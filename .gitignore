@@ -1,3 +1,6 @@
+# Visual Studio user config
+.vs/
+
 # Prerequisites
 *.d
 
@@ -30,3 +33,9 @@
 *.exe
 *.out
 *.app
+
+# Subdirectories
+Saved/*
+Build/*
+Intermediate/*
+Binaries/*
