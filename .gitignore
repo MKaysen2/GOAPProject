@@ -1,6 +1,7 @@
-# Visual Studio user config
+# Visual Studio files
 .vs/
-
+*.sln
+*.code-workspace
 # Prerequisites
 *.d
 
