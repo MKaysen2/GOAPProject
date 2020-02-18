@@ -93,7 +93,7 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 			//verify context preconditions
 			//skip action if it has already been visited for this node
 			UE_LOG(LogTemp, Warning, TEXT("          Checking action \"%s\""), *action->GetName());
-			if (!action->verify_context(nullptr) || visited_actions.Contains(action))
+			if (!action->VerifyContext(nullptr) || visited_actions.Contains(action))
 				continue;
 			UE_LOG(LogTemp, Warning, TEXT("          Mark visited"));
 			//mark edge as visited for current node

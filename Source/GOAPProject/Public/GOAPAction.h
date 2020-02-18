@@ -46,7 +46,7 @@ public:
 	}
 	
 	//Try to access cached values here rather than perform direct computation
-	virtual bool verify_context(AAIController* Controller) 
+	virtual bool VerifyContext(AAIController* Controller) 
 	{
 		return false;
 	}
@@ -84,9 +84,9 @@ public:
 	UFUNCTION()
 	virtual bool IsActionRunning();
 	UFUNCTION()
-	virtual void start_action(AAIController* controller);
+	virtual void StartAction(AAIController* controller);
 	UFUNCTION()
-	virtual void stop_action(AAIController* controller); //this might not be necessary
+	virtual void StopAction(AAIController* controller); //this might not be necessary
 };
 
 
@@ -101,8 +101,8 @@ private:
 public:
 	UActionMoveTo();
 	
-	bool verify_context(AAIController* controller) override;
-	void start_action(AAIController * controller) override;
+	bool VerifyContext(AAIController* controller) override;
+	void StartAction(AAIController * controller) override;
 };
 
 UCLASS(BlueprintType)
@@ -112,8 +112,8 @@ class GOAPPROJECT_API UAIAct_Reload : public UGOAPAction
 public:
 	UAIAct_Reload();
 
-	bool verify_context(AAIController* controller) override;
-	void start_action(AAIController* controller) override;
+	bool VerifyContext(AAIController* controller) override;
+	void StartAction(AAIController* controller) override;
 	
 };
 
@@ -123,12 +123,12 @@ class GOAPPROJECT_API UAIAct_Equip : public UGOAPAction
 	GENERATED_BODY()
 public:
 	UAIAct_Equip();
-	bool verify_context(AAIController* controller) override 
+	bool VerifyContext(AAIController* controller) override 
 	{
 		//Check blackboard for equippable weapon
 		return true;
 	}
-	void start_action(AAIController* Controller) override;
+	void StartAction(AAIController* Controller) override;
 };
 
 UCLASS(BlueprintType)
@@ -137,11 +137,11 @@ class GOAPPROJECT_API UAIAct_Attack : public UGOAPAction
 	GENERATED_BODY()
 public:
 	UAIAct_Attack();
-	bool verify_context(AAIController* controller) override
+	bool VerifyContext(AAIController* controller) override
 	{
 		//Check BB for visible target
 		return true;
 	}
-	void start_action(AAIController* Controller) override;
+	void StartAction(AAIController* Controller) override;
 };
 typedef TMultiMap<FWorldProperty, UGOAPAction*> LookupTable;

@@ -14,14 +14,14 @@ void UGOAPActionsComponent::RunNextAction()
 	
 	//this would only matter on multithreading
 	if (CurrentAction && CurrentAction->IsActionRunning())
-		CurrentAction->stop_action(AIOwner);
+		CurrentAction->StopAction(AIOwner);
 
 	if (ActionIdx >= ActionsQueue.Num())
 		return;
 	CurrentAction = ActionsQueue[ActionIdx];
 
 	if (CurrentAction)
-		CurrentAction->start_action(AIOwner);
+		CurrentAction->StartAction(AIOwner);
 	++ActionIdx;
 }
 
@@ -29,7 +29,7 @@ void UGOAPActionsComponent::AbortPlan()
 {
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
-		CurrentAction->stop_action(AIOwner);
+		CurrentAction->StopAction(AIOwner);
 		if (AIOwner->IsInState(EAnimState::Anim))
 		{
 			ACharacter* Avatar = Cast<ACharacter>(AIOwner->GetPawn());

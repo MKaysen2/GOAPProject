@@ -14,8 +14,8 @@ FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
 	GoalState(Node->GoalState),
 	ParentNode(Node),
 	ParentEdge(Edge),
-	unsatisfied(Node->unsatisfied),
-	forward_cost(Node->cost())
+	forward_cost(Node->cost()),
+	unsatisfied(Node->unsatisfied)
 {
 	const UWorldState* ParentState = const_cast<const UWorldState*>(Node->CurrentState);
 	CurrentState = DuplicateObject<UWorldState>(ParentState, ParentState->GetOuter());

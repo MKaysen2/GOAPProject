@@ -9,7 +9,7 @@ UGOAPAction::UGOAPAction() : Super()
 	
 }
 
-void UGOAPAction::start_action(AAIController* controller) 
+void UGOAPAction::StartAction(AAIController* controller) 
 {
 	bIsRunning = true;
 	FString action_name = GetName();
@@ -17,7 +17,7 @@ void UGOAPAction::start_action(AAIController* controller)
 }
 
 
-void UGOAPAction::stop_action(AAIController* controller) 
+void UGOAPAction::StopAction(AAIController* controller) 
 {
 	bIsRunning = false;
 	FString action_name = GetName();
@@ -38,14 +38,14 @@ UActionMoveTo::UActionMoveTo() : UGOAPAction(), times_run(0)
 	effects.Add(FWorldProperty(EWorldKey::kAtLocation, nullptr));
 }
 
-bool UActionMoveTo::verify_context(AAIController* Controller) {
+bool UActionMoveTo::VerifyContext(AAIController* Controller) {
 	return true;
 }
 
-void UActionMoveTo::start_action(AAIController* controller) 
+void UActionMoveTo::StartAction(AAIController* controller) 
 {
 
-	Super::start_action(controller);
+	Super::StartAction(controller);
 	++times_run;
 }
 
@@ -56,15 +56,15 @@ UAIAct_Reload::UAIAct_Reload() : UGOAPAction()
 	//No effects yet. this is just a test action
 }
 
-bool UAIAct_Reload::verify_context(AAIController* controller)
+bool UAIAct_Reload::VerifyContext(AAIController* controller)
 {
 	//Think this might be fine as is
 	return true;
 }
 
-void UAIAct_Reload::start_action(AAIController* Controller)
+void UAIAct_Reload::StartAction(AAIController* Controller)
 {
-	Super::start_action(Controller);
+	Super::StartAction(Controller);
 	AGOAPController* AIController = Cast<AGOAPController>(Controller);
 	if (!AIController)
 	{
@@ -85,9 +85,9 @@ UAIAct_Equip::UAIAct_Equip() : Super()
 	effects.Add(FWorldProperty(EWorldKey::kHasWeapon, true));
 }
 
-void UAIAct_Equip::start_action(AAIController* Controller)
+void UAIAct_Equip::StartAction(AAIController* Controller)
 {
-	Super::start_action(Controller);
+	Super::StartAction(Controller);
 	AGOAPController* AIController = Cast<AGOAPController>(Controller);
 	if (!AIController)
 	{
@@ -109,9 +109,9 @@ UAIAct_Attack::UAIAct_Attack() : Super()
 	effects.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
-void UAIAct_Attack::start_action(AAIController* Controller)
+void UAIAct_Attack::StartAction(AAIController* Controller)
 {
-	Super::start_action(Controller);
+	Super::StartAction(Controller);
 	AGOAPController* AIController = Cast<AGOAPController>(Controller);
 	if (!AIController)
 	{
