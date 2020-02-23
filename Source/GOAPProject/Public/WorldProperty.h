@@ -18,9 +18,9 @@ enum class EWorldKey : uint8
 UENUM(BlueprintType)
 enum class EAnimProps : uint8
 {
-	kAct_Attack,
-	kAct_Equip,
-	kAct_Reload,
+	kActAttack,
+	kActEquip,
+	kActReload,
 };
 
 USTRUCT(BlueprintType)

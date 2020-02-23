@@ -42,5 +42,5 @@ public:
 	bool Search(UGOAPGoal* Goal, const UWorldState* CurrentState, TArray<UGOAPAction*>& Plan);
 
 	void ClearLookupTable();
-	void create_action_mapping(TArray<UGOAPAction*>& actions);
+	void CreateLookupTable(TArray<UGOAPAction*>& actions);
 };

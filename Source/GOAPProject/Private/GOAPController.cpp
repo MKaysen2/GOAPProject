@@ -25,8 +25,9 @@ AGOAPController::AGOAPController()
 	current_state->add_property(FWorldProperty(EWorldKey::kAtLocation, nullptr));
 	current_state->add_property(FWorldProperty(EWorldKey::kTargetDead, false));
 
-	ActionSet.Add(NewObject<UAIAct_Equip>());
-	ActionSet.Add(NewObject<UAIAct_Reload>());
+	//ActionSet.Add(NewObject<UAIAct_MoveTo>());
+	//ActionSet.Add(NewObject<UAIAct_Equip>());
+	//ActionSet.Add(NewObject<UAIAct_Reload>());
 	ActionSet.Add(NewObject<UAIAct_Attack>());
 	AnimState = EAnimState::Move;
 	current_goal = nullptr;
@@ -49,7 +50,7 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	if (!GOAPPawn)
 		return;
 	GOAPPawn->RegisterGoals(Goals);
-	AStarComponent->create_action_mapping(ActionSet);
+	AStarComponent->CreateLookupTable(ActionSet);
 	current_goal = nullptr;
 	NextGoal = nullptr;
 	
@@ -104,6 +105,7 @@ void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulu
 void AGOAPController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	Super::OnMoveCompleted(RequestID, Result);
+	UE_LOG(LogTemp, Warning, TEXT("Do we actually need to set delegates or does this get called anyway"));
 }
 
 //TODO: use a Heapified TArray as a PQueue
@@ -134,18 +136,60 @@ bool AGOAPController::HasGoalChanged()
 	return NextGoal != current_goal;
 }
 
+void AGOAPController::SetMovementObservers()
+{
+
+}
+
+void AGOAPController::SetMontageObservers()
+{
+	ACharacter* Avatar = Cast<ACharacter>(GetPawn());
+	if (!Avatar)
+	{
+		return;
+	}
+	UAnimInstance* AnimInstance = Avatar->GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+	FOnMontageEnded BlendingOutDel;
+	BlendingOutDel.BindUObject(this, &AGOAPController::OnMontageBlendingOut);
+
+	FOnMontageEnded MontageEndDel;
+	MontageEndDel.BindUObject(this, &AGOAPController::OnMontageEnded);
+	AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDel);
+	AnimInstance->Montage_SetEndDelegate(MontageEndDel);
+}
+
+void AGOAPController::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Montage Blending out!"));
+}
+
+void AGOAPController::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Montage Ended!"));
+}
+
 void AGOAPController::RePlan() 
 {
-	if (current_goal != nullptr)
+
+	GOAPActionsComponent->AbortPlan();
+	if (IsFollowingAPath())
 	{
-		GOAPActionsComponent->AbortPlan();
+		StopMovement();
 	}
-	else
+	if (current_goal == nullptr)
 	{
-		GOAPActionsComponent->AbortPlan();
 		return;
 	}
 	//No goal -> No plan needed. By default, it'll play the idle animation
+	for (auto Action : ActionSet)
+	{
+		GOAPActionsComponent->QueueAction(Action);
+	}
+	/*
 	TArray<UGOAPAction*> Plan;
 	bool bSuccess = AStarComponent->Search(current_goal, current_state, Plan);
 	if (bSuccess)
@@ -155,6 +199,7 @@ void AGOAPController::RePlan()
 			GOAPActionsComponent->QueueAction(Action);
 		}
 	}
+	*/
 }
 
 bool AGOAPController::IsInState(EAnimState CheckState)
@@ -181,4 +226,12 @@ bool AGOAPController::IsPlayingMontage()
 void AGOAPController::SetAnimState(const EAnimState& NewState)
 {
 	AnimState = NewState;
+	if (NewState == EAnimState::Anim)
+	{
+		SetMontageObservers();
+	}
+	else if (NewState == EAnimState::Move)
+	{
+
+	}
 }

@@ -32,21 +32,34 @@ void UGOAPAction::apply_procedural_effects(AAIController* controller) {
 
 }
 
-UActionMoveTo::UActionMoveTo() : UGOAPAction(), times_run(0)
+UAIAct_MoveTo::UAIAct_MoveTo() : UGOAPAction()
 {
 	edge_cost = 10;
 	effects.Add(FWorldProperty(EWorldKey::kAtLocation, nullptr));
 }
 
-bool UActionMoveTo::VerifyContext(AAIController* Controller) {
+bool UAIAct_MoveTo::VerifyContext(AAIController* Controller) {
 	return true;
 }
 
-void UActionMoveTo::StartAction(AAIController* controller) 
+void UAIAct_MoveTo::StartAction(AAIController* Controller) 
 {
-
-	Super::StartAction(controller);
-	++times_run;
+	Super::StartAction(Controller);
+	if (!Controller)
+	{
+		return;
+	}
+	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+	if (!BBComp)
+	{
+		return;
+	}
+	AActor* Target = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
+	if (!Target)
+	{
+		return;
+	}
+	Controller->MoveToActor(Target);
 }
 
 UAIAct_Reload::UAIAct_Reload() : UGOAPAction()
@@ -66,17 +79,15 @@ void UAIAct_Reload::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
 	AGOAPController* AIController = Cast<AGOAPController>(Controller);
-	if (!AIController)
-	{
-		return;
-	}
-	AIController->SetAnimState(EAnimState::Anim);
-	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(AIController->GetPawn());
-	if (!Character)
+	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
+
+	if (!AIController || !Character)
 	{
 		return;
 	}
 	Character->Reload();
+	AIController->SetAnimState(EAnimState::Anim);
+
 }
 
 UAIAct_Equip::UAIAct_Equip() : Super()
@@ -89,17 +100,16 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
 	AGOAPController* AIController = Cast<AGOAPController>(Controller);
-	if (!AIController)
+	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
+
+	if (!AIController || !Character)
 	{
 		return;
 	}
-	AIController->SetAnimState(EAnimState::Anim);
-	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(AIController->GetPawn());
-	if (!Character)
-	{
-		return;
-	}
+	
 	Character->Equip();
+	AIController->SetAnimState(EAnimState::Anim);
+
 }
 
 UAIAct_Attack::UAIAct_Attack() : Super()
@@ -113,16 +123,14 @@ void UAIAct_Attack::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
 	AGOAPController* AIController = Cast<AGOAPController>(Controller);
-	if (!AIController)
-	{
-		return;
-	}
-	AIController->SetAnimState(EAnimState::Anim);
-	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(AIController->GetPawn());
-	if (!Character)
+	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
+
+	if (!AIController || !Character)
 	{
 		return;
 	}
 	AIController->GetBlackboardComponent()->SetValueAsBool(FName("TorsoTracking"), true);
 	Character->Attack();
+	AIController->SetAnimState(EAnimState::Anim);
+
 }

@@ -120,7 +120,7 @@ void UAStarComponent::ClearLookupTable()
 {
 	ActionTable.Empty();
 }
-void UAStarComponent::create_action_mapping(TArray<UGOAPAction*>& Actions)
+void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 {
 	//map effects symbols as keys to action objects for a regressive search
 	for (auto action : Actions) 

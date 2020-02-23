@@ -73,9 +73,21 @@ public:
 	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
 	//TODO: move this into a separate componennt
 	UFUNCTION()
-		void ReEvaluateGoals();
+		void ReEvaluateGoals();	
 	UFUNCTION()
 		bool HasGoalChanged();
+
+	UFUNCTION()
+		void SetMovementObservers();
+
+	UFUNCTION()
+		void SetMontageObservers();
+
+	UFUNCTION()
+		void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
+		void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
 		void RePlan();

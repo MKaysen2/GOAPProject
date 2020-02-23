@@ -2,12 +2,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "WorldProperty.h"
 #include "AIController.h"
 #include "GOAPGoal.h"
 #include "GOAPCharacterBase.generated.h"
 
 UCLASS(BlueprintType, Blueprintable)
-class AGOAPCharacterBase : public ACharacter 
+class GOAPPROJECT_API AGOAPCharacterBase : public ACharacter 
 {
 	GENERATED_BODY()
 protected:
@@ -21,10 +22,9 @@ public:
 	void BeginPlay() override;
 	UFUNCTION()
 		void PostInitProperties() override;
-	UFUNCTION()
-	int idlenum() {
-		return 1;
-	}
+
+	UFUNCTION( BlueprintCallable)
+		void OnAnimState(const EAnimProps& AnimToPlay);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void Attack();

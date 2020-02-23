@@ -15,6 +15,10 @@ void AGOAPCharacterBase::PostInitProperties()
 	Super::PostInitProperties();
 }
 
+void AGOAPCharacterBase::OnAnimState(const EAnimProps& AnimToPlay)
+{
+}
+
 void AGOAPCharacterBase::RegisterGoals(TArray<UGOAPGoal*>& OutArray)
 {
 	OutArray.Add(NewObject<UAIGoal_KillEnemy>(this));

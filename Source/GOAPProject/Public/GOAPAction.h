@@ -91,15 +91,13 @@ public:
 
 
 UCLASS(BlueprintType)
-class GOAPPROJECT_API UActionMoveTo : public UGOAPAction 
+class GOAPPROJECT_API UAIAct_MoveTo : public UGOAPAction 
 {
 	GENERATED_BODY()
 private:
-	UPROPERTY()
-	int times_run;
 
 public:
-	UActionMoveTo();
+	UAIAct_MoveTo();
 	
 	bool VerifyContext(AAIController* controller) override;
 	void StartAction(AAIController * controller) override;
