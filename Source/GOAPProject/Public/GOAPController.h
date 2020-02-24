@@ -52,10 +52,7 @@ private:
 	//Should this go in the Pawn, or the Controller?
 	UPROPERTY()
 		UGOAPActionsComponent* GOAPActionsComponent;
-
-	UPROPERTY()
-		EAnimState AnimState;
-
+	
 public:
 	AGOAPController();
 
@@ -78,9 +75,6 @@ public:
 		bool HasGoalChanged();
 
 	UFUNCTION()
-		void SetMovementObservers();
-
-	UFUNCTION()
 		void SetMontageObservers();
 
 	UFUNCTION()
@@ -93,10 +87,6 @@ public:
 		void RePlan();
 
 	UFUNCTION()
-		bool IsInState(EAnimState CheckState);
-	UFUNCTION()
 		bool IsPlayingMontage();
-	//Called when actions are started to set the state
-	UFUNCTION()
-		void SetAnimState(const EAnimState& NewState);
+
 };

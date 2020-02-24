@@ -11,17 +11,15 @@ void UGOAPActionsComponent::OnRegister()
 
 void UGOAPActionsComponent::RunNextAction() 
 {
-	
-	//this would only matter on multithreading
-	if (CurrentAction && CurrentAction->IsActionRunning())
-		CurrentAction->StopAction(AIOwner);
-
 	if (ActionIdx >= ActionsQueue.Num())
 		return;
 	CurrentAction = ActionsQueue[ActionIdx];
 
 	if (CurrentAction)
+	{
+		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::ActionEnded);
 		CurrentAction->StartAction(AIOwner);
+	}
 	++ActionIdx;
 }
 
@@ -29,12 +27,17 @@ void UGOAPActionsComponent::AbortPlan()
 {
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
+		CurrentAction->OnActionEnded.Unbind();
 		CurrentAction->StopAction(AIOwner);
-		if (AIOwner->IsInState(EAnimState::Anim))
+		if (AIOwner->IsPlayingMontage())
 		{
 			ACharacter* Avatar = Cast<ACharacter>(AIOwner->GetPawn());
 			if (Avatar)
 				Avatar->StopAnimMontage();
+		}
+		if (AIOwner->IsFollowingAPath())
+		{
+			AIOwner->StopMovement();
 		}
 	}
 	
@@ -58,4 +61,17 @@ bool UGOAPActionsComponent::IsActionRunning()
 	if (!CurrentAction)
 		return false;
 	return CurrentAction->IsActionRunning();
+}
+
+void UGOAPActionsComponent::ActionEnded()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Action Ended"));
+}
+
+void UGOAPActionsComponent::OnMontageEnded()
+{
+	if (CurrentAction && CurrentAction->IsActionRunning())
+	{
+		CurrentAction->StopAction(AIOwner);
+	}
 }

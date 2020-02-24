@@ -19,6 +19,8 @@
 
 #include "GOAPAction.generated.h"
 
+DECLARE_DELEGATE( FActionEndedDelegate );
+
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
@@ -80,6 +82,8 @@ public:
 		}
 		return satisfied;
 	}
+
+	FActionEndedDelegate OnActionEnded;
 
 	UFUNCTION()
 	virtual bool IsActionRunning();

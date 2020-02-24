@@ -22,13 +22,15 @@ void UGOAPAction::StopAction(AAIController* controller)
 	bIsRunning = false;
 	FString action_name = GetName();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stopping action %s"), *action_name));
-
+	OnActionEnded.ExecuteIfBound();
 }
 
-bool UGOAPAction::IsActionRunning() {
+bool UGOAPAction::IsActionRunning() 
+{
 	return bIsRunning;
 }
-void UGOAPAction::apply_procedural_effects(AAIController* controller) {
+void UGOAPAction::apply_procedural_effects(AAIController* controller) 
+{
 
 }
 
@@ -38,7 +40,8 @@ UAIAct_MoveTo::UAIAct_MoveTo() : UGOAPAction()
 	effects.Add(FWorldProperty(EWorldKey::kAtLocation, nullptr));
 }
 
-bool UAIAct_MoveTo::VerifyContext(AAIController* Controller) {
+bool UAIAct_MoveTo::VerifyContext(AAIController* Controller) 
+{
 	return true;
 }
 
@@ -54,12 +57,21 @@ void UAIAct_MoveTo::StartAction(AAIController* Controller)
 	{
 		return;
 	}
-	AActor* Target = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
-	if (!Target)
+	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
+	if (TargetActor)
+	{
+		Controller->SetFocus(TargetActor);
+	}
+	ACharacter* Avatar = Cast<ACharacter>(Controller->GetPawn());
+	if (!Avatar)
 	{
 		return;
 	}
-	Controller->MoveToActor(Target);
+	FVector Location(Avatar->GetActorLocation());
+	FVector Offset(0.0f, -800.0f, 0.0f);
+	BBComp->SetValueAsBool(FName("TorsoTracking"), true);
+
+	Controller->MoveToLocation(Location + Offset);
 }
 
 UAIAct_Reload::UAIAct_Reload() : UGOAPAction()
@@ -86,7 +98,7 @@ void UAIAct_Reload::StartAction(AAIController* Controller)
 		return;
 	}
 	Character->Reload();
-	AIController->SetAnimState(EAnimState::Anim);
+	AIController->SetMontageObservers();
 
 }
 
@@ -108,7 +120,7 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 	}
 	
 	Character->Equip();
-	AIController->SetAnimState(EAnimState::Anim);
+	AIController->SetMontageObservers();
 
 }
 
@@ -131,6 +143,5 @@ void UAIAct_Attack::StartAction(AAIController* Controller)
 	}
 	AIController->GetBlackboardComponent()->SetValueAsBool(FName("TorsoTracking"), true);
 	Character->Attack();
-	AIController->SetAnimState(EAnimState::Anim);
-
+	AIController->SetMontageObservers();
 }

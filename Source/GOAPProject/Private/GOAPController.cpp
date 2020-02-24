@@ -27,9 +27,8 @@ AGOAPController::AGOAPController()
 
 	//ActionSet.Add(NewObject<UAIAct_MoveTo>());
 	//ActionSet.Add(NewObject<UAIAct_Equip>());
-	//ActionSet.Add(NewObject<UAIAct_Reload>());
+	ActionSet.Add(NewObject<UAIAct_Reload>());
 	ActionSet.Add(NewObject<UAIAct_Attack>());
-	AnimState = EAnimState::Move;
 	current_goal = nullptr;
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
 }
@@ -70,10 +69,8 @@ void AGOAPController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	bool bMoveFinished = (AnimState == EAnimState::Move) && !IsFollowingAPath();
-	bool bAnimFinished = (AnimState == EAnimState::Anim) && !IsPlayingMontage();
 	//state transition conditions
-	if (bMoveFinished || bAnimFinished)
+	if (!GOAPActionsComponent->IsActionRunning())
 	{
 		GOAPActionsComponent->RunNextAction();
 	}
@@ -136,11 +133,6 @@ bool AGOAPController::HasGoalChanged()
 	return NextGoal != current_goal;
 }
 
-void AGOAPController::SetMovementObservers()
-{
-
-}
-
 void AGOAPController::SetMontageObservers()
 {
 	ACharacter* Avatar = Cast<ACharacter>(GetPawn());
@@ -164,22 +156,19 @@ void AGOAPController::SetMontageObservers()
 
 void AGOAPController::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Montage Blending out!"));
+	UE_LOG(LogTemp, Warning, TEXT("Montage %s Blending out!"), *Montage->GetName());
 }
 
 void AGOAPController::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Montage Ended!"));
+	UE_LOG(LogTemp, Warning, TEXT("Montage %s Ended!"), *Montage->GetName());
+	GOAPActionsComponent->OnMontageEnded();
 }
 
 void AGOAPController::RePlan() 
 {
 
 	GOAPActionsComponent->AbortPlan();
-	if (IsFollowingAPath())
-	{
-		StopMovement();
-	}
 	if (current_goal == nullptr)
 	{
 		return;
@@ -202,11 +191,6 @@ void AGOAPController::RePlan()
 	*/
 }
 
-bool AGOAPController::IsInState(EAnimState CheckState)
-{
-	return CheckState == AnimState;
-}
-
 bool AGOAPController::IsPlayingMontage()
 {
 	ACharacter* GOAPCharacter = Cast<ACharacter>(GetPawn());
@@ -221,17 +205,4 @@ bool AGOAPController::IsPlayingMontage()
 		return Anim->IsAnyMontagePlaying();
 	}
 	return false;
-}
-
-void AGOAPController::SetAnimState(const EAnimState& NewState)
-{
-	AnimState = NewState;
-	if (NewState == EAnimState::Anim)
-	{
-		SetMontageObservers();
-	}
-	else if (NewState == EAnimState::Move)
-	{
-
-	}
 }

@@ -44,4 +44,9 @@ public:
 	UFUNCTION()
 	void QueueAction(UGOAPAction* Action);
 
+	//These will be removed after implementing actions as event driven
+	UFUNCTION()
+		void ActionEnded();
+	UFUNCTION()
+		void OnMontageEnded();
 };
