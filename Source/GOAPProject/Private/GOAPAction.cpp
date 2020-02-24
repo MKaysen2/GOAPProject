@@ -141,7 +141,11 @@ void UAIAct_Attack::StartAction(AAIController* Controller)
 	{
 		return;
 	}
+
 	AIController->GetBlackboardComponent()->SetValueAsBool(FName("TorsoTracking"), true);
+	//Currently, this is the workaround for not being able to add ActionBPs to the character
+	//Once I get around that, then I'll be able to execute animMontages/Movement in the
+	//BP event graph directly
+	Character->TaskEndedDelegate.BindUObject(this, &UAIAct_Attack::StopAction, Controller);
 	Character->Attack();
-	AIController->SetMontageObservers();
 }

@@ -13,6 +13,7 @@ class GOAPPROJECT_API UGOAPActionsComponent : public UActorComponent
 	GENERATED_BODY()
 
 protected:
+	bool bPlanDone;
 
 	UPROPERTY(Transient)
 		AGOAPController* AIOwner;
@@ -44,9 +45,6 @@ public:
 	UFUNCTION()
 	void QueueAction(UGOAPAction* Action);
 
-	//These will be removed after implementing actions as event driven
 	UFUNCTION()
-		void ActionEnded();
-	UFUNCTION()
-		void OnMontageEnded();
+		bool IsPlanComplete();
 };

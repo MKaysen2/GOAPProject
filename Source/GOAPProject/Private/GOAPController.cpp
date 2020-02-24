@@ -25,10 +25,6 @@ AGOAPController::AGOAPController()
 	current_state->add_property(FWorldProperty(EWorldKey::kAtLocation, nullptr));
 	current_state->add_property(FWorldProperty(EWorldKey::kTargetDead, false));
 
-	//ActionSet.Add(NewObject<UAIAct_MoveTo>());
-	//ActionSet.Add(NewObject<UAIAct_Equip>());
-	ActionSet.Add(NewObject<UAIAct_Reload>());
-	ActionSet.Add(NewObject<UAIAct_Attack>());
 	current_goal = nullptr;
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
 }
@@ -49,6 +45,7 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	if (!GOAPPawn)
 		return;
 	GOAPPawn->RegisterGoals(Goals);
+	GOAPPawn->RegisterActions(ActionSet);
 	AStarComponent->CreateLookupTable(ActionSet);
 	current_goal = nullptr;
 	NextGoal = nullptr;
@@ -69,13 +66,8 @@ void AGOAPController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	//state transition conditions
-	if (!GOAPActionsComponent->IsActionRunning())
-	{
-		GOAPActionsComponent->RunNextAction();
-	}
 	ReEvaluateGoals();
-	if (HasGoalChanged())
+	if (HasGoalChanged() || GOAPActionsComponent->IsPlanComplete())
 	{
 		current_goal = NextGoal;
 		ScreenLog(FString::Printf(TEXT("Goal has changed")));
@@ -133,8 +125,14 @@ bool AGOAPController::HasGoalChanged()
 	return NextGoal != current_goal;
 }
 
+void AGOAPController::SetMovementObservers()
+{
+	bObserveMovement = true;
+}
+
 void AGOAPController::SetMontageObservers()
 {
+	bObserveMovement = false;
 	ACharacter* Avatar = Cast<ACharacter>(GetPawn());
 	if (!Avatar)
 	{
@@ -162,7 +160,6 @@ void AGOAPController::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrup
 void AGOAPController::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Montage %s Ended!"), *Montage->GetName());
-	GOAPActionsComponent->OnMontageEnded();
 }
 
 void AGOAPController::RePlan() 
@@ -189,6 +186,7 @@ void AGOAPController::RePlan()
 		}
 	}
 	*/
+	GOAPActionsComponent->RunNextAction();
 }
 
 bool AGOAPController::IsPlayingMontage()

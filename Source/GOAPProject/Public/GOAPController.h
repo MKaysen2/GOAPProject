@@ -17,11 +17,6 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "GOAPController.generated.h"
 
-UENUM(BlueprintType)
-enum class EAnimState : uint8 {
-	Move,
-	Anim
-};
 //I really need a messaging system somewhere
 //Maybe I can extend BrainComponent and use theirs
 
@@ -53,6 +48,9 @@ private:
 	UPROPERTY()
 		UGOAPActionsComponent* GOAPActionsComponent;
 	
+	//For now
+	UPROPERTY()
+		bool bObserveMovement;
 public:
 	AGOAPController();
 
@@ -75,6 +73,9 @@ public:
 		bool HasGoalChanged();
 
 	UFUNCTION()
+		void SetMovementObservers();
+
+	UFUNCTION()
 		void SetMontageObservers();
 
 	UFUNCTION()
@@ -85,6 +86,7 @@ public:
 
 	UFUNCTION()
 		void RePlan();
+
 
 	UFUNCTION()
 		bool IsPlayingMontage();

@@ -12,12 +12,16 @@ void UGOAPActionsComponent::OnRegister()
 void UGOAPActionsComponent::RunNextAction() 
 {
 	if (ActionIdx >= ActionsQueue.Num())
+	{
 		return;
+	}
 	CurrentAction = ActionsQueue[ActionIdx];
 
 	if (CurrentAction)
 	{
-		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::ActionEnded);
+		bPlanDone = false;
+		//Eventually I want animations that aren't forced to interrupt clean themselves up
+		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::RunNextAction);
 		CurrentAction->StartAction(AIOwner);
 	}
 	++ActionIdx;
@@ -48,6 +52,7 @@ void UGOAPActionsComponent::Reset()
 {
 	ActionIdx = 0;
 	CurrentAction = nullptr;
+	bPlanDone = true;
 	ActionsQueue.Reset();
 }
 
@@ -63,15 +68,7 @@ bool UGOAPActionsComponent::IsActionRunning()
 	return CurrentAction->IsActionRunning();
 }
 
-void UGOAPActionsComponent::ActionEnded()
+bool UGOAPActionsComponent::IsPlanComplete()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Action Ended"));
-}
-
-void UGOAPActionsComponent::OnMontageEnded()
-{
-	if (CurrentAction && CurrentAction->IsActionRunning())
-	{
-		CurrentAction->StopAction(AIOwner);
-	}
+	return false;
 }

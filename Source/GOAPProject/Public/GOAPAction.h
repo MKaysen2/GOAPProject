@@ -24,7 +24,7 @@ DECLARE_DELEGATE( FActionEndedDelegate );
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
-UCLASS(ABSTRACT)
+UCLASS(ABSTRACT, BlueprintType, Blueprintable)
 class GOAPPROJECT_API UGOAPAction : public UObject 
 {
 	GENERATED_BODY()
