@@ -13,7 +13,6 @@ class GOAPPROJECT_API UGOAPActionsComponent : public UActorComponent
 	GENERATED_BODY()
 
 protected:
-	bool bPlanDone;
 
 	UPROPERTY(Transient)
 		AGOAPController* AIOwner;
@@ -27,6 +26,7 @@ protected:
 
 	int32 ActionIdx;
 
+	bool bPlanComplete;
 public:
 	void OnRegister() override;
 

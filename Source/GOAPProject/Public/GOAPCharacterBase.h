@@ -35,15 +35,6 @@ public:
 	UFUNCTION()
 		void PostInitProperties() override;
 
-	UFUNCTION(BlueprintImplementableEvent)
-		void Attack();
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void Reload();
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void Equip();
-
 	FTaskEndedSignature TaskEndedDelegate;
 
 	UFUNCTION(BlueprintCallable)

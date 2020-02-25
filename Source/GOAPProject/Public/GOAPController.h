@@ -1,22 +1,16 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "AStarComponent.h"
-#include "GOAPAction.h"
-#include "GOAPGoal.h"
-#include "Perception\AISenseConfig_Sight.h"
-#include "GOAPCharacterBase.h"
-#include "BehaviorTree\BlackboardComponent.h"
-#include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
-#include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
-#include "Animation/AnimInstance.h"
-#include "Delegates/Delegate.h"
-#include "Containers/Queue.h"
 #include "Perception\AIPerceptionTypes.h"
-#include "GOAPActionsComponent.h"
-#include "Perception/AIPerceptionComponent.h"
+
 #include "GOAPController.generated.h"
 
+class UAStarComponent;
+class UWorldState;
+class UGOAPGoal;
+class UGOAPAction;
+class UGOAPActionsComponent;
+class UAISenseConfig_Sight;
 //I really need a messaging system somewhere
 //Maybe I can extend BrainComponent and use theirs
 

@@ -64,9 +64,6 @@ public:
 		}
 	}
 
-	//Redundant, essentially what happens when you run the action itself
-	virtual void apply_procedural_effects(AAIController* controller);
-
 	//reverse application of action
 	//Returns number of successfully satisfied properties
 	virtual int unapply_action(UWorldState* CurrentState, const UWorldState* GoalState) const 
@@ -133,17 +130,4 @@ public:
 	void StartAction(AAIController* Controller) override;
 };
 
-UCLASS(BlueprintType)
-class GOAPPROJECT_API UAIAct_Attack : public UGOAPAction
-{
-	GENERATED_BODY()
-public:
-	UAIAct_Attack();
-	bool VerifyContext(AAIController* controller) override
-	{
-		//Check BB for visible target
-		return true;
-	}
-	void StartAction(AAIController* Controller) override;
-};
 typedef TMultiMap<FWorldProperty, UGOAPAction*> LookupTable;

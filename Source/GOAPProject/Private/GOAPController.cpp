@@ -1,5 +1,19 @@
 #include "..\Public\GOAPController.h"
+#include "..\Public\GOAPCharacterBase.h"
+#include "..\Public\GOAPActionsComponent.h"
+#include "..\Public\AStarComponent.h"
+#include "..\Public\GOAPAction.h"
+#include "..\Public\GOAPGoal.h"
+#include "Perception\AISenseConfig_Sight.h"
 
+#include "BehaviorTree\BlackboardComponent.h"
+
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
+#include "Animation/AnimInstance.h"
+#include "Delegates/Delegate.h"
+#include "Containers/Queue.h"
+#include "Perception/AIPerceptionComponent.h"
 
 AGOAPController::AGOAPController()
 {
@@ -67,10 +81,15 @@ void AGOAPController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	ReEvaluateGoals();
-	if (HasGoalChanged() || GOAPActionsComponent->IsPlanComplete())
+	if (HasGoalChanged())
 	{
 		current_goal = NextGoal;
 		ScreenLog(FString::Printf(TEXT("Goal has changed")));
+		RePlan();
+	}
+	else if (current_goal != nullptr && GOAPActionsComponent->IsPlanComplete())
+	{
+		ScreenLog(FString::Printf(TEXT("Plan Complete, Re-Running Goal")));
 		RePlan();
 	}
 }
@@ -170,6 +189,7 @@ void AGOAPController::RePlan()
 	{
 		return;
 	}
+
 	//No goal -> No plan needed. By default, it'll play the idle animation
 	for (auto Action : ActionSet)
 	{

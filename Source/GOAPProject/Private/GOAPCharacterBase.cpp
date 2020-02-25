@@ -28,7 +28,7 @@ void AGOAPCharacterBase::RegisterActions(TArray<UGOAPAction*>& OutArray)
 		}
 	}
 	*/
-	OutArray.Add(NewObject<UAIAct_Attack>(this));
+	//OutArray.Add(NewObject<UAIAct_Attack>(this));
 }
 void AGOAPCharacterBase::RegisterGoals(TArray<UGOAPGoal*>& OutArray)
 {
@@ -38,5 +38,4 @@ void AGOAPCharacterBase::RegisterGoals(TArray<UGOAPGoal*>& OutArray)
 void AGOAPCharacterBase::OnTaskEnded(bool bSuccess)
 {
 	TaskEndedDelegate.ExecuteIfBound();
-	TaskEndedDelegate.Unbind();
 }
