@@ -59,7 +59,7 @@ public:
 	//reverse application of action
 	//Returns number of successfully satisfied properties
 	UFUNCTION()
-	virtual int unapply_action(UWorldState* CurrentState, const UWorldState* GoalState) const;
+	virtual int UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const;
 
 	FActionEndedDelegate OnActionEnded;
 

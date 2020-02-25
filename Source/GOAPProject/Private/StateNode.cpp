@@ -65,7 +65,7 @@ void FStateNode::FindActions(const LookupTable& action_map, TArray<UGOAPAction*>
 void FStateNode::TakeAction(const UGOAPAction* action) 
 {
 
-	int num_satisfied = action->unapply_action(CurrentState, GoalState);
+	int num_satisfied = action->UnapplySymbolicEffects(CurrentState, GoalState);
 	unsatisfied -= num_satisfied;
 	//for every prop in preconditions
 	for (auto prop : action->preconditions) 

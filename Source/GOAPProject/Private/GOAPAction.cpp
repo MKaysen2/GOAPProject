@@ -24,7 +24,7 @@ void UGOAPAction::ApplySymbolicEffects(UWorldState* State) const
 	}
 }
 
-int UGOAPAction::unapply_action(UWorldState* CurrentState, const UWorldState* GoalState) const
+int UGOAPAction::UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const
 {
 	//TODO: solve variable properties by getting value indicated by prop
 	int satisfied = 0;
