@@ -86,18 +86,6 @@ public:
 };
 
 UCLASS(BlueprintType)
-class GOAPPROJECT_API UAIAct_Reload : public UGOAPAction
-{
-	GENERATED_BODY()
-public:
-	UAIAct_Reload();
-
-	bool VerifyContext(AAIController* controller) override;
-	void StartAction(AAIController* controller) override;
-	
-};
-
-UCLASS(BlueprintType)
 class GOAPPROJECT_API UAIAct_Equip : public UGOAPAction
 {
 	GENERATED_BODY()
