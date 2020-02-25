@@ -1,4 +1,5 @@
 #include "..\Public\StateNode.h"
+#include "..\Public\WorldState.h"
 
 FStateNode::FStateNode()
 {

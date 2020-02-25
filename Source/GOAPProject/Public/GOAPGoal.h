@@ -1,16 +1,14 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "WorldProperty.h"
-#include "AIController.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISense_Sight.h"
 #include "GOAPGoal.generated.h"
 
 class AGOAPCharacterBase;
+class AAIController;
 
-//TODO:mark abstract
-UCLASS(BlueprintType)
-class UGOAPGoal : public UObject {
+UCLASS(ABSTRACT, BlueprintType)
+class UGOAPGoal : public UObject 
+{
 	GENERATED_BODY()
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -25,7 +23,7 @@ public:
 	float Priority() const;
 };
 
-UCLASS(BlueprintType)
+UCLASS()
 class UAIGoal_KillEnemy : public UGOAPGoal
 {
 	GENERATED_BODY()

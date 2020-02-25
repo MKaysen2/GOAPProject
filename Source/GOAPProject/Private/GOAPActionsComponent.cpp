@@ -1,6 +1,7 @@
 #include "../Public/GOAPActionsComponent.h"
 #include "../Public/GOAPController.h"
 #include "../Public/GOAPAction.h"
+#include "GameFramework/Character.h"
 
 void UGOAPActionsComponent::OnRegister()
 {

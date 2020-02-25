@@ -4,6 +4,10 @@
 
 #include "..\Public\AStarComponent.h"
 #include "..\Public\GOAPController.h"
+#include "..\Public\GOAPAction.h"
+#include "..\Public\GOAPGoal.h"
+#include "..\Public\WorldState.h"
+
 #include "Templates/Less.h"
 
 UAStarComponent::UAStarComponent() :

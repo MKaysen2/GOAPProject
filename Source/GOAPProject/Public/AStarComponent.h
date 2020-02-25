@@ -5,12 +5,8 @@
 #include "CoreMinimal.h"
 #include "Containers/Array.h"
 #include "IAStarNode.h"
-#include "WorldState.h"
 #include "StateNode.h"
-#include "GOAPAction.h"
-#include "GOAPGoal.h"
 #include "Containers/Map.h"
-#include "Containers/Queue.h"
 #include "UObject/NoExportTypes.h"
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
@@ -20,6 +16,9 @@
 
 #define ScreenLog(text)	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, text);
 
+class UGOAPAction;
+class UGOAPGoal;
+class UWorldState;
 class AGOAPController;
 /**
  * This is really like a GOAPComponent

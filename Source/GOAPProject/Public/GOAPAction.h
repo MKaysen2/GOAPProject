@@ -2,22 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "WorldProperty.h"
-#include "WorldState.h"
-#include "AIController.h"
 #include "Containers/Array.h"
 #include "UObject/NoExportTypes.h"
-#include "GameFramework/Character.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "Animation/AnimInstance.h"
-#include "Delegates/Delegate.h"
-#include "Navigation/PathFollowingComponent.h"
-#include "TimerManager.h"
+
 #include "UObject/ConstructorHelpers.h"
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
 
 #include "GOAPAction.generated.h"
+
+class UWorldState;
+class AAIController;
 
 DECLARE_DELEGATE( FActionEndedDelegate );
 
@@ -48,37 +43,23 @@ public:
 	}
 	
 	//Try to access cached values here rather than perform direct computation
+	UFUNCTION()
 	virtual bool VerifyContext(AAIController* Controller) 
 	{
+		//prevent accidental base class instances from being valid
 		return false;
 	}
 
 	//forward application of action
 	//Call after validating action success
 	//TODO: Variable-valued symbols
-	virtual void apply_symbolic_effects(UWorldState* state) const 
-	{
-		for (auto& prop : effects) 
-		{
-			state->apply_effect(prop);
-		}
-	}
+	UFUNCTION()
+	void ApplySymbolicEffects(UWorldState* state) const;
 
 	//reverse application of action
 	//Returns number of successfully satisfied properties
-	virtual int unapply_action(UWorldState* CurrentState, const UWorldState* GoalState) const 
-	{
-		//TODO: solve variable properties by getting value indicated by prop
-		int satisfied = 0;
-		for (auto& prop : effects) 
-		{
-			const FWorldProperty* prev_prop = GoalState->find_property(prop);
-			check(prev_prop); //sanity check - the controller state should define all of the symbols
-			if (CurrentState->apply_effect(*prev_prop))
-				++satisfied;
-		}
-		return satisfied;
-	}
+	UFUNCTION()
+	virtual int unapply_action(UWorldState* CurrentState, const UWorldState* GoalState) const;
 
 	FActionEndedDelegate OnActionEnded;
 

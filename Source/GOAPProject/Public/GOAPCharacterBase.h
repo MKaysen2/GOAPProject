@@ -3,12 +3,11 @@
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "WorldProperty.h"
-#include "AIController.h"
-#include "GOAPGoal.h"
 #include "GOAPCharacterBase.generated.h"
 
 class UGOAPAction;
-
+class AAIController;
+class UGOAPGoal;
 DECLARE_DELEGATE(FTaskEndedSignature);
 
 UCLASS(BlueprintType, Blueprintable)

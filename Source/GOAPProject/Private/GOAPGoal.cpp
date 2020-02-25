@@ -1,5 +1,8 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\GOAPCharacterBase.h"
+#include "AIController.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
 
 UGOAPGoal::UGOAPGoal() : Super() 
 {

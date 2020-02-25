@@ -3,7 +3,6 @@
 #include "Containers/Set.h"
 #include "UObject/NoExportTypes.h"
 #include "WorldProperty.h"
-#include "IAStarNode.h"
 #include "WorldState.generated.h"
 
 UCLASS(BlueprintType)

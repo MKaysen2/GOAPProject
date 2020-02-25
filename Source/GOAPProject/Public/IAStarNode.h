@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Containers/Array.h"
-#include "Containers/Set.h"
 #include "IAStarNode.generated.h"
 
 

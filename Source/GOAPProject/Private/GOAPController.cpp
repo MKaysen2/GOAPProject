@@ -4,6 +4,7 @@
 #include "..\Public\AStarComponent.h"
 #include "..\Public\GOAPAction.h"
 #include "..\Public\GOAPGoal.h"
+#include "..\Public\WorldState.h"
 #include "Perception\AISenseConfig_Sight.h"
 
 #include "BehaviorTree\BlackboardComponent.h"

@@ -2,11 +2,40 @@
 
 #include "..\Public\GOAPAction.h"
 #include "..\Public\GOAPCharacterBase.h"
-#include "..\Public\GOAPController.h"
 #include "..\Public\CombatInterface.h"
+#include "..\Public\WorldState.h"
+#include "AIController.h"
+#include "GameFramework/Character.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Navigation/PathFollowingComponent.h"
+#include "TimerManager.h"
+
 UGOAPAction::UGOAPAction() : Super() 
 {
 	
+}
+
+void UGOAPAction::ApplySymbolicEffects(UWorldState* State) const
+{
+	for (auto& prop : effects)
+	{
+		State->apply_effect(prop);
+	}
+}
+
+int UGOAPAction::unapply_action(UWorldState* CurrentState, const UWorldState* GoalState) const
+{
+	//TODO: solve variable properties by getting value indicated by prop
+	int satisfied = 0;
+	for (auto& prop : effects)
+	{
+		const FWorldProperty* prev_prop = GoalState->find_property(prop);
+		check(prev_prop); //sanity check - the controller state should define all of the symbols
+		if (CurrentState->apply_effect(*prev_prop))
+			++satisfied;
+	}
+	return satisfied;
 }
 
 void UGOAPAction::StartAction(AAIController* Controller) 
@@ -20,7 +49,6 @@ void UGOAPAction::StartAction(AAIController* Controller)
 		Character->TaskEndedDelegate.BindUObject(this, &UAIAct_Reload::StopAction, Controller);
 	}
 }
-
 
 void UGOAPAction::StopAction(AAIController* Controller) 
 {

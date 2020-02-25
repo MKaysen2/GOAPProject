@@ -1,5 +1,8 @@
 #include "..\Public\GOAPCharacterBase.h"
 #include "..\Public\GOAPAction.h"
+#include "..\Public\GOAPGoal.h"
+
+#include "AIController.h"
 
 AGOAPCharacterBase::AGOAPCharacterBase() : ACharacter() 
 {

@@ -1,6 +1,7 @@
 #include "..\Public\AIAct_Attack.h"
 #include "..\Public\CombatInterface.h"
 #include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "..\Public\WorldProperty.h"
 #include "..\Public\WorldState.h"
 #include "GameFramework/Pawn.h"
