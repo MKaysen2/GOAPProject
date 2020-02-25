@@ -82,6 +82,7 @@ void AGOAPController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	ReEvaluateGoals();
+	//TODO: Make this event driven
 	if (HasGoalChanged())
 	{
 		current_goal = NextGoal;
