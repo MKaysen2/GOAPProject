@@ -70,15 +70,6 @@ public:
 		void SetMovementObservers();
 
 	UFUNCTION()
-		void SetMontageObservers();
-
-	UFUNCTION()
-		void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
-
-	UFUNCTION()
-		void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-	UFUNCTION()
 		void RePlan();
 
 

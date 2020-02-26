@@ -17,7 +17,7 @@ protected:
 public:
 	UGOAPGoal();
 	const TArray<FWorldProperty>& container();
-	virtual bool IsValid(AAIController* Controller);
+	virtual bool IsGoalValid(AAIController* Controller);
 	virtual void Activate(AAIController* Controller);
 	virtual void ReCalcPriority(AAIController* Controller);
 	float Priority() const;
@@ -29,7 +29,18 @@ class UAIGoal_KillEnemy : public UGOAPGoal
 	GENERATED_BODY()
 public:
 	UAIGoal_KillEnemy();
-	bool IsValid(AAIController* Controller) override;
+	bool IsGoalValid(AAIController* Controller) override;
+	void Activate(AAIController* Controller) override;
+	void ReCalcPriority(AAIController* Controller) override;
+};
+
+UCLASS()
+class UAIGoal_Wander : public UGOAPGoal
+{
+	GENERATED_BODY()
+public:
+	UAIGoal_Wander();
+	bool IsGoalValid(AAIController* Controller) override;
 	void Activate(AAIController* Controller) override;
 	void ReCalcPriority(AAIController* Controller) override;
 };

@@ -14,7 +14,7 @@ const TArray<FWorldProperty>& UGOAPGoal::container()
 	return goal;
 }
 
-bool UGOAPGoal::IsValid(AAIController* Controller)
+bool UGOAPGoal::IsGoalValid(AAIController* Controller)
 {
 	return false;
 }
@@ -38,18 +38,84 @@ UAIGoal_KillEnemy::UAIGoal_KillEnemy() : Super()
 	goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
-bool UAIGoal_KillEnemy::IsValid(AAIController* Controller)
+bool UAIGoal_KillEnemy::IsGoalValid(AAIController* Controller)
 {
-	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
-	UObject* Target = BBComponent->GetValueAsObject(FName("Target"));
-	return (Target !=nullptr);
+	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
+	TArray<AActor*> PerceivedActors;
+	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
+	return (PerceivedActors.Num() > 0);
 }
 
 void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 {
+	if (!Controller)
+	{
+		return;
+	}
+	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
 
+	APawn* ControlledPawn = Controller->GetPawn();
+	if (!ControlledPawn || !PerceptionComponent)
+	{
+		return;
+	}
+
+	TArray<AActor*> PerceivedActors;
+	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
+	AActor* Target = nullptr;
+	FVector Location(ControlledPawn->GetActorLocation());
+	float TargetDistance = 0.0f;
+	for (auto Actor : PerceivedActors)
+	{
+		if (!Actor)
+		{
+			continue;
+		}
+
+		if (!Target)
+		{
+			Target = Actor;
+			TargetDistance = ControlledPawn->GetDistanceTo(Target);
+		}
+		else
+		{
+			float TestDistance = ControlledPawn->GetDistanceTo(Actor);
+			if (TestDistance < TargetDistance)
+			{
+				Target = Actor;
+				TargetDistance = TestDistance;
+			}
+		}
+	}
+	if (!Target)
+	{
+		return;
+	}
+	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
+	BBComponent->SetValueAsObject(FName("Target"), Target);
 }
 
 void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
 {
+}
+
+UAIGoal_Wander::UAIGoal_Wander() : Super()
+{
+	LastPriority = 10.0f;
+	goal.Add(FWorldProperty(EWorldKey::kAtLocation, true));
+}
+
+bool UAIGoal_Wander::IsGoalValid(AAIController* Controller)
+{
+	return true;
+}
+
+void UAIGoal_Wander::Activate(AAIController* Controller)
+{
+
+}
+
+void UAIGoal_Wander::ReCalcPriority(AAIController* Controller)
+{
+
 }

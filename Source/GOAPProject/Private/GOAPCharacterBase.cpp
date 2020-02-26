@@ -32,11 +32,13 @@ void AGOAPCharacterBase::RegisterActions(TArray<UGOAPAction*>& OutArray)
 		}
 	}
 	*/
+	OutArray.Add(NewObject<UAIAct_Equip>(this));
 	OutArray.Add(NewObject<UAIAct_Reload>(this));
 	OutArray.Add(NewObject<UAIAct_Attack>(this));
 }
 void AGOAPCharacterBase::RegisterGoals(TArray<UGOAPGoal*>& OutArray)
 {
+	OutArray.Add(NewObject<UAIGoal_Wander>(this));
 	OutArray.Add(NewObject<UAIGoal_KillEnemy>(this));
 }
 

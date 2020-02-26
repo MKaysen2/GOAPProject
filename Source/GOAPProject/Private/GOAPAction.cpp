@@ -60,7 +60,7 @@ void UGOAPAction::StopAction(AAIController* Controller)
 	{
 		Character->TaskEndedDelegate.Unbind();
 	}
-	
+	Controller->SetFocus(nullptr);
 	bIsRunning = false;
 
 	OnActionEnded.ExecuteIfBound();
@@ -74,7 +74,7 @@ bool UGOAPAction::IsActionRunning()
 UAIAct_MoveTo::UAIAct_MoveTo() : UGOAPAction()
 {
 	edge_cost = 10;
-	effects.Add(FWorldProperty(EWorldKey::kAtLocation, nullptr));
+	effects.Add(FWorldProperty(EWorldKey::kAtLocation, true));
 }
 
 bool UAIAct_MoveTo::VerifyContext(AAIController* Controller) 
@@ -114,7 +114,7 @@ void UAIAct_MoveTo::StartAction(AAIController* Controller)
 UAIAct_Equip::UAIAct_Equip() : Super()
 {
 	edge_cost = 1;
-	effects.Add(FWorldProperty(EWorldKey::kHasWeapon, true));
+	effects.Add(FWorldProperty(EWorldKey::kAtLocation, true));
 }
 
 void UAIAct_Equip::StartAction(AAIController* Controller)
@@ -135,7 +135,7 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 	{
 		return;
 	}
-
+	Controller->SetFocus(nullptr);
 	//Currently, this is the workaround for not being able to add ActionBPs to the character
 	//Once I get around that, then I'll be able to execute animMontages/Movement in the
 	//BP event graph directly

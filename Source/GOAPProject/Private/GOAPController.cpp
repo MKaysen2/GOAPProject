@@ -37,7 +37,7 @@ AGOAPController::AGOAPController()
 	current_state->add_property(FWorldProperty(EWorldKey::kWeaponLoaded, false));
 	current_state->add_property(FWorldProperty(EWorldKey::kHasWeapon, false));
 	current_state->add_property(FWorldProperty(EWorldKey::kIdle, false));
-	current_state->add_property(FWorldProperty(EWorldKey::kAtLocation, nullptr));
+	current_state->add_property(FWorldProperty(EWorldKey::kAtLocation, false));
 	current_state->add_property(FWorldProperty(EWorldKey::kTargetDead, false));
 
 	current_goal = nullptr;
@@ -91,7 +91,7 @@ void AGOAPController::Tick(float DeltaSeconds)
 	}
 	else if (current_goal != nullptr && GOAPActionsComponent->IsPlanComplete())
 	{
-		ScreenLog(FString::Printf(TEXT("Plan Complete, Re-Running Goal")));
+		ScreenLog(FString::Printf(TEXT("Plan Complete, Re-Running Goal %s"), *current_goal->GetName()));
 		RePlan();
 	}
 }
@@ -99,23 +99,23 @@ void AGOAPController::Tick(float DeltaSeconds)
 void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	//Might want to register Goals as stimuli listeners and just pump Stimuli to them
-	//
+	/*
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		Blackboard->SetValueAsObject(FName("Target"), Actor);
+		//Blackboard->SetValueAsObject(FName("Target"), Actor);
 		UE_LOG(LogTemp, Warning, TEXT("Target successfully sensed"));
 	}
 	else
 	{
-		Blackboard->SetValueAsObject(FName("Target"), nullptr);
+		//Blackboard->SetValueAsObject(FName("Target"), nullptr);
 		UE_LOG(LogTemp, Warning, TEXT("Target not successfully sensed"));
 	}
+	*/
 }
 
 void AGOAPController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	Super::OnMoveCompleted(RequestID, Result);
-	UE_LOG(LogTemp, Warning, TEXT("Do we actually need to set delegates or does this get called anyway"));
 }
 
 //TODO: use a Heapified TArray as a PQueue
@@ -124,7 +124,7 @@ void AGOAPController::ReEvaluateGoals()
 	NextGoal = nullptr;
 	for (auto Goal : Goals)
 	{
-		if (Goal->IsValid(this))
+		if (Goal->IsGoalValid(this))
 		{
 			//Recalculate prioirity if necessary
 			Goal->ReCalcPriority(this);
@@ -151,38 +151,6 @@ void AGOAPController::SetMovementObservers()
 	bObserveMovement = true;
 }
 
-void AGOAPController::SetMontageObservers()
-{
-	bObserveMovement = false;
-	ACharacter* Avatar = Cast<ACharacter>(GetPawn());
-	if (!Avatar)
-	{
-		return;
-	}
-	UAnimInstance* AnimInstance = Avatar->GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
-	{
-		return;
-	}
-	FOnMontageEnded BlendingOutDel;
-	BlendingOutDel.BindUObject(this, &AGOAPController::OnMontageBlendingOut);
-
-	FOnMontageEnded MontageEndDel;
-	MontageEndDel.BindUObject(this, &AGOAPController::OnMontageEnded);
-	AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDel);
-	AnimInstance->Montage_SetEndDelegate(MontageEndDel);
-}
-
-void AGOAPController::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Montage %s Blending out!"), *Montage->GetName());
-}
-
-void AGOAPController::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Montage %s Ended!"), *Montage->GetName());
-}
-
 void AGOAPController::RePlan() 
 {
 
@@ -192,22 +160,31 @@ void AGOAPController::RePlan()
 		return;
 	}
 
+	current_goal->Activate(this);
+
 	//No goal -> No plan needed. By default, it'll play the idle animation
+	/*
 	for (auto Action : ActionSet)
 	{
 		GOAPActionsComponent->QueueAction(Action);
 	}
-	/*
+	*/
+	
 	TArray<UGOAPAction*> Plan;
 	bool bSuccess = AStarComponent->Search(current_goal, current_state, Plan);
 	if (bSuccess)
 	{
+		//ScreenLog(FString::Printf(TEXT("Found Plan")));
+
 		for (auto Action : Plan)
 		{
+			//ScreenLog(FString::Printf(TEXT("Queueing action %s"), *Action->GetName()));
+
 			GOAPActionsComponent->QueueAction(Action);
 		}
+
 	}
-	*/
+	
 	GOAPActionsComponent->RunNextAction();
 }
 
