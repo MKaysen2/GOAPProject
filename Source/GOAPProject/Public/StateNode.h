@@ -33,10 +33,13 @@ private:
 	UPROPERTY()
 		UGOAPAction* ParentEdge;
 
-	
+		int CountUnsatisfied();
 	int forward_cost;
+
 public:
 	int unsatisfied;
+	int depth = 0;
+
 	friend FORCEINLINE bool operator<(const FStateNode& lhs, const FStateNode& rhs) {
 		return lhs.cost() < rhs.cost();
 	}

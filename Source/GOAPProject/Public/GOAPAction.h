@@ -37,7 +37,8 @@ public:
 	UPROPERTY()
 	bool bIsRunning = false;
 
-	virtual int cost() const 
+	UFUNCTION()
+	virtual int Cost() const 
 	{
 		return edge_cost;
 	}
@@ -61,6 +62,8 @@ public:
 	UFUNCTION()
 	virtual int UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const;
 
+	UFUNCTION()
+		void AddUnsatisfiedPreconditions(UWorldState* CurrentState, const UWorldState* GoalState) const;
 	FActionEndedDelegate OnActionEnded;
 
 	UFUNCTION()
@@ -99,4 +102,4 @@ public:
 	void StartAction(AAIController* Controller) override;
 };
 
-typedef TMultiMap<FWorldProperty, UGOAPAction*> LookupTable;
+typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;

@@ -7,6 +7,8 @@
 class AGOAPController;
 class UGOAPAction;
 
+DECLARE_DELEGATE(FPlanCompletedSignature);
+
 UCLASS()
 class GOAPPROJECT_API UGOAPActionsComponent : public UActorComponent
 {
@@ -47,4 +49,6 @@ public:
 
 	UFUNCTION()
 		bool IsPlanComplete();
+
+	FPlanCompletedSignature OnPlanCompleted;
 };

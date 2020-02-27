@@ -15,27 +15,24 @@ enum class EWorldKey : uint8
 	kTargetDead
 };
 
-UENUM(BlueprintType)
-enum class EAnimProps : uint8
-{
-	kActAttack,
-	kActEquip,
-	kActReload,
-};
-
 USTRUCT(BlueprintType)
 struct GOAPPROJECT_API FWorldProperty 
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere)
-		EWorldKey key;
+	
+	UPROPERTY()
+	EWorldKey key;
 
 	TUnion<bool, AActor*> value;
+	UPROPERTY()
+	bool bSatisfied;
 
-	FWorldProperty() : key(), value() {}
-	FWorldProperty(EWorldKey _key, bool bValue) : key(_key), value(bValue) {}
-	FWorldProperty(EWorldKey _key, AActor* objValue) : key(_key), value(objValue) {}
+
+	FWorldProperty() : key(), value(), bSatisfied(false) {}
+	FWorldProperty(const FWorldProperty& Copy) : key(Copy.key), value(Copy.value), bSatisfied(Copy.bSatisfied) {}
+	FWorldProperty(EWorldKey _key, bool bValue) : key(_key), value(bValue), bSatisfied(false) {}
+	FWorldProperty(EWorldKey _key, AActor* objValue) : key(_key), value(objValue), bSatisfied(false) {}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& prop) 
 	{
@@ -45,5 +42,10 @@ public:
 	friend bool operator==(const FWorldProperty& lhs, const FWorldProperty& rhs) 
 	{
 		return lhs.key == rhs.key;
+	}
+	
+	void MarkSatisfied(bool bNewSatisfied)
+	{
+		bSatisfied = bNewSatisfied;
 	}
 };

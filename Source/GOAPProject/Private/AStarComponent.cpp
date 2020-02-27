@@ -13,7 +13,7 @@
 UAStarComponent::UAStarComponent() :
 	Super()
 {
-
+	MaxDepth = 10;
 }
 void UAStarComponent::OnRegister()
 {
@@ -62,6 +62,11 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 			break;
 		//UE_LOG(LogTemp, Warning, TEXT("Check closed set"));
 
+		if (CurrentNode->depth > MaxDepth)
+		{
+			CurrentNode = nullptr;
+			continue;
+		}
 		//check closed set for current node
 		//this prob doesn't work as expected rn.
 		auto check_closed = closed_set.Find(CurrentNode);
@@ -78,15 +83,6 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 		//Generate candidate edges (actions)
 		TArray<UGOAPAction*> valid_actions;
 		CurrentNode->FindActions(ActionTable, valid_actions);
-
-		//diagnostic
-		/*
-		for (auto action : valid_actions) {
-			FString name = action->GetName();
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *name);
-		}
-		CurrentNode->log_node();
-		*/
 
 		TSet<UGOAPAction*> visited_actions;
 		//UE_LOG(LogTemp, Warning, TEXT("Add children to fringe"));
@@ -127,11 +123,11 @@ void UAStarComponent::ClearLookupTable()
 void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 {
 	//map effects symbols as keys to action objects for a regressive search
-	for (auto action : Actions) 
+	for (auto Action : Actions) 
 	{
-		for (auto effect : action->effects) 
+		for (auto Effect : Action->effects) 
 		{
-			ActionTable.AddUnique(effect, action);
+			ActionTable.AddUnique(Effect.key, Action);
 		}
 	}
 }

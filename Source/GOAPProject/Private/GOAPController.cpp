@@ -42,6 +42,7 @@ AGOAPController::AGOAPController()
 
 	current_goal = nullptr;
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
+	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
 }
 
 void AGOAPController::OnPossess(APawn * InPawn)
@@ -64,7 +65,13 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	AStarComponent->CreateLookupTable(ActionSet);
 	current_goal = nullptr;
 	NextGoal = nullptr;
-	
+	ReEvaluateGoals();
+	if (HasGoalChanged())
+	{
+		current_goal = NextGoal;
+		ScreenLog(FString::Printf(TEXT("Goal has changed")));
+		RePlan();
+	}
 }
 
 void AGOAPController::OnUnPossess()
@@ -81,19 +88,7 @@ void AGOAPController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	ReEvaluateGoals();
-	//TODO: Make this event driven
-	if (HasGoalChanged())
-	{
-		current_goal = NextGoal;
-		ScreenLog(FString::Printf(TEXT("Goal has changed")));
-		RePlan();
-	}
-	else if (current_goal != nullptr && GOAPActionsComponent->IsPlanComplete())
-	{
-		ScreenLog(FString::Printf(TEXT("Plan Complete, Re-Running Goal %s"), *current_goal->GetName()));
-		RePlan();
-	}
+	
 }
 
 void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
@@ -111,11 +106,13 @@ void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulu
 		UE_LOG(LogTemp, Warning, TEXT("Target not successfully sensed"));
 	}
 	*/
-}
-
-void AGOAPController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
-{
-	Super::OnMoveCompleted(RequestID, Result);
+	ReEvaluateGoals();
+	if (HasGoalChanged())
+	{
+		current_goal = NextGoal;
+		ScreenLog(FString::Printf(TEXT("Goal has changed")));
+		RePlan();
+	}
 }
 
 //TODO: use a Heapified TArray as a PQueue
@@ -146,11 +143,6 @@ bool AGOAPController::HasGoalChanged()
 	return NextGoal != current_goal;
 }
 
-void AGOAPController::SetMovementObservers()
-{
-	bObserveMovement = true;
-}
-
 void AGOAPController::RePlan() 
 {
 
@@ -175,7 +167,7 @@ void AGOAPController::RePlan()
 	if (bSuccess)
 	{
 		//ScreenLog(FString::Printf(TEXT("Found Plan")));
-
+		UE_LOG(LogTemp, Warning, TEXT("Plan of size %d"), Plan.Num());
 		for (auto Action : Plan)
 		{
 			//ScreenLog(FString::Printf(TEXT("Queueing action %s"), *Action->GetName()));
@@ -202,4 +194,9 @@ bool AGOAPController::IsPlayingMontage()
 		return Anim->IsAnyMontagePlaying();
 	}
 	return false;
+}
+
+void AGOAPController::OnPlanCompleted()
+{
+	ScreenLog(FString::Printf(TEXT("Plan Completed")));
 }

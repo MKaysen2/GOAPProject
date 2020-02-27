@@ -29,11 +29,14 @@ class GOAPPROJECT_API UAStarComponent : public UActorComponent
 	
 	GENERATED_BODY()
 protected:
-	typedef TMultiMap<FWorldProperty, UGOAPAction*> LookupTable;
+	typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
 	LookupTable ActionTable;
 	void generate_plan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOAPAction*>& out_plan);
 	UPROPERTY()
 		AGOAPController* AIOwner;
+
+	UPROPERTY()
+		int32 MaxDepth;
 public:
 	UAStarComponent();
 	void OnRegister() override;

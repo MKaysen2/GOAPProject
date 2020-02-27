@@ -15,11 +15,13 @@ void UGOAPActionsComponent::RunNextAction()
 {
 	if (ActionIdx >= ActionsQueue.Num())
 	{
-		bPlanComplete = true;
+		OnPlanCompleted.ExecuteIfBound();
 		return;
 	}
 	CurrentAction = ActionsQueue[ActionIdx];
+	UE_LOG(LogTemp, Warning, TEXT("Action index: %d"), ActionIdx);
 
+	++ActionIdx;
 	if (CurrentAction)
 	{
 		if (!CurrentAction->VerifyContext(AIOwner))
@@ -33,7 +35,6 @@ void UGOAPActionsComponent::RunNextAction()
 		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::RunNextAction);
 		CurrentAction->StartAction(AIOwner);
 	}
-	++ActionIdx;
 }
 
 void UGOAPActionsComponent::AbortPlan()

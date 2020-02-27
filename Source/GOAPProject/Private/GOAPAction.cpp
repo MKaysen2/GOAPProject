@@ -28,14 +28,19 @@ int UGOAPAction::UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldS
 {
 	//TODO: solve variable properties by getting value indicated by prop
 	int satisfied = 0;
-	for (auto& prop : effects)
+	for (auto& Prop : effects)
 	{
-		const FWorldProperty* prev_prop = GoalState->find_property(prop);
-		check(prev_prop); //sanity check - the controller state should define all of the symbols
-		if (CurrentState->apply_effect(*prev_prop))
-			++satisfied;
+		CurrentState->TrySatisfyPropertyFrom(GoalState, Prop);
 	}
 	return satisfied;
+}
+
+void UGOAPAction::AddUnsatisfiedPreconditions(UWorldState* CurrentState, const UWorldState* GoalState) const
+{
+	for (auto Property : preconditions) //by value so should be ok to modify
+	{
+		CurrentState->AddPropertyAndTrySatisfy(GoalState, Property);
+	}
 }
 
 void UGOAPAction::StartAction(AAIController* Controller) 

@@ -41,10 +41,7 @@ private:
 	//Should this go in the Pawn, or the Controller?
 	UPROPERTY()
 		UGOAPActionsComponent* GOAPActionsComponent;
-	
-	//For now
-	UPROPERTY()
-		bool bObserveMovement;
+
 public:
 	AGOAPController();
 
@@ -59,15 +56,11 @@ public:
 	UFUNCTION()
 		void TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
-	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
 	//TODO: move this into a separate componennt
 	UFUNCTION()
 		void ReEvaluateGoals();	
 	UFUNCTION()
 		bool HasGoalChanged();
-
-	UFUNCTION()
-		void SetMovementObservers();
 
 	UFUNCTION()
 		void RePlan();
@@ -76,4 +69,6 @@ public:
 	UFUNCTION()
 		bool IsPlayingMontage();
 
+	UFUNCTION()
+		void OnPlanCompleted();
 };
