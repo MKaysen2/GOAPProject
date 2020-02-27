@@ -2,8 +2,11 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Perception\AIPerceptionTypes.h"
-
+#include "AITypes.h"
+#include "BrainComponent.h"
 #include "GOAPController.generated.h"
+
+
 
 class UAStarComponent;
 class UWorldState;
@@ -11,11 +14,14 @@ class UGOAPGoal;
 class UGOAPAction;
 class UGOAPActionsComponent;
 class UAISenseConfig_Sight;
+
 //I really need a messaging system somewhere
 //Maybe I can extend BrainComponent and use theirs
 
+
 UCLASS(BlueprintType)
-class GOAPPROJECT_API AGOAPController : public AAIController {
+class GOAPPROJECT_API AGOAPController : public AAIController 
+{
 
 	GENERATED_BODY()
 private:
@@ -42,9 +48,13 @@ private:
 	UPROPERTY()
 		UGOAPActionsComponent* GOAPActionsComponent;
 
+
 public:
 	AGOAPController();
+	static const FName DamageMsg;
 
+	FAIMessageObserverHandle TestObserverHandle;
+	FOnAIMessage AIMessageDelegate;
 	UFUNCTION()
 		void Tick(float DeltaSeconds) override;
 
@@ -65,6 +75,7 @@ public:
 	UFUNCTION()
 		void RePlan();
 
+		void OnDamageReceived(UBrainComponent* BrainComp, const FAIMessage& Message);
 
 	UFUNCTION()
 		bool IsPlayingMontage();

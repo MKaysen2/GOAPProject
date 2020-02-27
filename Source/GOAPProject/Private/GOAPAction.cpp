@@ -27,6 +27,8 @@ void UGOAPAction::ApplySymbolicEffects(UWorldState* State) const
 int UGOAPAction::UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const
 {
 	//TODO: solve variable properties by getting value indicated by prop
+	//I think FName()s are pre-generated to integers so might be able to use
+	//that to store blackboard keys or something
 	int satisfied = 0;
 	for (auto& Prop : effects)
 	{

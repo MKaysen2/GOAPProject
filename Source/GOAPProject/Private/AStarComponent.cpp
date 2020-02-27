@@ -47,11 +47,10 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 
 	fringe.HeapPush(CurrentNode, LessFn);
 
-	while (fringe.Num() != 0) {
-		
-		//UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search:\t Fringe loop"));
-		
-		//pop the lowest cost node from p_queue
+	while (fringe.Num() != 0) 
+	{
+
+		//pop the lowest cost node from p-queue
 		fringe.HeapPop(CurrentNode, LessFn);
 		if (!CurrentNode)
 			break;
@@ -60,10 +59,11 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 		//a goal node g is any node s.t. all values of the node's state match that of the initial state
 		if (CurrentNode->IsGoal())
 			break;
-		//UE_LOG(LogTemp, Warning, TEXT("Check closed set"));
 
-		if (CurrentNode->depth > MaxDepth)
+		if (CurrentNode->Depth > MaxDepth)
 		{
+			//Do not want to accidentally generate partial plan
+			//if last node in fringe went over MaxDepth
 			CurrentNode = nullptr;
 			continue;
 		}
@@ -81,28 +81,28 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 		}
 
 		//Generate candidate edges (actions)
-		TArray<UGOAPAction*> valid_actions;
-		CurrentNode->FindActions(ActionTable, valid_actions);
+		TArray<UGOAPAction*> CandidateActions;
+		CurrentNode->FindActions(ActionTable, CandidateActions);
 
-		TSet<UGOAPAction*> visited_actions;
-		//UE_LOG(LogTemp, Warning, TEXT("Add children to fringe"));
-		for (auto action : valid_actions) 
+		TSet<UGOAPAction*> VisitedActions;
+		for (auto Action : CandidateActions) 
 		{
 			
-			check(IsValid(action)); //sanity check
+			check(IsValid(Action)); //sanity check
+
 			//verify context preconditions
 			//skip action if it has already been visited for this node
-			//UE_LOG(LogTemp, Warning, TEXT("          Checking action \"%s\""), *action->GetName());
-			if (!action->VerifyContext(AIOwner) || visited_actions.Contains(action))
+			if (!Action->VerifyContext(AIOwner) || VisitedActions.Contains(Action))
 				continue;
-			//UE_LOG(LogTemp, Warning, TEXT("          Mark visited"));
-			//mark edge as visited for current node
-			visited_actions.Add(action);
 			
-			//UE_LOG(LogTemp, Warning, TEXT("          create child node"));
+			//mark edge as visited for current node
+			VisitedActions.Add(Action);
 
-			TSharedPtr<FStateNode> ChildNode(new FStateNode(CurrentNode, action));
-			ChildNode->TakeAction(action);
+			//Create the Child node 
+			TSharedPtr<FStateNode> ChildNode(new FStateNode(CurrentNode, Action));
+			
+			//Apply the action and add node to fringe
+			ChildNode->TakeAction(Action);
 			fringe.HeapPush(ChildNode, LessFn);
 		}
 	}
@@ -112,7 +112,6 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 		generate_plan(CurrentNode, Plan);
 		return true;
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("No goal found!"));
 	return false;
 }
 
@@ -135,11 +134,10 @@ void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 void UAStarComponent::generate_plan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOAPAction*>& plan) 
 {
 	TSharedPtr<FStateNode> current = FoundGoal;
-	//UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::generate_plan"));
+
 	//The starting node should have a nullptr for the parent node+edge
 	while (current->previous().IsValid() && current->edge()) {
 		FString action_name = current->edge()->GetName();
-		//ScreenLog(FString::Printf(TEXT("adding action: %s"), *action_name));
 		
 		//edge is the action used to reach this node
 		//the search is regressive so we add the actions in reverse order

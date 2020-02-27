@@ -16,6 +16,8 @@
 #include "Containers/Queue.h"
 #include "Perception/AIPerceptionComponent.h"
 
+const FName AGOAPController::DamageMsg = TEXT("DamageMsg");
+
 AGOAPController::AGOAPController()
 {
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
@@ -32,6 +34,9 @@ AGOAPController::AGOAPController()
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("TorsoTracking"));
 
 	Blackboard->InitializeBlackboard(*BBAsset);
+
+	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComponent"));
+	AIMessageDelegate.BindUObject(this, &AGOAPController::OnDamageReceived);
 
 	current_state = CreateDefaultSubobject<UWorldState>(TEXT("ControllerState"));
 	current_state->add_property(FWorldProperty(EWorldKey::kWeaponLoaded, false));
@@ -57,6 +62,7 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	sightConfig->DetectionByAffiliation.bDetectFriendlies = true;
 	PerceptionComponent->ConfigureSense(*sightConfig);
 
+	TestObserverHandle = FAIMessageObserver::Create(BrainComponent, AGOAPController::DamageMsg, FAIRequestID(3), AIMessageDelegate);
 	AGOAPCharacterBase* GOAPPawn = Cast<AGOAPCharacterBase>(InPawn);
 	if (!GOAPPawn)
 		return;
@@ -196,6 +202,11 @@ bool AGOAPController::IsPlayingMontage()
 	return false;
 }
 
+void AGOAPController::OnDamageReceived(UBrainComponent* BrainComp, const FAIMessage& Message)
+{
+	ScreenLog(FString::Printf(TEXT("Damage received message")));
+
+}
 void AGOAPController::OnPlanCompleted()
 {
 	ScreenLog(FString::Printf(TEXT("Plan Completed")));

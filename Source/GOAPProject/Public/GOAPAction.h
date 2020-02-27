@@ -59,6 +59,7 @@ public:
 
 	//reverse application of action
 	//Returns number of successfully satisfied properties
+	//TODO: Variable-Valued symbols
 	UFUNCTION()
 	virtual int UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const;
 

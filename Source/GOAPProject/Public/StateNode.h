@@ -38,7 +38,7 @@ private:
 
 public:
 	int unsatisfied;
-	int depth = 0;
+	int Depth = 0;
 
 	friend FORCEINLINE bool operator<(const FStateNode& lhs, const FStateNode& rhs) {
 		return lhs.cost() < rhs.cost();
