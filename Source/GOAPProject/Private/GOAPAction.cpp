@@ -67,7 +67,7 @@ void UGOAPAction::StopAction(AAIController* Controller)
 	{
 		Character->TaskEndedDelegate.Unbind();
 	}
-	Controller->SetFocus(nullptr);
+	Controller->ClearFocus(EAIFocusPriority::Gameplay);
 	bIsRunning = false;
 
 	OnActionEnded.ExecuteIfBound();
@@ -148,4 +148,45 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 	//BP event graph directly
 	ICombatInterface::Execute_Equip(Pawn);
 
+}
+
+UAIAct_ReactDisturbance::UAIAct_ReactDisturbance()
+{
+	edge_cost = 1;
+	effects.Add({ EWorldKey::kDisturbanceHandled, true });
+}
+
+bool UAIAct_ReactDisturbance::VerifyContext(AAIController* Controller)
+{
+	return true;
+}
+
+void UAIAct_ReactDisturbance::StartAction(AAIController* Controller)
+{
+	Super::StartAction(Controller);
+	
+	if (!Controller)
+	{
+		return;
+	}
+	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+	if (!BBComp)
+	{
+		return;
+	}
+	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
+	if (TargetActor)
+	{
+		Controller->SetFocus(TargetActor);
+	}
+	FTimerManager& TimerMgr = Controller->GetWorldTimerManager();
+	FTimerDelegate InDelegate;
+	InDelegate.BindUObject(this, &UAIAct_ReactDisturbance::StopAction, Controller);
+	TimerMgr.SetTimer(TimerHandle, InDelegate, 3.0f, false);
+}
+
+void UAIAct_ReactDisturbance::StopAction(AAIController* Controller)
+{
+	Controller->GetWorldTimerManager().ClearTimer(TimerHandle);
+	Super::StopAction(Controller);
 }

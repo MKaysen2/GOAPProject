@@ -6,11 +6,13 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\WorldState.h"
 #include "Perception\AISenseConfig_Sight.h"
+#include "Perception\AISenseConfig_Hearing.h"
 
 #include "BehaviorTree\BlackboardComponent.h"
 
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "Animation/AnimInstance.h"
 #include "Delegates/Delegate.h"
 #include "Containers/Queue.h"
@@ -20,16 +22,21 @@ const FName AGOAPController::DamageMsg = TEXT("DamageMsg");
 
 AGOAPController::AGOAPController()
 {
-	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
 	AStarComponent = CreateDefaultSubobject<UAStarComponent>(TEXT("AStarComponent"));
+	
+	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
 	sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
 	PerceptionComponent->ConfigureSense(*sightConfig);
+	
 	PerceptionComponent->SetDominantSense(sightConfig->GetSenseImplementation());
+
 	PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AGOAPController::TargetPerceptionUpdated);
 
 	Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	UBlackboardData* BBAsset = NewObject<UBlackboardData>(Blackboard);
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("Target"));
+	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("TargetLocation"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("FaceTracking"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("TorsoTracking"));
 
@@ -44,6 +51,8 @@ AGOAPController::AGOAPController()
 	current_state->add_property(FWorldProperty(EWorldKey::kIdle, false));
 	current_state->add_property(FWorldProperty(EWorldKey::kAtLocation, false));
 	current_state->add_property(FWorldProperty(EWorldKey::kTargetDead, false));
+	current_state->add_property({ EWorldKey::kDisturbanceHandled, false });
+
 
 	current_goal = nullptr;
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
@@ -60,6 +69,13 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	sightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	sightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	sightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	
+	HearingConfig->HearingRange = 600.0f;
+	HearingConfig->SetMaxAge(5.0f);
+	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
 	PerceptionComponent->ConfigureSense(*sightConfig);
 
 	TestObserverHandle = FAIMessageObserver::Create(BrainComponent, AGOAPController::DamageMsg, FAIRequestID(3), AIMessageDelegate);
@@ -116,7 +132,6 @@ void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulu
 	if (HasGoalChanged())
 	{
 		current_goal = NextGoal;
-		ScreenLog(FString::Printf(TEXT("Goal has changed")));
 		RePlan();
 	}
 }

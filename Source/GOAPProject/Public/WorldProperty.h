@@ -12,7 +12,8 @@ enum class EWorldKey : uint8
 	kIdle,
 	kWeaponLoaded,
 	kHasWeapon,
-	kTargetDead
+	kTargetDead,
+	kDisturbanceHandled
 };
 
 USTRUCT(BlueprintType)

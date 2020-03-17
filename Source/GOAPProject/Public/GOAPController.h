@@ -14,6 +14,7 @@ class UGOAPGoal;
 class UGOAPAction;
 class UGOAPActionsComponent;
 class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
 
 //I really need a messaging system somewhere
 //Maybe I can extend BrainComponent and use theirs
@@ -30,6 +31,8 @@ private:
 	UPROPERTY()
 		UAISenseConfig_Sight* sightConfig;
 		
+	UPROPERTY()
+		UAISenseConfig_Hearing* HearingConfig;
 	UPROPERTY()
 		UWorldState* current_state;
 

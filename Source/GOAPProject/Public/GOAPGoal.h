@@ -1,10 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "WorldProperty.h"
+#include "EngineDefines.h"
 #include "GOAPGoal.generated.h"
 
 class AGOAPCharacterBase;
 class AAIController;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGoal, Warning, All);
 
 UCLASS(ABSTRACT, BlueprintType)
 class UGOAPGoal : public UObject 
@@ -43,4 +46,14 @@ public:
 	bool IsGoalValid(AAIController* Controller) override;
 	void Activate(AAIController* Controller) override;
 	void ReCalcPriority(AAIController* Controller) override;
+};
+
+UCLASS()
+class UAIGoal_InvestigateNoise : public UGOAPGoal
+{
+	GENERATED_BODY()
+public:
+	UAIGoal_InvestigateNoise();
+	bool IsGoalValid(AAIController* Controller) override;
+	void Activate(AAIController* Controller) override;
 };

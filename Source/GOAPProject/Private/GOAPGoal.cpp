@@ -3,6 +3,9 @@
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "Perception/AISense_Hearing.h"
+
+DEFINE_LOG_CATEGORY(LogGoal);
 
 UGOAPGoal::UGOAPGoal() : Super() 
 {
@@ -25,8 +28,9 @@ void UGOAPGoal::ReCalcPriority(AAIController* Controller)
 
 void UGOAPGoal::Activate(AAIController* Controller)
 {
-
+	UE_LOG(LogGoal, Warning, TEXT("Activated goal %s"), *GetName());
 }
+
 float UGOAPGoal::Priority() const
 {
 	return LastPriority;
@@ -118,4 +122,39 @@ void UAIGoal_Wander::Activate(AAIController* Controller)
 void UAIGoal_Wander::ReCalcPriority(AAIController* Controller)
 {
 
+}
+
+UAIGoal_InvestigateNoise::UAIGoal_InvestigateNoise() :
+	Super()
+{
+	LastPriority = 20.0f;
+	goal.Add(FWorldProperty(EWorldKey::kDisturbanceHandled, true));
+}
+
+bool UAIGoal_InvestigateNoise::IsGoalValid(AAIController* Controller)
+{
+	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
+	TArray<AActor*> PerceivedActors;
+	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceivedActors);
+	return (PerceivedActors.Num() > 0);
+}
+
+void UAIGoal_InvestigateNoise::Activate(AAIController* Controller)
+{
+	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
+	TArray<AActor*> PerceivedActors;
+	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceivedActors);
+	AActor* Actor = PerceivedActors[0]; //just going to get the first actor for now
+	if (!Actor)
+	{
+		return;
+	}
+	const FActorPerceptionInfo* Info = PerceptionComponent->GetActorInfo(*Actor);
+	
+	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
+	if (!Info || !BBComponent)
+	{
+		return;
+	}
+	BBComponent->SetValueAsVector(FName("TargetLocation"), Info->GetLastStimulusLocation());
 }

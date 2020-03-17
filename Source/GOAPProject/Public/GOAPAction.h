@@ -103,4 +103,16 @@ public:
 	void StartAction(AAIController* Controller) override;
 };
 
+UCLASS(BlueprintType)
+class GOAPPROJECT_API UAIAct_ReactDisturbance : public UGOAPAction
+{
+	GENERATED_BODY()
+
+		FTimerHandle TimerHandle;
+public:
+	UAIAct_ReactDisturbance();
+	bool VerifyContext(AAIController* Controller) override;
+	void StartAction(AAIController* Controller) override;
+	void StopAction(AAIController* Controller) override;
+};
 typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
