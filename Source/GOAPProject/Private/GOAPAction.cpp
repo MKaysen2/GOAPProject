@@ -3,7 +3,6 @@
 #include "..\Public\GOAPAction.h"
 #include "..\Public\GOAPCharacterBase.h"
 #include "..\Public\CombatInterface.h"
-#include "..\Public\WorldState.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -16,15 +15,15 @@ UGOAPAction::UGOAPAction() : Super()
 	
 }
 
-void UGOAPAction::ApplySymbolicEffects(UWorldState* State) const
+void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
 {
-	for (auto& prop : effects)
+	for (auto& Property : effects)
 	{
-		State->apply_effect(prop);
+		State.Apply(Property);
 	}
 }
 
-int UGOAPAction::UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const
+int UGOAPAction::UnapplySymbolicEffects(FWorldState& CurrentState, const FWorldState& GoalState) const
 {
 	//TODO: solve variable properties by getting value indicated by prop
 	//I think FName()s are pre-generated to integers so might be able to use
@@ -32,16 +31,16 @@ int UGOAPAction::UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldS
 	int satisfied = 0;
 	for (auto& Prop : effects)
 	{
-		CurrentState->TrySatisfyPropertyFrom(GoalState, Prop);
+		CurrentState.TrySatisfyPropertyFrom(&GoalState, Prop);
 	}
 	return satisfied;
 }
 
-void UGOAPAction::AddUnsatisfiedPreconditions(UWorldState* CurrentState, const UWorldState* GoalState) const
+void UGOAPAction::AddUnsatisfiedPreconditions(FWorldState& CurrentState, const FWorldState& GoalState) const
 {
 	for (auto Property : preconditions) //by value so should be ok to modify
 	{
-		CurrentState->AddPropertyAndTrySatisfy(GoalState, Property);
+		CurrentState.AddPropertyAndTrySatisfy(&GoalState, Property);
 	}
 }
 

@@ -26,12 +26,12 @@ void UAStarComponent::OnUnregister()
 	AIOwner = nullptr;
 	Super::OnUnregister();
 }
-bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_state, TArray<UGOAPAction*>& Plan) //graph needs to be V, E
+bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState, TArray<UGOAPAction*>& Plan) //graph needs to be V, E
 {
 	UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search"));
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
-	if (!goal || !controller_state)
+	if (!Goal)
 		return false;
 	TArray<TSharedPtr<FStateNode>> fringe;
 	auto LessFn = TSharedPtrLess<FStateNode>(); //predicate, use in any heap functions
@@ -40,8 +40,7 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 	//there are optimizations to be made here by someone smarter than me
 	TSet<TSharedPtr<FStateNode>> closed_set; //probably have to figure out keyfuncs for this
 
-	TSharedPtr<FStateNode> CurrentNode(new FStateNode());
-	CurrentNode->SetupInitialNode(goal->container(), controller_state);
+	TSharedPtr<FStateNode> CurrentNode(new FStateNode(Goal->container(), InitialState));
 
 	//UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search:\t set up initial node and push to fringe"));
 
@@ -109,7 +108,7 @@ bool UAStarComponent::Search(UGOAPGoal* goal, const UWorldState* controller_stat
 	
 	if (CurrentNode)
 	{
-		generate_plan(CurrentNode, Plan);
+		GeneratePlan(CurrentNode, Plan);
 		return true;
 	}
 	return false;
@@ -131,7 +130,7 @@ void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 	}
 }
 
-void UAStarComponent::generate_plan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOAPAction*>& plan) 
+void UAStarComponent::GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOAPAction*>& plan) 
 {
 	TSharedPtr<FStateNode> current = FoundGoal;
 

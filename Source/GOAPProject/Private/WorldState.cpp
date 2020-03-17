@@ -1,51 +1,56 @@
 #include "..\Public\WorldState.h"
 
-void UWorldState::add_property(const FWorldProperty & prop)
+void FWorldState::Add(const FWorldProperty & Prop)
 {
-	state.Add(prop);
+	State.Add(Prop);
 }
 
-bool UWorldState::apply_effect(const FWorldProperty& property) {
+bool FWorldState::Apply(const FWorldProperty& Prop) {
 	
 	return false;
 }
 
-void UWorldState::AddPropertyAndTrySatisfy(const UWorldState* Other, FWorldProperty Property)
+void FWorldState::AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldProperty Property)
 {
 	if (!Other)
 	{
 		return;
 	}
-	int32 Idx = Other->state.IndexOfByKey(Property);
+	int32 Idx = Other->State.IndexOfByKey(Property);
 	if (Idx == INDEX_NONE)
 	{
 		return;
 	}
-	int32 NewIdx = state.Add(Property);
-	state[NewIdx].MarkSatisfied((Property.value == Other->state[Idx].value));
+	int32 NewIdx = State.Add(Property);
+	State[NewIdx].MarkSatisfied((Property.value == Other->State[Idx].value));
 }
-bool UWorldState::TrySatisfyPropertyFrom(const UWorldState* Other, const FWorldProperty& Property)
+bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldProperty& Property)
 {
 
 	if (!Other)
 	{
 		return false;
 	}
-	int32 Idx = state.IndexOfByKey(Property);
-	int32 OtherIdx = Other->state.IndexOfByKey(Property);
+	int32 Idx = State.IndexOfByKey(Property);
+	int32 OtherIdx = Other->State.IndexOfByKey(Property);
 	if (Idx == INDEX_NONE || OtherIdx == INDEX_NONE)
 	{
 		return false;
 	}
-	state[Idx].value = Other->state[OtherIdx].value;
-	state[Idx].MarkSatisfied(true);
+	State[Idx].value = Other->State[OtherIdx].value;
+	State[Idx].MarkSatisfied(true);
 	return true;
 }
 
-bool UWorldState::satisfied(const FWorldProperty& property) const
+bool FWorldState::Satisfied(const FWorldProperty& property) const
 {
-	int32 Index =  state.IndexOfByKey(property);
+	int32 Index =  State.IndexOfByKey(property);
 	if(Index == INDEX_NONE)
 		return false;
-	return (state[Index].value == property.value);
+	return (State[Index].value == property.value);
+}
+
+FWorldState* FWorldState::Clone()
+{
+	return (new FWorldState(*this));
 }

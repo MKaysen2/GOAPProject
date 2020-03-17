@@ -15,8 +15,11 @@ class GOAPPROJECT_API AGOAPCharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 protected:
+
+	/* soon...
 	UPROPERTY()
-		TArray<UGOAPGoal*> goals;
+		TArray<TSubclassOf<UGOAPGoal>> GoalSet;
+		*/
 	UPROPERTY()
 		TArray<UGOAPAction*> Actions;
 
@@ -25,6 +28,9 @@ public:
 	AGOAPCharacterBase();
 	UFUNCTION()
 		virtual void RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray);
+
+	UFUNCTION()
+		TArray<TSubclassOf<UGOAPGoal>> GetGoalSet();
 
 	UFUNCTION()
 		void RegisterActions(TArray<UGOAPAction*>& OutArray);

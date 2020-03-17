@@ -35,9 +35,9 @@ public:
 	FWorldProperty(EWorldKey _key, bool bValue) : key(_key), value(bValue), bSatisfied(false) {}
 	FWorldProperty(EWorldKey _key, AActor* objValue) : key(_key), value(objValue), bSatisfied(false) {}
 
-	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& prop) 
+	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{
-		return (uint32)prop.key;
+		return (uint32)Prop.key;
 	}
 
 	friend bool operator==(const FWorldProperty& lhs, const FWorldProperty& rhs) 

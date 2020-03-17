@@ -21,7 +21,7 @@ protected:
 		UGOAPGoal* NextGoal;
 
 	UPROPERTY(Transient)
-		TArray<UGOAPGoal*> Goals;
+		TArray<UGOAPGoal*> GoalSet;
 public:
 	UGoalSelectionComponent();
 	UFUNCTION()
@@ -36,6 +36,11 @@ public:
 	UFUNCTION()
 		bool HasGoalChanged();
 
+	//It would be cool to dynamically update available goals
 	UFUNCTION()
 		void RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass);
+
+
+	UFUNCTION()
+		void RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet);
 };

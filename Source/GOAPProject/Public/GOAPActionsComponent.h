@@ -24,7 +24,10 @@ protected:
 		UGOAPAction* CurrentAction;
 
 	UPROPERTY(Transient)
-		TArray<UGOAPAction*> ActionsQueue;
+		TArray<UGOAPAction*> ActionQueue;
+
+	UPROPERTY(Transient)
+		TArray<UGOAPAction*> ActionSet;
 
 	int32 ActionIdx;
 
@@ -47,8 +50,12 @@ public:
 	UFUNCTION()
 	void QueueAction(UGOAPAction* Action);
 
+	FPlanCompletedSignature OnPlanCompleted;
+
 	UFUNCTION()
 		bool IsPlanComplete();
 
-	FPlanCompletedSignature OnPlanCompleted;
+	UFUNCTION()
+		TArray<UGOAPAction*>& GetActionSet();
+
 };

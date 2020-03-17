@@ -2,15 +2,16 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Perception/AIPerceptionTypes.h"
+#include "WorldState.h"
 #include "AITypes.h"
 #include "BrainComponent.h"
+#include "Templates/SharedPointer.h"
 #include "GOAPController.generated.h"
 
 
 
 class UAStarComponent;
 class UGoalSelectionComponent;
-class UWorldState;
 class UGOAPGoal;
 class UGOAPAction;
 class UGOAPActionsComponent;
@@ -27,18 +28,17 @@ class GOAPPROJECT_API AGOAPController : public AAIController
 
 	GENERATED_BODY()
 private:
+
+	/////////////////////////////////////////////////////
+	// GOAP related components and members
+	
+		TSharedPtr<FWorldState> CurrentState;
+
 	UPROPERTY()
 		UAStarComponent* AStarComponent;
-	UPROPERTY()
-		UAISenseConfig_Sight* sightConfig;
 		
 	UPROPERTY()
 		UGoalSelectionComponent* GoalComponent;
-
-	UPROPERTY()
-		UAISenseConfig_Hearing* HearingConfig;
-	UPROPERTY()
-		UWorldState* current_state;
 
 	//This should (probably) not be getting changed after possession
 
@@ -49,6 +49,13 @@ private:
 	UPROPERTY()
 		UGOAPActionsComponent* GOAPActionsComponent;
 
+	///////////////////////////////////////
+	//Sense configs
+	UPROPERTY()
+		UAISenseConfig_Sight* sightConfig;
+
+	UPROPERTY()
+		UAISenseConfig_Hearing* HearingConfig;
 
 public:
 	AGOAPController();

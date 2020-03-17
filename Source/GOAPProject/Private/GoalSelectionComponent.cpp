@@ -23,9 +23,9 @@ UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
 //TODO: use a Heapified TArray as a PQueue
 void UGoalSelectionComponent::ReEvaluateGoals()
 {
-	UE_LOG(LogGoal, Warning, TEXT("Number of goals: %d"), Goals.Num());
+	UE_LOG(LogGoal, Warning, TEXT("Number of goals: %d"), GoalSet.Num());
 	NextGoal = nullptr;
-	for (auto Goal : Goals)
+	for (auto Goal : GoalSet)
 	{
 		if (Goal->IsGoalValid(AIOwner))
 		{
@@ -59,5 +59,13 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 	{
 		return;
 	}
-	Goals.Add(NewObject<UGOAPGoal>(this, GoalClass));
+	GoalSet.Add(NewObject<UGOAPGoal>(this, GoalClass));
+}
+
+void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet)
+{
+	for (auto Goal : NewGoalSet)
+	{
+		RegisterGoal(Goal);
+	}
 }

@@ -13,12 +13,12 @@ void UGOAPActionsComponent::OnRegister()
 
 void UGOAPActionsComponent::RunNextAction() 
 {
-	if (ActionIdx >= ActionsQueue.Num())
+	if (ActionIdx >= ActionQueue.Num())
 	{
 		OnPlanCompleted.ExecuteIfBound();
 		return;
 	}
-	CurrentAction = ActionsQueue[ActionIdx];
+	CurrentAction = ActionQueue[ActionIdx];
 	UE_LOG(LogTemp, Warning, TEXT("Action index: %d"), ActionIdx);
 
 	++ActionIdx;
@@ -64,13 +64,13 @@ void UGOAPActionsComponent::Reset()
 	bPlanComplete = true;
 	ActionIdx = 0;
 	CurrentAction = nullptr;
-	ActionsQueue.Reset();
+	ActionQueue.Reset();
 }
 
 void UGOAPActionsComponent::QueueAction(UGOAPAction* Action)
 {
 	bPlanComplete = false;
-	ActionsQueue.Emplace(Action);
+	ActionQueue.Emplace(Action);
 }
 
 bool UGOAPActionsComponent::IsActionRunning()
@@ -83,4 +83,9 @@ bool UGOAPActionsComponent::IsActionRunning()
 bool UGOAPActionsComponent::IsPlanComplete()
 {
 	return bPlanComplete;
+}
+
+TArray<UGOAPAction*>& UGOAPActionsComponent::GetActionSet()
+{
+	return ActionSet;
 }

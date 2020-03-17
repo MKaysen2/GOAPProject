@@ -46,13 +46,13 @@ AGOAPController::AGOAPController()
 	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComponent"));
 	AIMessageDelegate.BindUObject(this, &AGOAPController::OnDamageReceived);
 
-	current_state = CreateDefaultSubobject<UWorldState>(TEXT("ControllerState"));
-	current_state->add_property(FWorldProperty(EWorldKey::kWeaponLoaded, false));
-	current_state->add_property(FWorldProperty(EWorldKey::kHasWeapon, false));
-	current_state->add_property(FWorldProperty(EWorldKey::kIdle, false));
-	current_state->add_property(FWorldProperty(EWorldKey::kAtLocation, false));
-	current_state->add_property(FWorldProperty(EWorldKey::kTargetDead, false));
-	current_state->add_property({ EWorldKey::kDisturbanceHandled, false });
+	CurrentState = MakeShared<FWorldState>();
+	CurrentState->Add(FWorldProperty(EWorldKey::kWeaponLoaded, false));
+	CurrentState->Add(FWorldProperty(EWorldKey::kHasWeapon, false));
+	CurrentState->Add(FWorldProperty(EWorldKey::kIdle, false));
+	CurrentState->Add(FWorldProperty(EWorldKey::kAtLocation, false));
+	CurrentState->Add(FWorldProperty(EWorldKey::kTargetDead, false));
+	CurrentState->Add({ EWorldKey::kDisturbanceHandled, false });
 
 	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
 
@@ -84,13 +84,9 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	if (!GOAPPawn)
 		return;
 	TArray<TSubclassOf<UGOAPGoal>> Goals;
-	GOAPPawn->RegisterGoals(Goals);
-	for (auto Goal : Goals)
-	{
-		GoalComponent->RegisterGoal(Goal);
-	}
-	GOAPPawn->RegisterActions(ActionSet);
-	AStarComponent->CreateLookupTable(ActionSet);
+	GoalComponent->RegisterGoalSet(GOAPPawn->GetGoalSet());
+	GOAPPawn->RegisterActions(GOAPActionsComponent->GetActionSet());
+	AStarComponent->CreateLookupTable(GOAPActionsComponent->GetActionSet());
 	GoalComponent->ReEvaluateGoals();
 
 	if (GoalComponent->HasGoalChanged())
@@ -157,7 +153,7 @@ void AGOAPController::RePlan()
 	*/
 	
 	TArray<UGOAPAction*> Plan;
-	bool bSuccess = AStarComponent->Search(CurrentGoal, current_state, Plan);
+	bool bSuccess = AStarComponent->Search(CurrentGoal, CurrentState, Plan);
 	if (bSuccess)
 	{
 		//ScreenLog(FString::Printf(TEXT("Found Plan")));

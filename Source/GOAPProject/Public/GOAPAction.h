@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "WorldProperty.h"
 #include "Containers/Array.h"
+#include "WorldState.h"
 #include "UObject/NoExportTypes.h"
 
 #include "UObject/ConstructorHelpers.h"
@@ -11,7 +12,6 @@
 
 #include "GOAPAction.generated.h"
 
-class UWorldState;
 class AAIController;
 
 DECLARE_DELEGATE( FActionEndedDelegate );
@@ -55,16 +55,16 @@ public:
 	//Call after validating action success
 	//TODO: Variable-valued symbols
 	UFUNCTION()
-	void ApplySymbolicEffects(UWorldState* state) const;
+	void ApplySymbolicEffects(FWorldState& State) const;
 
 	//reverse application of action
 	//Returns number of successfully satisfied properties
 	//TODO: Variable-Valued symbols
 	UFUNCTION()
-	virtual int UnapplySymbolicEffects(UWorldState* CurrentState, const UWorldState* GoalState) const;
+	virtual int UnapplySymbolicEffects(FWorldState& CurrentState, const FWorldState& GoalState) const;
 
 	UFUNCTION()
-		void AddUnsatisfiedPreconditions(UWorldState* CurrentState, const UWorldState* GoalState) const;
+		void AddUnsatisfiedPreconditions(FWorldState& CurrentState, const FWorldState& GoalState) const;
 	FActionEndedDelegate OnActionEnded;
 
 	UFUNCTION()

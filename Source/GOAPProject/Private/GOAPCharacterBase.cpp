@@ -44,6 +44,10 @@ void AGOAPCharacterBase::RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray)
 	OutArray.Add(UAIGoal_InvestigateNoise::StaticClass());
 }
 
+TArray<TSubclassOf<UGOAPGoal>> AGOAPCharacterBase::GetGoalSet()
+{
+	return { UAIGoal_Wander::StaticClass(), UAIGoal_KillEnemy::StaticClass(), UAIGoal_InvestigateNoise::StaticClass() };
+}
 void AGOAPCharacterBase::OnTaskEnded(bool bSuccess)
 {
 	TaskEndedDelegate.ExecuteIfBound();

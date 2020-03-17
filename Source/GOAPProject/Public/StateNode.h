@@ -5,7 +5,8 @@
 #include "WorldProperty.h"
 #include "GOAPAction.h"
 #include "IAStarNode.h"
-
+#include "Templates/UniquePtr.h"
+#include "Templates/SharedPointer.h"
 #include "StateNode.generated.h"
 
 template <typename T>
@@ -23,11 +24,9 @@ struct GOAPPROJECT_API FStateNode
 {
 	GENERATED_BODY()
 private:
-	UPROPERTY(EditAnywhere)
-		UWorldState* CurrentState;
-
-	UPROPERTY(VisibleAnywhere)
-		const UWorldState* GoalState; //Not a new object
+		TSharedPtr<FWorldState> CurrentState;
+	
+		TSharedPtr<FWorldState> GoalState; //Not a new object
 
 		TSharedPtr<FStateNode> ParentNode;
 	UPROPERTY()
@@ -44,8 +43,9 @@ public:
 		return lhs.cost() < rhs.cost();
 	}
 	FStateNode();
+	FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldState> InitialState);
 	FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge);
-	void SetupInitialNode(const TArray<FWorldProperty>& goal, const UWorldState* CurrentState); //regressive search
+
 	int cost() const;
 	void TakeAction(const UGOAPAction* action);
 

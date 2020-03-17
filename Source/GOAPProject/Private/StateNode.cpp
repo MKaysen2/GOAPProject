@@ -1,17 +1,37 @@
 #include "..\Public\StateNode.h"
 #include "..\Public\WorldState.h"
 
-FStateNode::FStateNode()
+FStateNode::FStateNode() :
+	CurrentState(),
+	GoalState(),
+	ParentNode(),
+	ParentEdge(),
+	forward_cost(0),
+	unsatisfied(0),
+	Depth(0)
 {
-	CurrentState = NewObject<UWorldState>();
-	GoalState = nullptr;
-	ParentEdge = nullptr;
-	ParentNode = nullptr;
 	UE_LOG(LogTemp, Warning, TEXT("FStateNode default constructor"));
 }
 
+FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldState> InitialState) :
+	CurrentState(),
+	GoalState(InitialState),
+	ParentNode(),
+	ParentEdge(),
+	forward_cost(0),
+	unsatisfied(0),
+	Depth(0)
+{
+	CurrentState = MakeShared<FWorldState>();
+	for (auto Property : GoalSet)
+	{
+		CurrentState->AddPropertyAndTrySatisfy(GoalState.Get(), Property);
+	}
+	unsatisfied = CountUnsatisfied();
+}
+
 FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
-	CurrentState(nullptr),
+	CurrentState(Node->CurrentState->Clone()),
 	GoalState(Node->GoalState),
 	ParentNode(Node),
 	ParentEdge(Edge),
@@ -19,25 +39,10 @@ FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
 	unsatisfied(Node->unsatisfied),
 	Depth(Node->Depth + 1)
 {
-	const UWorldState* ParentState = const_cast<const UWorldState*>(Node->CurrentState);
-	CurrentState = DuplicateObject<UWorldState>(ParentState, ParentState->GetOuter());
 }
 
-void FStateNode::SetupInitialNode(const TArray<FWorldProperty>& GoalSet, const UWorldState* ControllerState)
+int FStateNode::cost() const 
 {
-	if (!ControllerState) 
-	{
-		return;
-	}
-	GoalState = ControllerState;
-	for (auto Property : GoalSet) 
-	{
-		CurrentState->AddPropertyAndTrySatisfy(GoalState, Property);
-	}
-	unsatisfied = CountUnsatisfied();
-}
-
-int FStateNode::cost() const {
 	return forward_cost + unsatisfied;
 }
 bool FStateNode::IsGoal() 
@@ -62,9 +67,13 @@ void FStateNode::FindActions(const LookupTable& action_map, TArray<UGOAPAction*>
 
 void FStateNode::TakeAction(const UGOAPAction* Action) 
 {
-	Action->UnapplySymbolicEffects(CurrentState, GoalState);
+	if (!CurrentState.IsValid() || !GoalState.IsValid())
+	{
+		return;
+	}
+	Action->UnapplySymbolicEffects(*CurrentState, *GoalState);
 	
-	Action->AddUnsatisfiedPreconditions(CurrentState, GoalState);
+	Action->AddUnsatisfiedPreconditions(*CurrentState, *GoalState);
 
 	unsatisfied = CountUnsatisfied();
 	
