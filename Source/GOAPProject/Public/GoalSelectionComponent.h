@@ -5,6 +5,8 @@
 
 class UGOAPGoal;
 
+//TODO: Add a delegate for goal changed
+
 UCLASS(BlueprintType)
 class GOAPPROJECT_API UGoalSelectionComponent : public UActorComponent 
 {
@@ -18,7 +20,7 @@ protected:
 	UPROPERTY(Transient)
 		UGOAPGoal* NextGoal;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TArray<UGOAPGoal*> Goals;
 public:
 	UGoalSelectionComponent();

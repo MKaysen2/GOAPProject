@@ -24,7 +24,7 @@ public:
 	
 	AGOAPCharacterBase();
 	UFUNCTION()
-		virtual void RegisterGoals(TArray<UGOAPGoal*>& OutArray);
+		virtual void RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray);
 
 	UFUNCTION()
 		void RegisterActions(TArray<UGOAPAction*>& OutArray);

@@ -1,10 +1,11 @@
-#include "..\Public\GOAPController.h"
-#include "..\Public\GOAPCharacterBase.h"
-#include "..\Public\GOAPActionsComponent.h"
-#include "..\Public\AStarComponent.h"
-#include "..\Public\GOAPAction.h"
-#include "..\Public\GOAPGoal.h"
-#include "..\Public\WorldState.h"
+#include "../Public/GOAPController.h"
+#include "../Public/GOAPCharacterBase.h"
+#include "../Public/GOAPActionsComponent.h"
+#include "../Public/AStarComponent.h"
+#include "../Public/GOAPAction.h"
+#include "../Public/GOAPGoal.h"
+#include "../Public/WorldState.h"
+#include "../Public/GoalSelectionComponent.h"
 #include "Perception\AISenseConfig_Sight.h"
 #include "Perception\AISenseConfig_Hearing.h"
 
@@ -53,8 +54,8 @@ AGOAPController::AGOAPController()
 	current_state->add_property(FWorldProperty(EWorldKey::kTargetDead, false));
 	current_state->add_property({ EWorldKey::kDisturbanceHandled, false });
 
+	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
 
-	current_goal = nullptr;
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
 	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
 }
@@ -82,15 +83,18 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	AGOAPCharacterBase* GOAPPawn = Cast<AGOAPCharacterBase>(InPawn);
 	if (!GOAPPawn)
 		return;
+	TArray<TSubclassOf<UGOAPGoal>> Goals;
 	GOAPPawn->RegisterGoals(Goals);
+	for (auto Goal : Goals)
+	{
+		GoalComponent->RegisterGoal(Goal);
+	}
 	GOAPPawn->RegisterActions(ActionSet);
 	AStarComponent->CreateLookupTable(ActionSet);
-	current_goal = nullptr;
-	NextGoal = nullptr;
-	ReEvaluateGoals();
-	if (HasGoalChanged())
+	GoalComponent->ReEvaluateGoals();
+
+	if (GoalComponent->HasGoalChanged())
 	{
-		current_goal = NextGoal;
 		ScreenLog(FString::Printf(TEXT("Goal has changed")));
 		RePlan();
 	}
@@ -99,8 +103,6 @@ void AGOAPController::OnPossess(APawn * InPawn)
 void AGOAPController::OnUnPossess()
 {
 	Super::OnUnPossess();
-	Goals.Reset();
-	current_goal = nullptr;
 	AStarComponent->ClearLookupTable();
 	GOAPActionsComponent->Reset();
 	PerceptionComponent->OnTargetPerceptionUpdated.RemoveAll(this);
@@ -128,52 +130,23 @@ void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulu
 		UE_LOG(LogTemp, Warning, TEXT("Target not successfully sensed"));
 	}
 	*/
-	ReEvaluateGoals();
-	if (HasGoalChanged())
+	GoalComponent->ReEvaluateGoals();
+	if (GoalComponent->HasGoalChanged())
 	{
-		current_goal = NextGoal;
 		RePlan();
 	}
 }
 
-//TODO: use a Heapified TArray as a PQueue
-void AGOAPController::ReEvaluateGoals()
-{
-	NextGoal = nullptr;
-	for (auto Goal : Goals)
-	{
-		if (Goal->IsGoalValid(this))
-		{
-			//Recalculate prioirity if necessary
-			Goal->ReCalcPriority(this);
-
-			//Highest priority goal becomes next goal
-			if (NextGoal == nullptr) 
-			{
-				NextGoal = Goal;
-				continue;
-			}
-			if (Goal->Priority() > NextGoal->Priority()) 
-				NextGoal = Goal;
-		}
-	}
-}
-
-bool AGOAPController::HasGoalChanged()
-{
-	return NextGoal != current_goal;
-}
-
 void AGOAPController::RePlan() 
 {
-
+	UGOAPGoal* CurrentGoal = GoalComponent->GetCurrentGoal();
 	GOAPActionsComponent->AbortPlan();
-	if (current_goal == nullptr)
+	if (CurrentGoal == nullptr)
 	{
 		return;
 	}
 
-	current_goal->Activate(this);
+	CurrentGoal->Activate(this);
 
 	//No goal -> No plan needed. By default, it'll play the idle animation
 	/*
@@ -184,7 +157,7 @@ void AGOAPController::RePlan()
 	*/
 	
 	TArray<UGOAPAction*> Plan;
-	bool bSuccess = AStarComponent->Search(current_goal, current_state, Plan);
+	bool bSuccess = AStarComponent->Search(CurrentGoal, current_state, Plan);
 	if (bSuccess)
 	{
 		//ScreenLog(FString::Printf(TEXT("Found Plan")));

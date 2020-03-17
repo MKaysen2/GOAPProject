@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "Perception\AIPerceptionTypes.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "AITypes.h"
 #include "BrainComponent.h"
 #include "GOAPController.generated.h"
@@ -9,6 +9,7 @@
 
 
 class UAStarComponent;
+class UGoalSelectionComponent;
 class UWorldState;
 class UGOAPGoal;
 class UGOAPAction;
@@ -32,18 +33,15 @@ private:
 		UAISenseConfig_Sight* sightConfig;
 		
 	UPROPERTY()
+		UGoalSelectionComponent* GoalComponent;
+
+	UPROPERTY()
 		UAISenseConfig_Hearing* HearingConfig;
 	UPROPERTY()
 		UWorldState* current_state;
 
-	UPROPERTY()
-	UGOAPGoal* current_goal;
-	UPROPERTY()
-		UGOAPGoal* NextGoal;
 	//This should (probably) not be getting changed after possession
-	UPROPERTY()
-		TArray<UGOAPGoal*> Goals;
-	
+
 	UPROPERTY()
 		TArray<UGOAPAction*> ActionSet;
 
@@ -68,12 +66,6 @@ public:
 
 	UFUNCTION()
 		void TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-
-	//TODO: move this into a separate componennt
-	UFUNCTION()
-		void ReEvaluateGoals();	
-	UFUNCTION()
-		bool HasGoalChanged();
 
 	UFUNCTION()
 		void RePlan();

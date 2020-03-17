@@ -37,11 +37,11 @@ void AGOAPCharacterBase::RegisterActions(TArray<UGOAPAction*>& OutArray)
 	OutArray.Add(NewObject<UAIAct_Attack>(this));
 	OutArray.Add(NewObject<UAIAct_ReactDisturbance>(this));
 }
-void AGOAPCharacterBase::RegisterGoals(TArray<UGOAPGoal*>& OutArray)
+void AGOAPCharacterBase::RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray)
 {
-	OutArray.Add(NewObject<UAIGoal_Wander>(this));
-	OutArray.Add(NewObject<UAIGoal_KillEnemy>(this));
-	OutArray.Add(NewObject<UAIGoal_InvestigateNoise>(this));
+	OutArray.Add(UAIGoal_Wander::StaticClass());
+	OutArray.Add(UAIGoal_KillEnemy::StaticClass());
+	OutArray.Add(UAIGoal_InvestigateNoise::StaticClass());
 }
 
 void AGOAPCharacterBase::OnTaskEnded(bool bSuccess)

@@ -9,6 +9,9 @@ UGoalSelectionComponent::UGoalSelectionComponent() : Super()
 
 void UGoalSelectionComponent::OnRegister()
 {
+	Super::OnRegister();
+	CurrentGoal = nullptr;
+	NextGoal = nullptr;
 	AIOwner = Cast<AAIController>(GetOwner());
 }
 
@@ -20,6 +23,7 @@ UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
 //TODO: use a Heapified TArray as a PQueue
 void UGoalSelectionComponent::ReEvaluateGoals()
 {
+	UE_LOG(LogGoal, Warning, TEXT("Number of goals: %d"), Goals.Num());
 	NextGoal = nullptr;
 	for (auto Goal : Goals)
 	{
@@ -43,7 +47,9 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 
 bool UGoalSelectionComponent::HasGoalChanged()
 {
-	return NextGoal != CurrentGoal;
+	bool bGoalChanged = (NextGoal != CurrentGoal);
+	CurrentGoal = NextGoal;
+	return bGoalChanged;
 }
 
 void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
