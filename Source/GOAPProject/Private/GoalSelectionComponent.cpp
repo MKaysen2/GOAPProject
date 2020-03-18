@@ -62,6 +62,12 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 	GoalSet.Add(NewObject<UGOAPGoal>(this, GoalClass));
 }
 
+void UGoalSelectionComponent::OnGoalCompleted()
+{
+	//TODO: deactivate goal here
+	CurrentGoal = nullptr;
+}
+
 void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet)
 {
 	for (auto Goal : NewGoalSet)

@@ -157,7 +157,6 @@ void AGOAPController::RePlan()
 	if (bSuccess)
 	{
 		//ScreenLog(FString::Printf(TEXT("Found Plan")));
-		UE_LOG(LogTemp, Warning, TEXT("Plan of size %d"), Plan.Num());
 		for (auto Action : Plan)
 		{
 			//ScreenLog(FString::Printf(TEXT("Queueing action %s"), *Action->GetName()));
@@ -168,6 +167,11 @@ void AGOAPController::RePlan()
 	}
 	
 	GOAPActionsComponent->RunNextAction();
+}
+
+void AGOAPController::ApplyWorldProp(FWorldProperty Property)
+{
+	CurrentState->Apply(Property);
 }
 
 bool AGOAPController::IsPlayingMontage()
@@ -191,7 +195,14 @@ void AGOAPController::OnDamageReceived(UBrainComponent* BrainComp, const FAIMess
 	ScreenLog(FString::Printf(TEXT("Damage received message")));
 
 }
+
 void AGOAPController::OnPlanCompleted()
 {
 	ScreenLog(FString::Printf(TEXT("Plan Completed")));
+	GoalComponent->OnGoalCompleted();
+	GoalComponent->ReEvaluateGoals();
+	if (GoalComponent->HasGoalChanged())
+	{
+		RePlan();
+	}
 }

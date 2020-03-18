@@ -40,6 +40,8 @@ public:
 	UFUNCTION()
 		void RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass);
 
+	UFUNCTION()
+		void OnGoalCompleted();
 
 	UFUNCTION()
 		void RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet);

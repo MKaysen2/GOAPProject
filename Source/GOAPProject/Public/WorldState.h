@@ -18,6 +18,7 @@ public:
 	void AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldProperty Property);
 	void Add(const FWorldProperty& prop);
 	bool Apply(const FWorldProperty& property);
+
 	bool TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldProperty& Property);
 	//True when prop is element in state and state's value for key matches prop's value
 	bool Satisfied(const FWorldProperty& prop) const;

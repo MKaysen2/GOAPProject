@@ -111,7 +111,7 @@ UAIGoal_Wander::UAIGoal_Wander() : Super()
 
 bool UAIGoal_Wander::IsGoalValid(AAIController* Controller)
 {
-	return true;
+	return false;
 }
 
 void UAIGoal_Wander::Activate(AAIController* Controller)

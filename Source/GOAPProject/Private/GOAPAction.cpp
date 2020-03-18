@@ -120,7 +120,7 @@ void UAIAct_MoveTo::StartAction(AAIController* Controller)
 UAIAct_Equip::UAIAct_Equip() : Super()
 {
 	edge_cost = 1;
-	effects.Add(FWorldProperty(EWorldKey::kAtLocation, true));
+	effects.Add(FWorldProperty(EWorldKey::kHasWeapon, true));
 }
 
 void UAIAct_Equip::StartAction(AAIController* Controller)

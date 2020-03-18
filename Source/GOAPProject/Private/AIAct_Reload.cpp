@@ -8,6 +8,7 @@
 UAIAct_Reload::UAIAct_Reload() : UGOAPAction()
 {
 	edge_cost = 1;
+	preconditions.Add({ EWorldKey::kHasWeapon, true });
 	effects.Add(FWorldProperty(EWorldKey::kWeaponLoaded, true));
 	//No effects yet. this is just a test action
 }

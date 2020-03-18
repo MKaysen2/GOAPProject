@@ -22,18 +22,20 @@ struct GOAPPROJECT_API FWorldProperty
 	GENERATED_BODY()
 public:
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	EWorldKey key;
+	//I have elected to only use booleans for now as TUnions do not currently work with UE4 reflection
+	UPROPERTY(BlueprintReadWrite)
+		bool bValue;
 
-	TUnion<bool, AActor*> value;
+	//I believe this should only ever be marked in the planner
 	UPROPERTY()
 	bool bSatisfied;
 
 
-	FWorldProperty() : key(), value(), bSatisfied(false) {}
-	FWorldProperty(const FWorldProperty& Copy) : key(Copy.key), value(Copy.value), bSatisfied(Copy.bSatisfied) {}
-	FWorldProperty(EWorldKey _key, bool bValue) : key(_key), value(bValue), bSatisfied(false) {}
-	FWorldProperty(EWorldKey _key, AActor* objValue) : key(_key), value(objValue), bSatisfied(false) {}
+	FWorldProperty() : key(), bValue(), bSatisfied(false) {}
+	FWorldProperty(const FWorldProperty& Copy) : key(Copy.key), bValue(Copy.bValue), bSatisfied(Copy.bSatisfied) {}
+	FWorldProperty(EWorldKey _key, bool bValue) : key(_key), bValue(bValue), bSatisfied(false) {}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{

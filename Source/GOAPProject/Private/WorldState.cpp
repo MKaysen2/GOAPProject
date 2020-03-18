@@ -1,13 +1,19 @@
 #include "..\Public\WorldState.h"
 
-void FWorldState::Add(const FWorldProperty & Prop)
+void FWorldState::Add(const FWorldProperty& Prop)
 {
 	State.Add(Prop);
 }
 
-bool FWorldState::Apply(const FWorldProperty& Prop) {
-	
-	return false;
+bool FWorldState::Apply(const FWorldProperty& Prop) 
+{
+	int32 Idx = State.IndexOfByKey(Prop);
+	if (Idx == INDEX_NONE)
+	{
+		return false;
+	}
+	State[Idx].bValue = Prop.bValue;
+	return true;
 }
 
 void FWorldState::AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldProperty Property)
@@ -22,8 +28,9 @@ void FWorldState::AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldPrope
 		return;
 	}
 	int32 NewIdx = State.Add(Property);
-	State[NewIdx].MarkSatisfied((Property.value == Other->State[Idx].value));
+	State[NewIdx].MarkSatisfied((Property.bValue == Other->State[Idx].bValue));
 }
+
 bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldProperty& Property)
 {
 
@@ -37,7 +44,7 @@ bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldP
 	{
 		return false;
 	}
-	State[Idx].value = Other->State[OtherIdx].value;
+	State[Idx].bValue = Other->State[OtherIdx].bValue;
 	State[Idx].MarkSatisfied(true);
 	return true;
 }
@@ -47,7 +54,7 @@ bool FWorldState::Satisfied(const FWorldProperty& property) const
 	int32 Index =  State.IndexOfByKey(property);
 	if(Index == INDEX_NONE)
 		return false;
-	return (State[Index].value == property.value);
+	return (State[Index].bValue == property.bValue);
 }
 
 FWorldState* FWorldState::Clone()

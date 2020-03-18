@@ -79,6 +79,8 @@ public:
 
 		void OnDamageReceived(UBrainComponent* BrainComp, const FAIMessage& Message);
 
+		UFUNCTION(BlueprintCallable)
+			void ApplyWorldProp(FWorldProperty Property);
 	UFUNCTION()
 		bool IsPlayingMontage();
 
