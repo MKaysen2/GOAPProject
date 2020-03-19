@@ -33,6 +33,7 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 	{
 		if (Goal->IsGoalValid(AIOwner))
 		{
+
 			//Recalculate prioirity if necessary
 			Goal->ReCalcPriority(AIOwner);
 
@@ -45,6 +46,17 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 			if (Goal->Priority() > NextGoal->Priority())
 				NextGoal = Goal;
 		}
+	}
+
+	bool bGoalChanged = (NextGoal != CurrentGoal);
+	if (bGoalChanged)
+	{
+		if (CurrentGoal && CurrentGoal->IsActive())
+		{
+			CurrentGoal->Deactivate(AIOwner);
+		}
+		CurrentGoal = NextGoal;
+		OnGoalChanged.ExecuteIfBound(CurrentGoal);
 	}
 }
 
@@ -69,7 +81,9 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 void UGoalSelectionComponent::OnGoalCompleted()
 {
 	//TODO: deactivate goal here
+	CurrentGoal->Deactivate(AIOwner);
 	CurrentGoal = nullptr;
+	ReEvaluateGoals();
 }
 
 void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet)
@@ -80,6 +94,13 @@ void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal
 	}
 }
 
+void UGoalSelectionComponent::Reset()
+{
+	CurrentGoal = nullptr;
+	NextGoal = nullptr;
+	GoalSet.Empty();
+}
+
 #if WITH_GAMEPLAY_DEBUGGER
 
 void UGoalSelectionComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const
@@ -87,6 +108,16 @@ void UGoalSelectionComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCa
 	FString CurrentGoalName = (CurrentGoal) ? CurrentGoal->GetName() : TEXT("NONE");
 	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Current goal: %s"), *CurrentGoalName));
 	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Number of goals: %d"), GoalSet.Num()));
+	DebuggerCategory->AddTextLine(*FString(TEXT("Goal validity: ")));
+
+	for (auto Goal : GoalSet)
+	{
+		if (Goal)
+		{
+			FString Color = Goal->GetLastValidity() ? TEXT("{green}") : TEXT("{red}");
+			DebuggerCategory->AddTextLine(FString::Printf(TEXT("\t%s%.10s"), *Color, *Goal->GetName()));
+		}
+	}
 }
 
 #endif //WITH_GAMEPLAY_DEBUGGER

@@ -15,13 +15,29 @@ class UGOAPGoal : public UObject
 	GENERATED_BODY()
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TArray<FWorldProperty> goal;
+	TArray<FWorldProperty> Goal;
+
+	UPROPERTY()
 	float LastPriority;
+
+	UPROPERTY()
+		bool bIsActive;
+
+	UPROPERTY()
+		bool bCachedValidity;
+
+	UFUNCTION()
+		void CacheValidity(bool Validity) { bCachedValidity = Validity; }
 public:
 	UGOAPGoal();
 	const TArray<FWorldProperty>& container();
+
+	bool GetLastValidity() { return bCachedValidity; }
+
+	bool IsActive() { return bIsActive; }
 	virtual bool IsGoalValid(AAIController* Controller);
 	virtual void Activate(AAIController* Controller);
+	virtual void Deactivate(AAIController* Controller);
 	virtual void ReCalcPriority(AAIController* Controller);
 	float Priority() const;
 };

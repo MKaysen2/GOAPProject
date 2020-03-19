@@ -55,6 +55,8 @@ AGOAPController::AGOAPController()
 	CurrentState->Add({ EWorldKey::kDisturbanceHandled, false });
 
 	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
+	GoalComponent->OnGoalChanged.BindUObject(this, &AGOAPController::OnGoalChanged);
+
 
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
 	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
@@ -89,48 +91,25 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	AStarComponent->CreateLookupTable(GOAPActionsComponent->GetActionSet());
 	GoalComponent->ReEvaluateGoals();
 
-	if (GoalComponent->HasGoalChanged())
-	{
-		//ScreenLog(FString::Printf(TEXT("Goal has changed")));
-		RePlan();
-	}
 }
 
 void AGOAPController::OnUnPossess()
 {
 	Super::OnUnPossess();
 	AStarComponent->ClearLookupTable();
+	GoalComponent->Reset();
 	GOAPActionsComponent->Reset();
 	PerceptionComponent->OnTargetPerceptionUpdated.RemoveAll(this);
 }
 
 void AGOAPController::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
-
-	
+	Super::Tick(DeltaSeconds);	
 }
 
 void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	//Might want to register Goals as stimuli listeners and just pump Stimuli to them
-	/*
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		//Blackboard->SetValueAsObject(FName("Target"), Actor);
-		UE_LOG(LogTemp, Warning, TEXT("Target successfully sensed"));
-	}
-	else
-	{
-		//Blackboard->SetValueAsObject(FName("Target"), nullptr);
-		UE_LOG(LogTemp, Warning, TEXT("Target not successfully sensed"));
-	}
-	*/
 	GoalComponent->ReEvaluateGoals();
-	if (GoalComponent->HasGoalChanged())
-	{
-		RePlan();
-	}
 }
 
 void AGOAPController::RePlan() 
@@ -141,9 +120,6 @@ void AGOAPController::RePlan()
 	{
 		return;
 	}
-
-	CurrentGoal->Activate(this);
-
 	//No goal -> No plan needed. By default, it'll play the idle animation
 	/*
 	for (auto Action : ActionSet)
@@ -154,19 +130,19 @@ void AGOAPController::RePlan()
 	
 	TArray<UGOAPAction*> Plan;
 	bool bSuccess = AStarComponent->Search(CurrentGoal, CurrentState, Plan);
+	
 	if (bSuccess)
 	{
-		//ScreenLog(FString::Printf(TEXT("Found Plan")));
+		CurrentGoal->Activate(this);
+
 		for (auto Action : Plan)
 		{
-			//ScreenLog(FString::Printf(TEXT("Queueing action %s"), *Action->GetName()));
-
 			GOAPActionsComponent->QueueAction(Action);
 		}
 
+		GOAPActionsComponent->RunNextAction();
 	}
 	
-	GOAPActionsComponent->RunNextAction();
 }
 
 void AGOAPController::ApplyWorldProp(FWorldProperty Property)
@@ -190,6 +166,11 @@ bool AGOAPController::IsPlayingMontage()
 	return false;
 }
 
+void AGOAPController::OnGoalChanged(UGOAPGoal* NewGoal)
+{
+	RePlan();
+}
+
 void AGOAPController::OnDamageReceived(UBrainComponent* BrainComp, const FAIMessage& Message)
 {
 	ScreenLog(FString::Printf(TEXT("Damage received message")));
@@ -200,9 +181,4 @@ void AGOAPController::OnPlanCompleted()
 {
 	//ScreenLog(FString::Printf(TEXT("Plan Completed")));
 	GoalComponent->OnGoalCompleted();
-	GoalComponent->ReEvaluateGoals();
-	if (GoalComponent->HasGoalChanged())
-	{
-		RePlan();
-	}
 }

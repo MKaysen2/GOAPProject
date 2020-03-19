@@ -85,6 +85,9 @@ public:
 		bool IsPlayingMontage();
 
 	UFUNCTION()
+		void OnGoalChanged(UGOAPGoal* NewGoal);
+
+	UFUNCTION()
 		void OnPlanCompleted();
 
 	UFUNCTION()

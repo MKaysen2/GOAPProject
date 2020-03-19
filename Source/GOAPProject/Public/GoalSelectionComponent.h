@@ -7,6 +7,7 @@ class UGOAPGoal;
 class FGameplayDebuggerCategory;
 
 //TODO: Add a delegate for goal changed
+DECLARE_DELEGATE_OneParam(FGoalChangedSignature, UGOAPGoal*);
 
 UCLASS(BlueprintType)
 class GOAPPROJECT_API UGoalSelectionComponent : public UActorComponent 
@@ -44,10 +45,15 @@ public:
 	UFUNCTION()
 		void OnGoalCompleted();
 
+	UFUNCTION()
+		void RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet);
+
+	UFUNCTION()
+		virtual void Reset();
+
+	FGoalChangedSignature OnGoalChanged;
+	//Debug
 #if WITH_GAMEPLAY_DEBUGGER
 	virtual void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
 #endif //WITH_GAMEPLAY_DEBUGGER
-
-	UFUNCTION()
-		void RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet);
 };

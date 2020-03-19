@@ -28,7 +28,6 @@ void UAStarComponent::OnUnregister()
 }
 bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState, TArray<UGOAPAction*>& Plan) //graph needs to be V, E
 {
-	//UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search"));
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
 	if (!Goal)
@@ -41,8 +40,6 @@ bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialSta
 	TSet<TSharedPtr<FStateNode>> closed_set; //probably have to figure out keyfuncs for this
 
 	TSharedPtr<FStateNode> CurrentNode(new FStateNode(Goal->container(), InitialState));
-
-	//UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search:\t set up initial node and push to fringe"));
 
 	fringe.HeapPush(CurrentNode, LessFn);
 
