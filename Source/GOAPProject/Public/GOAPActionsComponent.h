@@ -35,6 +35,11 @@ protected:
 public:
 	void OnRegister() override;
 
+	UFUNCTION()
+		void RegisterAction(TSubclassOf<UGOAPAction> ActionClass);
+
+	UFUNCTION()
+		void RegisterActionSet(const TArray<TSubclassOf<UGOAPAction>>& NewActionSet);
 	//TODO:Add cleanup code to OnDestroy
 	UFUNCTION()
 	void RunNextAction();

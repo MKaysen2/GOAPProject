@@ -25,6 +25,12 @@ class GOAPPROJECT_API UGOAPAction : public UObject
 	GENERATED_BODY()
 public:
 	UGOAPAction();
+protected:
+	//callable by child actions only (i.e., in the constructor)
+	//use this to construct child actions in the initializer list directly
+	explicit UGOAPAction(TArray<FWorldProperty>&& Pre, TArray<FWorldProperty>&& Post, int _Cost);
+
+public:
 	UPROPERTY(EditAnywhere)
 		TArray<FWorldProperty> preconditions;
 

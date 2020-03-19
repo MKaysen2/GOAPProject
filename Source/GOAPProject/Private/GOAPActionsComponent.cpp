@@ -17,6 +17,24 @@ void UGOAPActionsComponent::OnRegister()
 	AIOwner = Cast<AGOAPController>(GetOwner());
 }
 
+void UGOAPActionsComponent::RegisterAction(TSubclassOf<UGOAPAction> ActionClass)
+{
+	//Null if not a valid subclass
+	if (!ActionClass.GetDefaultObject())
+	{
+		return;
+	}
+	ActionSet.Add(NewObject<UGOAPAction>(this, ActionClass));
+}
+
+void UGOAPActionsComponent::RegisterActionSet(const TArray<TSubclassOf<UGOAPAction>>& NewActionSet)
+{
+	for (auto Action : NewActionSet)
+	{
+		RegisterAction(Action);
+	}
+}
+
 void UGOAPActionsComponent::RunNextAction() 
 {
 	if (ActionIdx >= ActionQueue.Num())
@@ -70,6 +88,7 @@ void UGOAPActionsComponent::Reset()
 	ActionIdx = 0;
 	CurrentAction = nullptr;
 	ActionQueue.Reset();
+	ActionSet.Reset();
 }
 
 void UGOAPActionsComponent::QueueAction(UGOAPAction* Action)

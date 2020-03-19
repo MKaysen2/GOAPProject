@@ -7,6 +7,7 @@ void FWorldState::Add(const FWorldProperty& Prop)
 
 bool FWorldState::Apply(const FWorldProperty& Prop) 
 {
+
 	int32 Idx = State.IndexOfByKey(Prop);
 	if (Idx == INDEX_NONE)
 	{

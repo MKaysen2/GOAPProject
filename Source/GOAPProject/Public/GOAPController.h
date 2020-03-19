@@ -80,7 +80,7 @@ public:
 		void OnDamageReceived(UBrainComponent* BrainComp, const FAIMessage& Message);
 
 		UFUNCTION(BlueprintCallable)
-			void ApplyWorldProp(FWorldProperty Property);
+			void ApplyWorldProp(const EWorldKey Key, const bool bValue);
 	UFUNCTION()
 		bool IsPlayingMontage();
 

@@ -10,9 +10,18 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "TimerManager.h"
 
-UGOAPAction::UGOAPAction() : Super() 
+UGOAPAction::UGOAPAction() : Super()
 {
 	
+}
+
+UGOAPAction::UGOAPAction(TArray<FWorldProperty>&& Pre, TArray<FWorldProperty>&& Post, int _Cost) :
+	Super(),
+	preconditions{ Pre },
+	effects{ Post },
+	edge_cost(_Cost)
+{
+
 }
 
 void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
@@ -77,10 +86,13 @@ bool UGOAPAction::IsActionRunning()
 	return bIsRunning;
 }
 
-UAIAct_MoveTo::UAIAct_MoveTo() : UGOAPAction()
+UAIAct_MoveTo::UAIAct_MoveTo() : 
+	Super(
+		{},
+		{ FWorldProperty(EWorldKey::kAtLocation, true) },
+		10
+	)
 {
-	edge_cost = 10;
-	effects.Add(FWorldProperty(EWorldKey::kAtLocation, true));
 }
 
 bool UAIAct_MoveTo::VerifyContext(AAIController* Controller) 
@@ -117,10 +129,14 @@ void UAIAct_MoveTo::StartAction(AAIController* Controller)
 }
 
 
-UAIAct_Equip::UAIAct_Equip() : Super()
+UAIAct_Equip::UAIAct_Equip() : 
+	Super(
+		{},
+		{ FWorldProperty(EWorldKey::kHasWeapon, true)},
+		1
+	)
 {
-	edge_cost = 1;
-	effects.Add(FWorldProperty(EWorldKey::kHasWeapon, true));
+	
 }
 
 void UAIAct_Equip::StartAction(AAIController* Controller)
@@ -149,10 +165,13 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 
 }
 
-UAIAct_ReactDisturbance::UAIAct_ReactDisturbance()
+UAIAct_ReactDisturbance::UAIAct_ReactDisturbance() :
+	Super(
+		{},
+		{ { EWorldKey::kDisturbanceHandled, true } },
+		1
+	)
 {
-	edge_cost = 1;
-	effects.Add({ EWorldKey::kDisturbanceHandled, true });
 }
 
 bool UAIAct_ReactDisturbance::VerifyContext(AAIController* Controller)

@@ -85,9 +85,8 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	AGOAPCharacterBase* GOAPPawn = Cast<AGOAPCharacterBase>(InPawn);
 	if (!GOAPPawn)
 		return;
-	TArray<TSubclassOf<UGOAPGoal>> Goals;
 	GoalComponent->RegisterGoalSet(GOAPPawn->GetGoalSet());
-	GOAPPawn->RegisterActions(GOAPActionsComponent->GetActionSet());
+	GOAPActionsComponent->RegisterActionSet(GOAPPawn->GetActionSet());
 	AStarComponent->CreateLookupTable(GOAPActionsComponent->GetActionSet());
 	GoalComponent->ReEvaluateGoals();
 
@@ -145,9 +144,10 @@ void AGOAPController::RePlan()
 	
 }
 
-void AGOAPController::ApplyWorldProp(FWorldProperty Property)
+void AGOAPController::ApplyWorldProp(const EWorldKey kWorldKey, const bool bValue)
 {
-	CurrentState->Apply(Property);
+	
+	CurrentState->Apply(FWorldProperty(kWorldKey, bValue));
 }
 
 bool AGOAPController::IsPlayingMontage()

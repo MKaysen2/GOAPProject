@@ -4,7 +4,6 @@
 #include "Containers/Union.h"
 #include "WorldProperty.generated.h"
 
-//using uint8 breaks this for whatever reason
 UENUM(BlueprintType)
 enum class EWorldKey : uint8
 {
@@ -22,20 +21,23 @@ struct GOAPPROJECT_API FWorldProperty
 	GENERATED_BODY()
 public:
 	
-	UPROPERTY(BlueprintReadWrite)
-	EWorldKey key;
+	EWorldKey key = EWorldKey::kIdle;
 	//I have elected to only use booleans for now as TUnions do not currently work with UE4 reflection
-	UPROPERTY(BlueprintReadWrite)
-		bool bValue;
+		bool bValue = false;
 
 	//I believe this should only ever be marked in the planner
-	UPROPERTY()
-	bool bSatisfied;
+	bool bSatisfied = false;
 
+	typedef union 
+	{
+		float fValue;
+		int iValue;
 
-	FWorldProperty() : key(), bValue(), bSatisfied(false) {}
-	FWorldProperty(const FWorldProperty& Copy) : key(Copy.key), bValue(Copy.bValue), bSatisfied(Copy.bSatisfied) {}
-	FWorldProperty(EWorldKey _key, bool bValue) : key(_key), bValue(bValue), bSatisfied(false) {}
+	} datatype; 
+	datatype MyVar = { 3.0f };
+
+	FWorldProperty() = default;
+	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key), bValue(_bValue) {}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{

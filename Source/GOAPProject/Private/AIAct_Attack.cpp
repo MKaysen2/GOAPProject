@@ -6,11 +6,13 @@
 #include "..\Public\WorldState.h"
 #include "GameFramework/Pawn.h"
 
-UAIAct_Attack::UAIAct_Attack() : Super()
+UAIAct_Attack::UAIAct_Attack() : 
+	Super(
+		{ FWorldProperty(EWorldKey::kWeaponLoaded, true) },
+		{ FWorldProperty(EWorldKey::kTargetDead, true) },
+		5
+	)
 {
-	edge_cost = 5;
-	preconditions.Add(FWorldProperty(EWorldKey::kWeaponLoaded, true));
-	effects.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
 bool UAIAct_Attack::VerifyContext(AAIController* Controller)

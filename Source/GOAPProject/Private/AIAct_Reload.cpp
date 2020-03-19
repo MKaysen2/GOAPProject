@@ -5,12 +5,13 @@
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UAIAct_Reload::UAIAct_Reload() : UGOAPAction()
+UAIAct_Reload::UAIAct_Reload() :
+	Super(
+		{ {EWorldKey::kHasWeapon, true} },
+		{ {EWorldKey::kWeaponLoaded, true} },
+		1
+	)
 {
-	edge_cost = 1;
-	preconditions.Add({ EWorldKey::kHasWeapon, true });
-	effects.Add(FWorldProperty(EWorldKey::kWeaponLoaded, true));
-	//No effects yet. this is just a test action
 }
 
 bool UAIAct_Reload::VerifyContext(AAIController* Controller)

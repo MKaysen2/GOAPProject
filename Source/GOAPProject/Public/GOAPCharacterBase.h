@@ -26,14 +26,19 @@ protected:
 public:
 	
 	AGOAPCharacterBase();
-	UFUNCTION()
-		virtual void RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray);
 
 	UFUNCTION()
 		TArray<TSubclassOf<UGOAPGoal>> GetGoalSet();
 
 	UFUNCTION()
-		void RegisterActions(TArray<UGOAPAction*>& OutArray);
+		virtual void RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray);
+
+	UFUNCTION()
+		TArray<TSubclassOf<UGOAPAction>> GetActionSet();
+	
+	UFUNCTION()
+		void RegisterActions(TArray<TSubclassOf<UGOAPAction>>& OutArray);
+
 
 	UFUNCTION()
 	void BeginPlay() override;
