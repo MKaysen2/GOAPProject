@@ -4,6 +4,7 @@
 #include "GoalSelectionComponent.generated.h"
 
 class UGOAPGoal;
+class FGameplayDebuggerCategory;
 
 //TODO: Add a delegate for goal changed
 
@@ -42,6 +43,10 @@ public:
 
 	UFUNCTION()
 		void OnGoalCompleted();
+
+#if WITH_GAMEPLAY_DEBUGGER
+	virtual void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
+#endif //WITH_GAMEPLAY_DEBUGGER
 
 	UFUNCTION()
 		void RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet);

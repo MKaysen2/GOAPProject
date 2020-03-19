@@ -3,6 +3,12 @@
 #include "../Public/GOAPAction.h"
 #include "GameFramework/Character.h"
 
+
+#if WITH_GAMEPLAY_DEBUGGER
+#include "GameplayDebuggerTypes.h"
+#include "GameplayDebuggerCategory.h"
+#endif
+
 void UGOAPActionsComponent::OnRegister()
 {
 	Super::OnRegister();
@@ -19,14 +25,13 @@ void UGOAPActionsComponent::RunNextAction()
 		return;
 	}
 	CurrentAction = ActionQueue[ActionIdx];
-	UE_LOG(LogTemp, Warning, TEXT("Action index: %d"), ActionIdx);
 
 	++ActionIdx;
 	if (CurrentAction)
 	{
 		if (!CurrentAction->VerifyContext(AIOwner))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Invalid Context"));
+			//UE_LOG(LogTemp, Warning, TEXT("Invalid Context"));
 			CurrentAction = nullptr;
 			//TODO fire delegate here I think
 			return;
@@ -89,3 +94,27 @@ TArray<UGOAPAction*>& UGOAPActionsComponent::GetActionSet()
 {
 	return ActionSet;
 }
+
+#if WITH_GAMEPLAY_DEBUGGER
+
+void UGOAPActionsComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const
+{
+	FString CurrentActionName = (CurrentAction) ? CurrentAction->GetName() : TEXT("NONE");
+	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Current Action: %s"), *CurrentActionName, ActionIdx));
+
+	int PlanSize = ActionQueue.Num();
+	FString PlanInfo;
+	if (PlanSize > 0)
+	{
+
+		PlanInfo = FString::Printf(TEXT("Step %d of %d"), ActionIdx, PlanSize);
+	}
+	else
+	{
+		PlanInfo = FString(TEXT("No plan"));
+	}
+
+	DebuggerCategory->AddTextLine(PlanInfo);
+}
+
+#endif //WITH_GAMEPLAY_DEBUGGER

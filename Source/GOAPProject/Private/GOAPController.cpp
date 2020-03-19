@@ -91,7 +91,7 @@ void AGOAPController::OnPossess(APawn * InPawn)
 
 	if (GoalComponent->HasGoalChanged())
 	{
-		ScreenLog(FString::Printf(TEXT("Goal has changed")));
+		//ScreenLog(FString::Printf(TEXT("Goal has changed")));
 		RePlan();
 	}
 }
@@ -198,7 +198,7 @@ void AGOAPController::OnDamageReceived(UBrainComponent* BrainComp, const FAIMess
 
 void AGOAPController::OnPlanCompleted()
 {
-	ScreenLog(FString::Printf(TEXT("Plan Completed")));
+	//ScreenLog(FString::Printf(TEXT("Plan Completed")));
 	GoalComponent->OnGoalCompleted();
 	GoalComponent->ReEvaluateGoals();
 	if (GoalComponent->HasGoalChanged())

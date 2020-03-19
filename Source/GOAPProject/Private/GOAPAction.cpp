@@ -47,8 +47,8 @@ void UGOAPAction::AddUnsatisfiedPreconditions(FWorldState& CurrentState, const F
 void UGOAPAction::StartAction(AAIController* Controller) 
 {
 	bIsRunning = true;
-	FString action_name = GetName();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
+	//FString action_name = GetName();
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
 	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
 	if (Character)
 	{
@@ -60,7 +60,7 @@ void UGOAPAction::StopAction(AAIController* Controller)
 {
 
 	FString action_name = GetName();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stopping action %s"), *action_name));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stopping action %s"), *action_name));
 	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
 	if (Character)
 	{

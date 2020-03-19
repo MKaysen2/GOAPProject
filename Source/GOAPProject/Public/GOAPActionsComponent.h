@@ -3,7 +3,7 @@
 #include "Components/ActorComponent.h"
 #include "GOAPActionsComponent.generated.h"
 
-
+class FGameplayDebuggerCategory;
 class AGOAPController;
 class UGOAPAction;
 
@@ -54,8 +54,12 @@ public:
 
 	UFUNCTION()
 		bool IsPlanComplete();
-
 	UFUNCTION()
 		TArray<UGOAPAction*>& GetActionSet();
+
+
+#if WITH_GAMEPLAY_DEBUGGER
+	virtual void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
+#endif //WITH_GAMEPLAY_DEBUGGER
 
 };

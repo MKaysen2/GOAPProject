@@ -1,6 +1,11 @@
 #include "../Public/GoalSelectionComponent.h"
 #include "../Public/GOAPGoal.h"
 
+#if WITH_GAMEPLAY_DEBUGGER
+#include "GameplayDebuggerTypes.h"
+#include "GameplayDebuggerCategory.h"
+#endif
+
 UGoalSelectionComponent::UGoalSelectionComponent() : Super() 
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -23,7 +28,6 @@ UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
 //TODO: use a Heapified TArray as a PQueue
 void UGoalSelectionComponent::ReEvaluateGoals()
 {
-	UE_LOG(LogGoal, Warning, TEXT("Number of goals: %d"), GoalSet.Num());
 	NextGoal = nullptr;
 	for (auto Goal : GoalSet)
 	{
@@ -75,3 +79,14 @@ void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal
 		RegisterGoal(Goal);
 	}
 }
+
+#if WITH_GAMEPLAY_DEBUGGER
+
+void UGoalSelectionComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const
+{
+	FString CurrentGoalName = (CurrentGoal) ? CurrentGoal->GetName() : TEXT("NONE");
+	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Current goal: %s"), *CurrentGoalName));
+	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Number of goals: %d"), GoalSet.Num()));
+}
+
+#endif //WITH_GAMEPLAY_DEBUGGER

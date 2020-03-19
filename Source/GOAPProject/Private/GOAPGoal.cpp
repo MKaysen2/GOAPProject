@@ -28,7 +28,7 @@ void UGOAPGoal::ReCalcPriority(AAIController* Controller)
 
 void UGOAPGoal::Activate(AAIController* Controller)
 {
-	UE_LOG(LogGoal, Warning, TEXT("Activated goal %s"), *GetName());
+	//UE_LOG(LogGoal, Warning, TEXT("Activated goal %s"), *GetName());
 }
 
 float UGOAPGoal::Priority() const

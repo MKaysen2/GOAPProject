@@ -3,5 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Modules/ModuleInterface.h"
 
+class FGOAPProjectModule : public IModuleInterface
+{
+
+	virtual void StartupModule() override;
+
+	virtual void ShutdownModule() override;
+
+	virtual bool IsGameModule() const override;
+};
 DECLARE_LOG_CATEGORY_EXTERN(LogGOAPProject, Log, All);

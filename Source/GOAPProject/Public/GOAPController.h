@@ -86,4 +86,10 @@ public:
 
 	UFUNCTION()
 		void OnPlanCompleted();
+
+	UFUNCTION()
+		UGOAPActionsComponent* GetGOAPActionsComponent() { return GOAPActionsComponent; }
+
+	UFUNCTION()
+		UGoalSelectionComponent* GetGoalSelectionComponent() { return GoalComponent; }
 };

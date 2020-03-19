@@ -28,7 +28,7 @@ void UAStarComponent::OnUnregister()
 }
 bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState, TArray<UGOAPAction*>& Plan) //graph needs to be V, E
 {
-	UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search"));
+	//UE_LOG(LogTemp, Warning, TEXT("UAStarMachine::Search"));
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
 	if (!Goal)
