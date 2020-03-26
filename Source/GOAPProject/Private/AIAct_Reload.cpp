@@ -7,8 +7,8 @@
 
 UAIAct_Reload::UAIAct_Reload() :
 	Super(
-		{ {EWorldKey::kHasWeapon, true} },
-		{ {EWorldKey::kWeaponLoaded, true} },
+		{ FWorldProperty(EWorldKey::kHasWeapon, true) },
+		{ FWorldProperty(EWorldKey::kWeaponLoaded, true) },
 		1
 	)
 {

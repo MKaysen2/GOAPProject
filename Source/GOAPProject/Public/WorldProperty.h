@@ -16,29 +16,36 @@ enum class EWorldKey : uint8
 	SYMBOL_MAX
 };
 
+
 USTRUCT(BlueprintType)
 struct GOAPPROJECT_API FWorldProperty 
 {
 	GENERATED_BODY()
 public:
-	
-	EWorldKey key = EWorldKey::kIdle;
-	//I have elected to only use booleans for now as TUnions do not currently work with UE4 reflection
-		bool bValue = false;
 
+	EWorldKey key = EWorldKey::kIdle;
+
+	enum class Type
+	{
+		kBool,
+		kVar
+	} DataType = Type::kBool;
+
+	union
+	{
+		bool bValue;
+		uint8 nValue;
+	} Data = { false };
 	//I believe this should only ever be marked in the planner
 	bool bUnsatisfied = false;
 
-	typedef union 
-	{
-		float fValue;
-		int iValue;
-
-	} UnionType; 
-	UnionType uValue = { 3.0f };
 
 	FWorldProperty() = default;
-	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key), bValue(_bValue) {}
+	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key) 
+	{
+		DataType = Type::kBool;
+		Data.bValue = _bValue;
+	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{
@@ -49,7 +56,46 @@ public:
 	{
 		return lhs.key == rhs.key;
 	}
-	
+
+	//eventually this will be moved into == operator after I make keyfuncs
+	bool Equals(const FWorldProperty& rhs)
+	{
+		if(rhs.DataType != this->DataType)
+		{
+			return false;
+		}
+		switch (DataType)
+		{
+		case Type::kBool:
+			return rhs.Data.bValue == this->Data.bValue;
+			break;
+
+		default:
+			return false;
+		}
+			
+	}
+
+	bool Equals(const FWorldProperty& rhs) const
+	{
+		if (rhs.DataType != this->DataType)
+		{
+			return false;
+		}
+		switch (DataType)
+		{
+		case Type::kBool:
+			return rhs.Data.bValue == this->Data.bValue;
+			break;
+
+		default:
+			return false;
+		}
+
+	}
+
+	void Apply(const FWorldProperty& Other);
+
 	void MarkSatisfied(bool bNewSatisfied)
 	{
 		bUnsatisfied = !bNewSatisfied;

@@ -168,7 +168,7 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 UAIAct_ReactDisturbance::UAIAct_ReactDisturbance() :
 	Super(
 		{},
-		{ { EWorldKey::kDisturbanceHandled, true } },
+		{ FWorldProperty(EWorldKey::kDisturbanceHandled, true) },
 		1
 	)
 {
