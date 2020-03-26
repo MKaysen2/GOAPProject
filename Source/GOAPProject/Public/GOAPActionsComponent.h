@@ -6,6 +6,8 @@
 class FGameplayDebuggerCategory;
 class AGOAPController;
 class UGOAPAction;
+struct FStateNode;
+struct FWorldState;
 
 DECLARE_DELEGATE(FPlanCompletedSignature);
 
@@ -26,6 +28,10 @@ protected:
 	UPROPERTY(Transient)
 		TArray<UGOAPAction*> ActionQueue;
 
+	//variable values are solved through the planner and actions are not instanced,
+	//so a record of the solved world state is necessary to retrieve the correct context information
+	TArray<TSharedPtr<FWorldState>> StateQueue;
+
 	UPROPERTY(Transient)
 		TArray<UGOAPAction*> ActionSet;
 
@@ -41,11 +47,17 @@ public:
 	UFUNCTION()
 		void RegisterActionSet(const TArray<TSubclassOf<UGOAPAction>>& NewActionSet);
 	//TODO:Add cleanup code to OnDestroy
+	
+	UFUNCTION()
+		void OnActionEnded();
 	UFUNCTION()
 	void RunNextAction();
 
 	UFUNCTION()
 		bool IsActionRunning();
+
+	void StartPlan(TSharedPtr<FStateNode> NewPlan);
+
 	UFUNCTION()
 	void AbortPlan();
 
@@ -55,12 +67,14 @@ public:
 	UFUNCTION()
 	void QueueAction(UGOAPAction* Action);
 
+
 	FPlanCompletedSignature OnPlanCompleted;
 
 	UFUNCTION()
 		bool IsPlanComplete();
 	UFUNCTION()
 		TArray<UGOAPAction*>& GetActionSet();
+
 
 
 #if WITH_GAMEPLAY_DEBUGGER

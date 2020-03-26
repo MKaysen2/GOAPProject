@@ -121,4 +121,19 @@ public:
 	void StartAction(AAIController* Controller) override;
 	void StopAction(AAIController* Controller) override;
 };
+
+//wait 3 seconds before ending
+//for testing action callbacks without the planner, so no symbols defined
+UCLASS(BlueprintType)
+class GOAPPROJECT_API UAIAct_CallbackTest : public UGOAPAction
+{
+	GENERATED_BODY()
+		FTimerHandle TimerHandle;
+
+public:
+	UAIAct_CallbackTest();
+	bool VerifyContext(AAIController* Controller) override;
+	void StartAction(AAIController* Controller) override;
+	void StopAction(AAIController* Controller) override;
+};
 typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;

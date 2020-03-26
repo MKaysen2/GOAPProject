@@ -53,6 +53,10 @@ public:
 	bool IsGoal();
 	void FindActions(const LookupTable& action_map, TArray<UGOAPAction*>& out_actions);
 
+	TSharedPtr<FWorldState> GetState()
+	{
+		return CurrentState;
+	}
 	UGOAPAction* edge() {
 		return ParentEdge;
 	}

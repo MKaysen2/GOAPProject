@@ -32,7 +32,7 @@ void UAStarComponent::OnUnregister()
 	Super::OnUnregister();
 }
 
-bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState, TArray<UGOAPAction*>& Plan) //graph needs to be V, E
+TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState) //graph needs to be V, E
 {
 	
 	//Fringe is a priority queue in textbook A*
@@ -109,12 +109,11 @@ bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialSta
 		}
 	}
 	
-	if (CurrentNode)
+	if (CurrentNode.IsValid())
 	{
-		GeneratePlan(CurrentNode, Plan);
-		return true;
+		return CurrentNode;
 	}
-	return false;
+	return nullptr;
 }
 
 void UAStarComponent::ClearLookupTable()
@@ -133,7 +132,7 @@ void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 	}
 }
 
-void UAStarComponent::GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOAPAction*>& plan) 
+void UAStarComponent::GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<TSharedPtr<FStateNode>>& plan) 
 {
 	TSharedPtr<FStateNode> current = FoundGoal;
 
@@ -141,11 +140,7 @@ void UAStarComponent::GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOA
 	while (current->previous().IsValid() && current->edge()) 
 	{
 		FString action_name = current->edge()->GetName();
-		
-		//edge is the action used to reach this node
-		//the search is regressive so we add the actions in reverse order
-		plan.Emplace(current->edge());
-		//traverse to the parent node
+		plan.Emplace(current);
 		current = current->previous();
 	}
 }

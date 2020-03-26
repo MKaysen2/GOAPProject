@@ -5,6 +5,7 @@
 #include "../Public/GOAPAction.h"
 #include "../Public/GOAPGoal.h"
 #include "../Public/WorldState.h"
+#include "../Public/StateNode.h"
 #include "../Public/GoalSelectionComponent.h"
 #include "Perception\AISenseConfig_Sight.h"
 #include "Perception\AISenseConfig_Hearing.h"
@@ -51,9 +52,11 @@ AGOAPController::AGOAPController()
 	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
 	GoalComponent->OnGoalChanged.BindUObject(this, &AGOAPController::OnGoalChanged);
 
-
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
 	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
+
+	CallbackTester = CreateDefaultSubobject<UAIAct_CallbackTest>(TEXT("Callback Test Action"));
+
 }
 
 void AGOAPController::OnPossess(APawn * InPawn)
@@ -122,18 +125,19 @@ void AGOAPController::RePlan()
 	*/
 	
 	TArray<UGOAPAction*> Plan;
-	bool bSuccess = AStarComponent->Search(CurrentGoal, CurrentState, Plan);
+	TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);
 	
-	if (bSuccess)
+	if (Node.IsValid())
 	{
 		CurrentGoal->Activate(this);
-
-		for (auto Action : Plan)
+		GOAPActionsComponent->StartPlan(Node);
+		/*
+		for (int i = 0; i < 3; ++i)
 		{
-			GOAPActionsComponent->QueueAction(Action);
+			GOAPActionsComponent->QueueAction(CallbackTester);
 		}
-
 		GOAPActionsComponent->RunNextAction();
+		*/
 	}
 	
 }

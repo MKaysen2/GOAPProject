@@ -1,6 +1,8 @@
 #include "../Public/GOAPActionsComponent.h"
 #include "../Public/GOAPController.h"
 #include "../Public/GOAPAction.h"
+#include "../Public/StateNode.h"
+#include "../Public/WorldState.h"
 #include "GameFramework/Character.h"
 
 
@@ -35,7 +37,14 @@ void UGOAPActionsComponent::RegisterActionSet(const TArray<TSubclassOf<UGOAPActi
 	}
 }
 
-void UGOAPActionsComponent::RunNextAction() 
+void UGOAPActionsComponent::OnActionEnded()
+{
+	++ActionIdx;
+
+	RunNextAction();
+}
+
+void UGOAPActionsComponent::RunNextAction()
 {
 	if (ActionIdx >= ActionQueue.Num())
 	{
@@ -44,20 +53,40 @@ void UGOAPActionsComponent::RunNextAction()
 	}
 	CurrentAction = ActionQueue[ActionIdx];
 
-	++ActionIdx;
 	if (CurrentAction)
 	{
 		if (!CurrentAction->VerifyContext(AIOwner))
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Invalid Context"));
 			CurrentAction = nullptr;
 			//TODO fire delegate here I think
 			return;
 		}
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
-		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::RunNextAction);
+		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::OnActionEnded);
 		CurrentAction->StartAction(AIOwner);
 	}
+}
+
+
+void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
+{
+	if (!CurrentNode.IsValid())
+	{
+		return;
+	}
+	//The starting node should have a nullptr for the parent node+edge
+	while (CurrentNode.IsValid() )
+	{
+		UGOAPAction* Action = CurrentNode->edge();
+		if (IsValid(Action))
+		{
+			FString action_name = Action->GetName();
+			QueueAction(Action);
+		}
+		StateQueue.Emplace(CurrentNode->GetState());
+		CurrentNode = CurrentNode->previous();
+	}
+	RunNextAction();
 }
 
 void UGOAPActionsComponent::AbortPlan()
@@ -89,6 +118,7 @@ void UGOAPActionsComponent::Reset()
 	CurrentAction = nullptr;
 	ActionQueue.Reset();
 	ActionSet.Reset();
+	StateQueue.Reset();
 }
 
 void UGOAPActionsComponent::QueueAction(UGOAPAction* Action)
@@ -103,6 +133,7 @@ bool UGOAPActionsComponent::IsActionRunning()
 		return false;
 	return CurrentAction->IsActionRunning();
 }
+
 
 bool UGOAPActionsComponent::IsPlanComplete()
 {

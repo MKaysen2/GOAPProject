@@ -7,7 +7,6 @@ FWorldState::FWorldState()
 	{
 		State.Emplace(FWorldProperty((EWorldKey)Key, false));
 	}
-	UE_LOG(LogTemp, Warning, TEXT("WorldState Num: %d"), State.Num());
 }
 
 void FWorldState::Add(const FWorldProperty& Prop)

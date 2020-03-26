@@ -208,3 +208,35 @@ void UAIAct_ReactDisturbance::StopAction(AAIController* Controller)
 	Controller->GetWorldTimerManager().ClearTimer(TimerHandle);
 	Super::StopAction(Controller);
 }
+
+UAIAct_CallbackTest::UAIAct_CallbackTest()
+	: Super()
+{
+
+}
+
+bool UAIAct_CallbackTest::VerifyContext(AAIController* Controller)
+{
+	return true;
+}
+
+void UAIAct_CallbackTest::StartAction(AAIController* Controller)
+{
+	Super::StartAction(Controller);
+
+	if (!Controller)
+	{
+		return;
+	}
+
+	FTimerManager& TimerMgr = Controller->GetWorldTimerManager();
+	FTimerDelegate InDelegate;
+	InDelegate.BindUObject(this, &UAIAct_CallbackTest::StopAction, Controller);
+	TimerMgr.SetTimer(TimerHandle, InDelegate, 3.0f, false);
+}
+
+void UAIAct_CallbackTest::StopAction(AAIController* Controller)
+{
+	Controller->GetWorldTimerManager().ClearTimer(TimerHandle);
+	Super::StopAction(Controller);
+}
