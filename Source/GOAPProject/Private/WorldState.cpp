@@ -1,8 +1,21 @@
 #include "..\Public\WorldState.h"
 
+FWorldState::FWorldState()
+{
+	State.Reserve((int32)EWorldKey::SYMBOL_MAX);
+	for (uint8 Key = 0; Key < (uint8)EWorldKey::SYMBOL_MAX; ++Key)
+	{
+		State.Emplace(FWorldProperty((EWorldKey)Key, false));
+	}
+	UE_LOG(LogTemp, Warning, TEXT("WorldState Num: %d"), State.Num());
+}
+
 void FWorldState::Add(const FWorldProperty& Prop)
 {
-	State.Add(Prop);
+	uint8 Key = (uint8)Prop.key;
+	FWorldProperty& Property = State[Key];
+	Property.bValue = Prop.bValue;
+	Property.bUnsatisfied = true;
 }
 
 bool FWorldState::Apply(const FWorldProperty& Prop) 
@@ -14,22 +27,17 @@ bool FWorldState::Apply(const FWorldProperty& Prop)
 		return false;
 	}
 	State[Idx].bValue = Prop.bValue;
+	State[Idx].bUnsatisfied = false;
 	return true;
 }
 
+
 void FWorldState::AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldProperty Property)
 {
-	if (!Other)
-	{
-		return;
-	}
-	int32 Idx = Other->State.IndexOfByKey(Property);
-	if (Idx == INDEX_NONE)
-	{
-		return;
-	}
-	int32 NewIdx = State.Add(Property);
-	State[NewIdx].MarkSatisfied((Property.bValue == Other->State[Idx].bValue));
+	
+	uint8 Key = (uint8)Property.key;
+	Add(Property);
+	State[Key].MarkSatisfied((Property.bValue == Other->State[Key].bValue));
 }
 
 bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldProperty& Property)
@@ -39,23 +47,23 @@ bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldP
 	{
 		return false;
 	}
-	int32 Idx = State.IndexOfByKey(Property);
-	int32 OtherIdx = Other->State.IndexOfByKey(Property);
-	if (Idx == INDEX_NONE || OtherIdx == INDEX_NONE)
-	{
-		return false;
-	}
-	State[Idx].bValue = Other->State[OtherIdx].bValue;
-	State[Idx].MarkSatisfied(true);
+
+	uint8 Key = (uint8)Property.key;
+	State[Key].bValue = Other->State[Key].bValue;
+	State[Key].MarkSatisfied(true);
 	return true;
 }
 
-bool FWorldState::Satisfied(const FWorldProperty& property) const
+bool FWorldState::Satisfied(const FWorldProperty& Property) const
 {
-	int32 Index =  State.IndexOfByKey(property);
-	if(Index == INDEX_NONE)
-		return false;
-	return (State[Index].bValue == property.bValue);
+	int Idx = (int32)Property.key;
+	return !(State[Idx].bUnsatisfied);
+}
+
+bool FWorldState::IsSatisfied(EWorldKey Key) const
+{
+	int Idx = (int32)Key;
+	return !(State[Idx].bUnsatisfied);
 }
 
 FWorldState* FWorldState::Clone()

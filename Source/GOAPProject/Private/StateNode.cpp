@@ -51,16 +51,16 @@ bool FStateNode::IsGoal()
 }
 
 
-void FStateNode::FindActions(const LookupTable& action_map, TArray<UGOAPAction*>& out_actions)
+void FStateNode::FindActions(const LookupTable& ActionMap, TArray<UGOAPAction*>& out_actions)
 {
 	if (!GoalState)
 		return;
 	auto& Container = CurrentState->expose_container();
-	for (auto Property : Container) {
-		//if the prop is unsatisfied, find an action
-		if (!Property.bSatisfied) 
+	for (uint8 Key = 0U; Key < (uint8)EWorldKey::SYMBOL_MAX; ++Key)
+	{
+		if (!CurrentState->IsSatisfied((EWorldKey)Key))
 		{
-			action_map.MultiFind(Property.key, out_actions);
+			ActionMap.MultiFind((EWorldKey)Key, out_actions);
 		}
 	}
 }
@@ -88,7 +88,7 @@ int FStateNode::CountUnsatisfied()
 	for (auto& Property : Container) {
 		//if the prop is unsatisfied, find an action
 
-		if (!Property.bSatisfied)
+		if (Property.bUnsatisfied)
 		{
 			++iNumUnsatisfied;
 		}

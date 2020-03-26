@@ -7,12 +7,13 @@
 UENUM(BlueprintType)
 enum class EWorldKey : uint8
 {
+	kIdle = 0,
 	kAtLocation,
-	kIdle,
 	kWeaponLoaded,
 	kHasWeapon,
 	kTargetDead,
-	kDisturbanceHandled
+	kDisturbanceHandled,
+	SYMBOL_MAX
 };
 
 USTRUCT(BlueprintType)
@@ -26,15 +27,15 @@ public:
 		bool bValue = false;
 
 	//I believe this should only ever be marked in the planner
-	bool bSatisfied = false;
+	bool bUnsatisfied = false;
 
 	typedef union 
 	{
 		float fValue;
 		int iValue;
 
-	} datatype; 
-	datatype MyVar = { 3.0f };
+	} UnionType; 
+	UnionType uValue = { 3.0f };
 
 	FWorldProperty() = default;
 	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key), bValue(_bValue) {}
@@ -51,6 +52,6 @@ public:
 	
 	void MarkSatisfied(bool bNewSatisfied)
 	{
-		bSatisfied = bNewSatisfied;
+		bUnsatisfied = !bNewSatisfied;
 	}
 };

@@ -20,8 +20,10 @@ class UGOAPAction;
 class UGOAPGoal;
 class UWorldState;
 class AGOAPController;
-/**
- * This is really like a GOAPComponent
+
+/** 
+  AStarComponent
+  Use to generate plans based on the current state and a given goal state and action set
  */
 UCLASS(BlueprintType)
 class GOAPPROJECT_API UAStarComponent : public UActorComponent
@@ -32,6 +34,7 @@ protected:
 	typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
 	LookupTable ActionTable;
 	void GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOAPAction*>& out_plan);
+
 	UPROPERTY()
 		AGOAPController* AIOwner;
 

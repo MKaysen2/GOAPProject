@@ -47,12 +47,6 @@ AGOAPController::AGOAPController()
 	AIMessageDelegate.BindUObject(this, &AGOAPController::OnDamageReceived);
 
 	CurrentState = MakeShared<FWorldState>();
-	CurrentState->Add(FWorldProperty(EWorldKey::kWeaponLoaded, false));
-	CurrentState->Add(FWorldProperty(EWorldKey::kHasWeapon, false));
-	CurrentState->Add(FWorldProperty(EWorldKey::kIdle, false));
-	CurrentState->Add(FWorldProperty(EWorldKey::kAtLocation, false));
-	CurrentState->Add(FWorldProperty(EWorldKey::kTargetDead, false));
-	CurrentState->Add({ EWorldKey::kDisturbanceHandled, false });
 
 	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
 	GoalComponent->OnGoalChanged.BindUObject(this, &AGOAPController::OnGoalChanged);

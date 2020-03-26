@@ -7,6 +7,7 @@
 #include "..\Public\GOAPAction.h"
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\WorldState.h"
+#include "Templates/IsTrivial.h"
 
 #include "Templates/Less.h"
 
@@ -14,7 +15,11 @@ UAStarComponent::UAStarComponent() :
 	Super()
 {
 	MaxDepth = 10;
+	UE_LOG(LogTemp, Warning, TEXT("Is FWorldProperty Trivial: %d"), TIsTrivial<FWorldProperty>::Value);
+	UE_LOG(LogTemp, Warning, TEXT("Is TSharedRef<FWorldProperty> Trivial: %d"), TIsTrivial<TSharedRef<FWorldProperty>>::Value);
+	UE_LOG(LogTemp, Warning, TEXT("Is FWorldState Trivial: %d"), TIsTrivial<FWorldState>::Value);
 }
+
 void UAStarComponent::OnRegister()
 {
 	Super::OnRegister();
@@ -26,8 +31,10 @@ void UAStarComponent::OnUnregister()
 	AIOwner = nullptr;
 	Super::OnUnregister();
 }
+
 bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState, TArray<UGOAPAction*>& Plan) //graph needs to be V, E
 {
+	
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
 	if (!Goal)
@@ -83,7 +90,6 @@ bool UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialSta
 		TSet<UGOAPAction*> VisitedActions;
 		for (auto Action : CandidateActions) 
 		{
-			
 			check(IsValid(Action)); //sanity check
 
 			//verify context preconditions
@@ -132,7 +138,8 @@ void UAStarComponent::GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<UGOA
 	TSharedPtr<FStateNode> current = FoundGoal;
 
 	//The starting node should have a nullptr for the parent node+edge
-	while (current->previous().IsValid() && current->edge()) {
+	while (current->previous().IsValid() && current->edge()) 
+	{
 		FString action_name = current->edge()->GetName();
 		
 		//edge is the action used to reach this node
