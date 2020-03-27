@@ -34,7 +34,6 @@ void UAStarComponent::OnUnregister()
 
 TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState) //graph needs to be V, E
 {
-	UE_LOG(LogWS, Warning, TEXT("Searching"));
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
 	if (!Goal)
@@ -57,7 +56,6 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		fringe.HeapPop(CurrentNode, LessFn);
 		if (!CurrentNode)
 			break;
-		UE_LOG(LogTemp, Warning, TEXT("Fringe Loop"));
 		//This is a regressive search
 		//a goal node g is any node s.t. all values of the node's state match that of the initial state
 		if (CurrentNode->IsGoal())

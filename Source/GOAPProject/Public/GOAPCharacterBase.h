@@ -31,14 +31,7 @@ public:
 		TArray<TSubclassOf<UGOAPGoal>> GetGoalSet();
 
 	UFUNCTION()
-		virtual void RegisterGoals(TArray<TSubclassOf<UGOAPGoal>>& OutArray);
-
-	UFUNCTION()
 		TArray<TSubclassOf<UGOAPAction>> GetActionSet();
-	
-	UFUNCTION()
-		void RegisterActions(TArray<TSubclassOf<UGOAPAction>>& OutArray);
-
 
 	UFUNCTION()
 	void BeginPlay() override;

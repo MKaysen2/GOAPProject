@@ -14,7 +14,10 @@
 
 class AAIController;
 struct FStateNode;
+struct FAIRequestID;
+struct FPathFollowingResult;
 DECLARE_DELEGATE( FActionEndedDelegate );
+
 
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
@@ -49,7 +52,9 @@ public:
 		return edge_cost;
 	}
 	
+	virtual void SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context);
 	//Try to access cached values here rather than perform direct computation
+
 	UFUNCTION()
 	virtual bool VerifyContext(AAIController* Controller) 
 	{
@@ -84,13 +89,17 @@ UCLASS(BlueprintType)
 class GOAPPROJECT_API UAIAct_MoveTo : public UGOAPAction 
 {
 	GENERATED_BODY()
-private:
-
+protected:
+	FDelegateHandle MoveHandle;
 public:
 	UAIAct_MoveTo();
+	void SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context) override;
+	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result, AAIController* Controller);
 	
 	bool VerifyContext(AAIController* controller) override;
-	void StartAction(AAIController * controller) override;
+	void StartAction(AAIController* controller) override;
+	void StopAction(AAIController* Controller) override;
+
 };
 
 UCLASS(BlueprintType)
@@ -104,7 +113,9 @@ public:
 		//Check blackboard for equippable weapon
 		return true;
 	}
+	void SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context) override;
 	void StartAction(AAIController* Controller) override;
+	void StopAction(AAIController* Controller) override;
 };
 
 UCLASS(BlueprintType)
@@ -134,4 +145,5 @@ public:
 	void StartAction(AAIController* Controller) override;
 	void StopAction(AAIController* Controller) override;
 };
+
 typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;

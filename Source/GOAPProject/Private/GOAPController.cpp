@@ -9,7 +9,7 @@
 #include "../Public/GoalSelectionComponent.h"
 #include "Perception\AISenseConfig_Sight.h"
 #include "Perception\AISenseConfig_Hearing.h"
-
+#include "../Public/InteractableObjectInterface.h"
 #include "BehaviorTree\BlackboardComponent.h"
 
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
@@ -131,13 +131,6 @@ void AGOAPController::RePlan()
 	{
 		CurrentGoal->Activate(this);
 		GOAPActionsComponent->StartPlan(Node);
-		/*
-		for (int i = 0; i < 3; ++i)
-		{
-			GOAPActionsComponent->QueueAction(CallbackTester);
-		}
-		GOAPActionsComponent->RunNextAction();
-		*/
 	}
 	
 }

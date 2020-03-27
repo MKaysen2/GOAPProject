@@ -48,6 +48,7 @@ void UGOAPActionsComponent::RunNextAction()
 {
 	if (ActionIdx >= ActionQueue.Num())
 	{
+		Reset();
 		OnPlanCompleted.ExecuteIfBound();
 		return;
 	}
@@ -61,6 +62,7 @@ void UGOAPActionsComponent::RunNextAction()
 			//TODO fire delegate here I think
 			return;
 		}
+		CurrentAction->SetBBTargets(AIOwner, StateQueue[ActionIdx + 1]);
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
 		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::OnActionEnded);
 		CurrentAction->StartAction(AIOwner);
@@ -154,10 +156,11 @@ void UGOAPActionsComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCate
 
 	int PlanSize = ActionQueue.Num();
 	FString PlanInfo;
+	int StateSize = 0;
 	if (PlanSize > 0)
 	{
-
-		PlanInfo = FString::Printf(TEXT("Step %d of %d"), ActionIdx, PlanSize);
+		StateSize = PlanSize + 1;
+		PlanInfo = FString::Printf(TEXT("Step %d of %d "), ActionIdx + 1, PlanSize);
 	}
 	else
 	{
@@ -165,6 +168,9 @@ void UGOAPActionsComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCate
 	}
 
 	DebuggerCategory->AddTextLine(PlanInfo);
+
+	FString StateInfo = FString::Printf(TEXT("Statequeue: %d states (should be %d)"), StateQueue.Num(), StateSize);
+	DebuggerCategory->AddTextLine(StateInfo);
 }
 
 #endif //WITH_GAMEPLAY_DEBUGGER

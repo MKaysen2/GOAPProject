@@ -190,15 +190,17 @@ bool UAIGoal_InteractTest::IsGoalValid(AAIController* Controller)
 {
 	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
 	TArray<AActor*> PerceivedActors;
-	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceivedActors);
+	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
 	for (auto Actor : PerceivedActors)
 	{
 		if (Actor->Implements<UInteractableObjectInterface>())
 		{
 			Goal[0].Apply(FWorldProperty(EWorldKey::kUsingObject, Actor));
+			CacheValidity(true);
 			return true;
 		}
 	}
+	CacheValidity(false);
 	return false;
 }
 

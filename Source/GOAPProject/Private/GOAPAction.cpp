@@ -4,6 +4,7 @@
 #include "..\Public\GOAPCharacterBase.h"
 #include "..\Public\CombatInterface.h"
 #include "..\Public\StateNode.h"
+#include "../Public/GOAPController.h"
 
 #include "AIController.h"
 #include "GameFramework/Character.h"
@@ -24,6 +25,10 @@ UGOAPAction::UGOAPAction(TArray<FWorldProperty>&& Pre, TArray<FWorldProperty>&& 
 	edge_cost(_Cost)
 {
 
+}
+
+void UGOAPAction::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState>)
+{
 }
 
 void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
@@ -93,37 +98,96 @@ UAIAct_MoveTo::UAIAct_MoveTo() :
 {
 }
 
-bool UAIAct_MoveTo::VerifyContext(AAIController* Controller) 
+void UAIAct_MoveTo::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context)
+{
+	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+
+	if (!Context.IsValid() || !BBComp)
+	{
+		return;
+	}
+	const FWorldProperty& Prop = Context->GetProperty(EWorldKey::kAtLocation);
+	if (Prop.DataType != FWorldProperty::Type::kObj)
+	{
+		return;
+	}
+	AActor* Target = Cast<AActor>(Prop.Data.objValue);
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	BBComp->SetValueAsObject(FName("Target"), Target);
+}
+
+void UAIAct_MoveTo::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result, AAIController* Controller)
+{
+	
+	AGOAPController* GOAPOwner = Cast<AGOAPController>(Controller);
+
+	if (GOAPOwner && Result.IsSuccess())
+	{
+		TSharedPtr<FWorldState> WS = GOAPOwner->GetWorldState();
+		UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+		if (WS.IsValid() && BBComp)
+		{
+			UObject* Target = BBComp->GetValueAsObject(FName("Target"));
+			FWorldProperty Prop(EWorldKey::kAtLocation, Target);
+			WS->Apply(Prop);
+		}
+	}
+	this->StopAction(Controller);
+}
+
+bool UAIAct_MoveTo::VerifyContext(AAIController* Controller)
 {
 	return true;
 }
 
 void UAIAct_MoveTo::StartAction(AAIController* Controller) 
 {
-	Super::StartAction(Controller);
+	bIsRunning = true;
 	if (!Controller)
 	{
 		return;
 	}
 	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
-	if (!BBComp)
+	UPathFollowingComponent* PathComp = Controller->GetPathFollowingComponent();
+
+	if (!BBComp || !PathComp)
 	{
 		return;
 	}
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
-	if (TargetActor)
-	{
-		Controller->SetFocus(TargetActor);
-	}
-	ACharacter* Avatar = Cast<ACharacter>(Controller->GetPawn());
-	if (!Avatar)
+	if (!TargetActor)
 	{
 		return;
 	}
-	FVector Location(Avatar->GetActorLocation());
-	FVector Offset(0.0f, -800.0f, 0.0f);
+	
+	Controller->SetFocus(TargetActor);
 
-	Controller->MoveToLocation(Location + Offset);
+	MoveHandle = PathComp->OnRequestFinished.AddUObject(this, &UAIAct_MoveTo::OnMoveCompleted, Controller);
+	Controller->MoveToActor(TargetActor);
+
+}
+
+void UAIAct_MoveTo::StopAction(AAIController* Controller)
+{
+	if (Controller)
+	{
+		Controller->ClearFocus(EAIFocusPriority::Gameplay);
+
+		UPathFollowingComponent* PathComp = Controller->GetPathFollowingComponent();
+		if (PathComp)
+		{
+			PathComp->OnRequestFinished.Remove(MoveHandle);
+		}
+	}
+	MoveHandle.Reset();
+
+	bIsRunning = false;
+
+	OnActionEnded.ExecuteIfBound();
 }
 
 
@@ -137,9 +201,32 @@ UAIAct_Equip::UAIAct_Equip() :
 	
 }
 
+void UAIAct_Equip::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context)
+{
+	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+
+	if (!Context.IsValid() || !BBComp)
+	{
+		return;
+	}
+	const FWorldProperty& Prop = Context->GetProperty(EWorldKey::kAtLocation);
+	if (Prop.DataType != FWorldProperty::Type::kObj)
+	{
+		return;
+	}
+	AActor* Target = Cast<AActor>(Prop.Data.objValue);
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	BBComp->SetValueAsObject(FName("Target"), Target);
+}
+
 void UAIAct_Equip::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
+	UE_LOG(LogTemp, Warning, TEXT("Equip::StartAction Called"));
 
 	APawn* Pawn = Controller->GetPawn();
 	bool bInterface = Pawn->Implements<UCombatInterface>();
@@ -155,7 +242,15 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 	{
 		return;
 	}
-	Controller->SetFocus(nullptr);
+
+
+	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
+	if (!TargetActor)
+	{
+		return;
+	}
+
+	Controller->SetFocus(TargetActor);
 	//Currently, this is the workaround for not being able to add ActionBPs to the character
 	//Once I get around that, then I'll be able to execute animMontages/Movement in the
 	//BP event graph directly
@@ -163,6 +258,13 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 
 }
 
+void UAIAct_Equip::StopAction(AAIController* Controller)
+{
+
+	UE_LOG(LogTemp, Warning, TEXT("Equip::StopAction Called"));
+	Super::StopAction(Controller);
+
+}
 UAIAct_ReactDisturbance::UAIAct_ReactDisturbance() :
 	Super(
 		{},

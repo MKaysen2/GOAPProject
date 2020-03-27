@@ -39,7 +39,7 @@ public:
 	{
 		bool bValue;
 		EWorldKey kValue;
-		UObject* objValue;
+		UObject* objValue; //should make this an actor pointer, not object ptr
 	} Data = { false };
 	//I believe this should only ever be marked in the planner
 	bool bUnsatisfied = false;
