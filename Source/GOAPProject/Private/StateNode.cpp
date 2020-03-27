@@ -76,7 +76,7 @@ void FStateNode::LogNode() const
 	{
 		UE_LOG(LogWS, Warning, TEXT("Node (start)"));
 	}
-	CurrentState->LogWS();
+	CurrentState->LogWS(GoalState.Get());
 }
 
 void FStateNode::TakeAction(const UGOAPAction* Action) 
@@ -99,29 +99,32 @@ void FStateNode::UnapplyProperty(const FWorldProperty& Property)
 {
 	if (Property.DataType == FWorldProperty::Type::kVariable)
 	{
-		//use the key indicated by the property
-		EWorldKey Key = Property.Data.kValue;
-		CurrentState->ApplyFromOther(GoalState.Get(), Key);
+		//I'm not sure if this should be different in the inverse application
+		CurrentState->ApplyFromOther(GoalState.Get(), Property.key);
 	}
 	else
 	{
+		//This is correct
 		CurrentState->ApplyFromOther(GoalState.Get(), Property.key);
 	}
+	CurrentState->ValidateProperty(GoalState.Get(), Property.key);
+
 }
 
 void FStateNode::AddPrecondition(const FWorldProperty& Property)
 {
-	EWorldKey eKey = Property.Data.kValue;
 	if (Property.DataType == FWorldProperty::Type::kVariable && ParentNode.IsValid())
 	{
-		const FStateNode* ParentState = ParentNode.Get();
-		CurrentState->ApplyFromOther(ParentState->CurrentState.Get(), eKey);
-		CurrentState->ValidateProperty(GoalState.Get(), eKey);
+
+		FWorldProperty PropCopy(ParentNode->CurrentState->GetProperty(Property.Data.kValue));
+		PropCopy.key = Property.key;
+		CurrentState->Apply(PropCopy);
 	}
 	else
 	{
-		CurrentState->ApplyFromOther(GoalState.Get(), eKey);
+		CurrentState->Apply(Property);
 	}
+	CurrentState->ValidateProperty(GoalState.Get(), Property.key);
 }
 
 int FStateNode::CountUnsatisfied()

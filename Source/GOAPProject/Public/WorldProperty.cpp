@@ -88,5 +88,5 @@ FString FWorldProperty::ToString() const
 		break;
 	}
 
-	return FString::Printf(TEXT("< %.5s | %.5s | %.5s > : %d"), *KeyString, *TypeString, *DataString, bUnsatisfied);
+	return FString::Printf(TEXT("< %d | %.5s | %.5s > : %d"), (uint8)key, *TypeString, *DataString, bUnsatisfied);
 }

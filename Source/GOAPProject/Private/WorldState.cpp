@@ -10,6 +10,7 @@ DEFINE_LOG_CATEGORY(LogWS);
 FWorldState::FWorldState()
 {
 	State.Reserve((int32)EWorldKey::SYMBOL_MAX);
+	
 	for (uint8 Key = 0; Key < (uint8)EWorldKey::SYMBOL_MAX; ++Key)
 	{
 		State.Emplace(FWorldProperty((EWorldKey)Key, false));
@@ -70,16 +71,33 @@ bool FWorldState::IsSatisfied(EWorldKey Key) const
 	return !(State[Idx].bUnsatisfied);
 }
 
+const FWorldProperty& FWorldState::GetProperty(EWorldKey Key)
+{
+	uint8 Idx = (uint8)Key;
+	return State[Idx];
+}
+
 FWorldState* FWorldState::Clone()
 {
 	return (new FWorldState(*this));
 }
 
-void FWorldState::LogWS() const
+void FWorldState::LogWS(const FWorldState* Other) const
 {
-	for (auto& Property : State)
+	if (!Other)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Property.ToString());
+		for (auto& Property : State)
+		{
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *Property.ToString());
+		}
+	}
+	else
+	{
+		for (auto& Property : State)
+		{
+			bool bWasValid = EqualsTest(Other, Property.key);
+			UE_LOG(LogTemp, Warning, TEXT("%s | test result: %d"), *Property.ToString(), bWasValid);
+		}
 	}
 }
 

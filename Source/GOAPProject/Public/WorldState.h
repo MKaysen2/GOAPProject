@@ -31,13 +31,23 @@ public:
 	bool Satisfied(const FWorldProperty& prop) const;
 	bool IsSatisfied(EWorldKey Key) const;
 
+	const FWorldProperty& GetProperty(EWorldKey Key);
 	const TArray<FWorldProperty>& expose_container()const { //i don't want to but i feel like i have to
 		return State;
 	}
 
+	bool EqualsTest(const FWorldState* Other, EWorldKey Key) const
+	{
+		if (!Other)
+		{
+			return false;
+		}
+		uint8 Idx = (uint8)Key;
+		return State[Idx].Equals(Other->State[Idx]);
+	}
 	FWorldState* Clone();
 
-	void LogWS() const;
+	void LogWS(const FWorldState* Other = nullptr) const;
 #if WITH_GAMEPLAY_DEBUGGER
 	void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
 #endif //WITH_GAMEPLAY_DEBUGGER

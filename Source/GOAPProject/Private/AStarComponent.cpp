@@ -57,7 +57,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		fringe.HeapPop(CurrentNode, LessFn);
 		if (!CurrentNode)
 			break;
-		CurrentNode->LogNode();
+		UE_LOG(LogTemp, Warning, TEXT("Fringe Loop"));
 		//This is a regressive search
 		//a goal node g is any node s.t. all values of the node's state match that of the initial state
 		if (CurrentNode->IsGoal())
