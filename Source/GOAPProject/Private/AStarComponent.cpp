@@ -34,7 +34,7 @@ void UAStarComponent::OnUnregister()
 
 TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState) //graph needs to be V, E
 {
-	
+	UE_LOG(LogWS, Warning, TEXT("Searching"));
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
 	if (!Goal)
@@ -57,7 +57,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		fringe.HeapPop(CurrentNode, LessFn);
 		if (!CurrentNode)
 			break;
-		
+		CurrentNode->LogNode();
 		//This is a regressive search
 		//a goal node g is any node s.t. all values of the node's state match that of the initial state
 		if (CurrentNode->IsGoal())
@@ -129,18 +129,5 @@ void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 		{
 			ActionTable.AddUnique(Effect.key, Action);
 		}
-	}
-}
-
-void UAStarComponent::GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<TSharedPtr<FStateNode>>& plan) 
-{
-	TSharedPtr<FStateNode> current = FoundGoal;
-
-	//The starting node should have a nullptr for the parent node+edge
-	while (current->previous().IsValid() && current->edge()) 
-	{
-		FString action_name = current->edge()->GetName();
-		plan.Emplace(current);
-		current = current->previous();
 	}
 }

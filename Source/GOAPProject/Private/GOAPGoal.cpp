@@ -1,5 +1,7 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\GOAPCharacterBase.h"
+#include "..\Public\InteractableObjectInterface.h"
+
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -168,11 +170,39 @@ void UAIGoal_InvestigateNoise::Activate(AAIController* Controller)
 		return;
 	}
 	const FActorPerceptionInfo* Info = PerceptionComponent->GetActorInfo(*Actor);
-	
+
 	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
 	if (!Info || !BBComponent)
 	{
 		return;
 	}
 	BBComponent->SetValueAsVector(FName("TargetLocation"), Info->GetLastStimulusLocation());
+}
+
+UAIGoal_InteractTest::UAIGoal_InteractTest() :
+	Super()
+{
+	LastPriority = 20.0f;
+	Goal.Add(FWorldProperty(EWorldKey::kUsingObject, true));
+}
+
+bool UAIGoal_InteractTest::IsGoalValid(AAIController* Controller)
+{
+	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
+	TArray<AActor*> PerceivedActors;
+	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceivedActors);
+	for (auto Actor : PerceivedActors)
+	{
+		if (Actor->Implements<UInteractableObjectInterface>())
+		{
+			Goal[0].Apply(FWorldProperty(EWorldKey::kUsingObject, Actor));
+			return true;
+		}
+	}
+	return false;
+}
+
+void UAIGoal_InteractTest::Activate(AAIController* Controller)
+{
+	Super::Activate(Controller);
 }

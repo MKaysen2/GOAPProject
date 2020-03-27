@@ -4,6 +4,8 @@
 #include "Containers/Union.h"
 #include "WorldProperty.generated.h"
 
+#define GETENUMSTRING(etype, evalue) ( (FindObject<UEnum>(nullptr, TEXT(etype), true) != nullptr) ? FindObject<UEnum>(nullptr, TEXT(etype), true)->GetNameStringByIndex((int32)evalue) : FString("Invalid - are you sure enum uses UENUM() macro?") )
+
 UENUM(BlueprintType)
 enum class EWorldKey : uint8
 {
@@ -13,6 +15,7 @@ enum class EWorldKey : uint8
 	kHasWeapon,
 	kTargetDead,
 	kDisturbanceHandled,
+	kUsingObject,
 	SYMBOL_MAX
 };
 
@@ -28,23 +31,33 @@ public:
 	enum class Type
 	{
 		kBool,
-		kVar
+		kVariable,
+		kObj
 	} DataType = Type::kBool;
 
 	union
 	{
 		bool bValue;
-		uint8 nValue;
+		EWorldKey kValue;
+		UObject* objValue;
 	} Data = { false };
 	//I believe this should only ever be marked in the planner
 	bool bUnsatisfied = false;
 
 
 	FWorldProperty() = default;
-	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key) 
+	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key), DataType(Type::kBool)
 	{
-		DataType = Type::kBool;
+		
 		Data.bValue = _bValue;
+	}
+	FWorldProperty(EWorldKey _key, EWorldKey varLookup) : key(_key), DataType(Type::kVariable)
+	{
+		Data.kValue = varLookup;
+	}
+	FWorldProperty(EWorldKey _key, UObject* objValue) : key(_key), DataType(Type::kObj)
+	{
+		Data.objValue = objValue;
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
@@ -58,41 +71,9 @@ public:
 	}
 
 	//eventually this will be moved into == operator after I make keyfuncs
-	bool Equals(const FWorldProperty& rhs)
-	{
-		if(rhs.DataType != this->DataType)
-		{
-			return false;
-		}
-		switch (DataType)
-		{
-		case Type::kBool:
-			return rhs.Data.bValue == this->Data.bValue;
-			break;
+	bool Equals(const FWorldProperty& rhs);
 
-		default:
-			return false;
-		}
-			
-	}
-
-	bool Equals(const FWorldProperty& rhs) const
-	{
-		if (rhs.DataType != this->DataType)
-		{
-			return false;
-		}
-		switch (DataType)
-		{
-		case Type::kBool:
-			return rhs.Data.bValue == this->Data.bValue;
-			break;
-
-		default:
-			return false;
-		}
-
-	}
+	bool Equals(const FWorldProperty& rhs) const;
 
 	void Apply(const FWorldProperty& Other);
 
@@ -100,4 +81,7 @@ public:
 	{
 		bUnsatisfied = !bNewSatisfied;
 	}
+
+	FString ToString() const;
+
 };

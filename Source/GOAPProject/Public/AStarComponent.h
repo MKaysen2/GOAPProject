@@ -33,7 +33,6 @@ class GOAPPROJECT_API UAStarComponent : public UActorComponent
 protected:
 	typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
 	LookupTable ActionTable;
-	void GeneratePlan(TSharedPtr<FStateNode> FoundGoal, TArray<TSharedPtr<FStateNode>>& out_plan);
 
 	UPROPERTY()
 		AGOAPController* AIOwner;

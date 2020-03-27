@@ -25,7 +25,8 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 	CurrentState = MakeShared<FWorldState>();
 	for (auto Property : GoalSet)
 	{
-		CurrentState->AddPropertyAndTrySatisfy(GoalState.Get(), Property);
+		CurrentState->Add(Property);
+		CurrentState->ValidateProperty(GoalState.Get(), Property.key);
 	}
 	unsatisfied = CountUnsatisfied();
 }
@@ -65,20 +66,62 @@ void FStateNode::FindActions(const LookupTable& ActionMap, TArray<UGOAPAction*>&
 	}
 }
 
+void FStateNode::LogNode() const
+{
+	if (ParentEdge)
+	{
+		UE_LOG(LogWS, Warning, TEXT("Parent edge: %.8s"), *ParentEdge->GetName());
+	}
+	else
+	{
+		UE_LOG(LogWS, Warning, TEXT("Node (start)"));
+	}
+	CurrentState->LogWS();
+}
+
 void FStateNode::TakeAction(const UGOAPAction* Action) 
 {
 	if (!CurrentState.IsValid() || !GoalState.IsValid())
 	{
 		return;
 	}
-	Action->UnapplySymbolicEffects(*CurrentState, *GoalState);
+	Action->UnapplySymbolicEffects(this);
 	
-	Action->AddUnsatisfiedPreconditions(*CurrentState, *GoalState);
+	Action->AddUnsatisfiedPreconditions(this);
 
 	unsatisfied = CountUnsatisfied();
 	
 	//add cost of action to produce current total forward cost
 	forward_cost += Action->Cost();
+}
+
+void FStateNode::UnapplyProperty(const FWorldProperty& Property)
+{
+	if (Property.DataType == FWorldProperty::Type::kVariable)
+	{
+		//use the key indicated by the property
+		EWorldKey Key = Property.Data.kValue;
+		CurrentState->ApplyFromOther(GoalState.Get(), Key);
+	}
+	else
+	{
+		CurrentState->ApplyFromOther(GoalState.Get(), Property.key);
+	}
+}
+
+void FStateNode::AddPrecondition(const FWorldProperty& Property)
+{
+	EWorldKey eKey = Property.Data.kValue;
+	if (Property.DataType == FWorldProperty::Type::kVariable && ParentNode.IsValid())
+	{
+		const FStateNode* ParentState = ParentNode.Get();
+		CurrentState->ApplyFromOther(ParentState->CurrentState.Get(), eKey);
+		CurrentState->ValidateProperty(GoalState.Get(), eKey);
+	}
+	else
+	{
+		CurrentState->ApplyFromOther(GoalState.Get(), eKey);
+	}
 }
 
 int FStateNode::CountUnsatisfied()

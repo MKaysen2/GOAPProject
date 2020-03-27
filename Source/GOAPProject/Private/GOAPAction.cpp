@@ -3,6 +3,8 @@
 #include "..\Public\GOAPAction.h"
 #include "..\Public\GOAPCharacterBase.h"
 #include "..\Public\CombatInterface.h"
+#include "..\Public\StateNode.h"
+
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -32,24 +34,20 @@ void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
 	}
 }
 
-int UGOAPAction::UnapplySymbolicEffects(FWorldState& CurrentState, const FWorldState& GoalState) const
+void UGOAPAction::UnapplySymbolicEffects(FStateNode* Node) const
 {
-	//TODO: solve variable properties by getting value indicated by prop
-	//I think FName()s are pre-generated to integers so might be able to use
-	//that to store blackboard keys or something
-	int satisfied = 0;
+
 	for (auto& Prop : effects)
 	{
-		CurrentState.TrySatisfyPropertyFrom(&GoalState, Prop);
+		Node->UnapplyProperty(Prop);
 	}
-	return satisfied;
 }
 
-void UGOAPAction::AddUnsatisfiedPreconditions(FWorldState& CurrentState, const FWorldState& GoalState) const
+void UGOAPAction::AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const
 {
-	for (auto Property : preconditions) //by value so should be ok to modify
+	for (auto& Property : preconditions) //by value so should be ok to modify
 	{
-		CurrentState.AddPropertyAndTrySatisfy(&GoalState, Property);
+		CurrentNode->AddPrecondition(Property);
 	}
 }
 
@@ -89,7 +87,7 @@ bool UGOAPAction::IsActionRunning()
 UAIAct_MoveTo::UAIAct_MoveTo() : 
 	Super(
 		{},
-		{ FWorldProperty(EWorldKey::kAtLocation, true) },
+		{ FWorldProperty(EWorldKey::kAtLocation, EWorldKey::kAtLocation) }, //Whatever the parent specified as the location
 		10
 	)
 {
@@ -131,8 +129,8 @@ void UAIAct_MoveTo::StartAction(AAIController* Controller)
 
 UAIAct_Equip::UAIAct_Equip() : 
 	Super(
-		{},
-		{ FWorldProperty(EWorldKey::kHasWeapon, true)},
+		{ FWorldProperty(EWorldKey::kAtLocation, EWorldKey::kUsingObject) }, //i.e. we must be at the object to use it
+		{ FWorldProperty(EWorldKey::kUsingObject, EWorldKey::kUsingObject)}, //use specified object
 		1
 	)
 {

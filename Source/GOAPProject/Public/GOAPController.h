@@ -97,4 +97,6 @@ public:
 
 	UFUNCTION()
 		UGoalSelectionComponent* GetGoalSelectionComponent() { return GoalComponent; }
+
+	TSharedPtr<FWorldState> GetWorldState() { return CurrentState; }
 };

@@ -1,5 +1,12 @@
 #include "..\Public\WorldState.h"
 
+#if WITH_GAMEPLAY_DEBUGGER
+#include "GameplayDebuggerTypes.h"
+#include "GameplayDebuggerCategory.h"
+#endif
+
+DEFINE_LOG_CATEGORY(LogWS);
+
 FWorldState::FWorldState()
 {
 	State.Reserve((int32)EWorldKey::SYMBOL_MAX);
@@ -26,17 +33,18 @@ bool FWorldState::Apply(const FWorldProperty& Prop)
 	return true;
 }
 
-
-void FWorldState::AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldProperty Property)
+void FWorldState::ValidateProperty(const FWorldState* Other, EWorldKey Key)
 {
-	
-	uint8 Key = (uint8)Property.key;
-	Add(Property);
-	bool bEquals = Other->State[Key].Equals(Property);
-	State[Key].MarkSatisfied(bEquals);
+	uint8 eKey = (uint8)Key;
+	if (!Other)
+	{
+		return;
+	}
+	bool bEquals = State[eKey].Equals(Other->State[eKey]);
+	State[eKey].MarkSatisfied(bEquals);
 }
 
-bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldProperty& Property)
+bool FWorldState::ApplyFromOther(const FWorldState* Other, EWorldKey eKey)
 {
 
 	if (!Other)
@@ -44,7 +52,7 @@ bool FWorldState::TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldP
 		return false;
 	}
 
-	uint8 Key = (uint8)Property.key;
+	uint8 Key = (uint8)eKey;
 	State[Key].Apply(Other->State[Key]);
 	State[Key].MarkSatisfied(true);
 	return true;
@@ -66,3 +74,25 @@ FWorldState* FWorldState::Clone()
 {
 	return (new FWorldState(*this));
 }
+
+void FWorldState::LogWS() const
+{
+	for (auto& Property : State)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *Property.ToString());
+	}
+}
+
+#if WITH_GAMEPLAY_DEBUGGER
+
+void FWorldState::DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const
+{
+	DebuggerCategory->AddTextLine(FString(TEXT("WorldState")));
+
+	for (auto& Property : State)
+	{
+		DebuggerCategory->AddTextLine(Property.ToString());
+	}
+}
+
+#endif //WITH_GAMEPLAY_DEBUGGER

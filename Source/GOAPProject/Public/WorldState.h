@@ -5,6 +5,11 @@
 #include "WorldProperty.h"
 #include "WorldState.generated.h"
 
+struct FStateNode;
+class FGameplayDebuggerCategory;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogWS, Warning, All);
+
 USTRUCT(BlueprintType)
 struct GOAPPROJECT_API FWorldState
 {
@@ -17,10 +22,11 @@ private:
 
 public:
 	FWorldState();
-	void AddPropertyAndTrySatisfy(const FWorldState* Other, FWorldProperty Property);
 	void Add(const FWorldProperty& prop);
 	bool Apply(const FWorldProperty& property);
-	bool TrySatisfyPropertyFrom(const FWorldState* Other, const FWorldProperty& Property);
+	bool ApplyFromOther(const FWorldState* Other, EWorldKey Key);
+	void ValidateProperty(const FWorldState* Other, EWorldKey Key);
+
 	//True when prop is element in state and state's value for key matches prop's value
 	bool Satisfied(const FWorldProperty& prop) const;
 	bool IsSatisfied(EWorldKey Key) const;
@@ -30,5 +36,11 @@ public:
 	}
 
 	FWorldState* Clone();
+
+	void LogWS() const;
+#if WITH_GAMEPLAY_DEBUGGER
+	void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
+#endif //WITH_GAMEPLAY_DEBUGGER
+
 };
 

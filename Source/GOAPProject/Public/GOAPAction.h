@@ -13,7 +13,7 @@
 #include "GOAPAction.generated.h"
 
 class AAIController;
-
+struct FStateNode;
 DECLARE_DELEGATE( FActionEndedDelegate );
 
 //Analogous to FSM States
@@ -66,11 +66,9 @@ public:
 	//reverse application of action
 	//Returns number of successfully satisfied properties
 	//TODO: Variable-Valued symbols
-	UFUNCTION()
-	virtual int UnapplySymbolicEffects(FWorldState& CurrentState, const FWorldState& GoalState) const;
+	virtual void UnapplySymbolicEffects(FStateNode* CurrentNode) const;
 
-	UFUNCTION()
-		void AddUnsatisfiedPreconditions(FWorldState& CurrentState, const FWorldState& GoalState) const;
+	void AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const;
 	FActionEndedDelegate OnActionEnded;
 
 	UFUNCTION()

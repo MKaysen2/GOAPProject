@@ -73,3 +73,13 @@ public:
 	bool IsGoalValid(AAIController* Controller) override;
 	void Activate(AAIController* Controller) override;
 };
+
+UCLASS()
+class UAIGoal_InteractTest : public UGOAPGoal
+{
+	GENERATED_BODY()
+public:
+	UAIGoal_InteractTest();
+	bool IsGoalValid(AAIController* Controller) override;
+	void Activate(AAIController* Controller) override;
+};

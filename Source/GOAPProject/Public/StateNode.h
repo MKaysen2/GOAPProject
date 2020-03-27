@@ -29,6 +29,7 @@ private:
 		TSharedPtr<FWorldState> GoalState; //Not a new object
 
 		TSharedPtr<FStateNode> ParentNode;
+
 	UPROPERTY()
 		UGOAPAction* ParentEdge;
 
@@ -48,19 +49,28 @@ public:
 
 	int cost() const;
 	void TakeAction(const UGOAPAction* action);
-
+	void UnapplyProperty(const FWorldProperty& Property);
+	void AddPrecondition(const FWorldProperty& Property);
 
 	bool IsGoal();
 	void FindActions(const LookupTable& action_map, TArray<UGOAPAction*>& out_actions);
+	void LogNode() const;
 
+	void LogGoal() const 
+	{
+		UE_LOG(LogWS, Warning, TEXT("(Goal)"));
+		GoalState->LogWS();
+	}
 	TSharedPtr<FWorldState> GetState()
 	{
 		return CurrentState;
 	}
-	UGOAPAction* edge() {
+	UGOAPAction* edge() 
+	{
 		return ParentEdge;
 	}
-	TSharedPtr<FStateNode> previous() {
+	TSharedPtr<FStateNode> previous() 
+	{
 		return ParentNode;
 	}
 };

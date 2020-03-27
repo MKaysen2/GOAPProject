@@ -39,6 +39,12 @@ void FGameplayDebuggerCategory_GOAP::CollectData(APlayerController* OwnerPC, AAc
 			{
 				GoalsComp->DescribeSelfToGameplayDebugger(this);
 			}
+
+			TSharedPtr<FWorldState> WS = GOAPAI->GetWorldState();
+			if (WS.IsValid())
+			{
+				WS->DescribeSelfToGameplayDebugger(this);
+			}
 		}
 	}
 }
