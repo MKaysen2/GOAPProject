@@ -110,6 +110,7 @@ void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulu
 
 void AGOAPController::RePlan() 
 {
+	//TODO: limit number of RePlans per tick to 
 	UGOAPGoal* CurrentGoal = GoalComponent->GetCurrentGoal();
 	GOAPActionsComponent->AbortPlan();
 	if (CurrentGoal == nullptr)

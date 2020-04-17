@@ -27,10 +27,10 @@ public:
 	bool ApplyFromOther(const FWorldState* Other, EWorldKey Key);
 	void ValidateProperty(const FWorldState* Other, EWorldKey Key);
 
-	//True when prop is element in state and state's value for key matches prop's value
+	//redundant, should combine
+	//checks flag on struct so other state is not passed in
 	bool Satisfied(const FWorldProperty& prop) const;
 	bool IsSatisfied(EWorldKey Key) const;
-
 	const FWorldProperty& GetProperty(EWorldKey Key);
 	const TArray<FWorldProperty>& expose_container()const { //i don't want to but i feel like i have to
 		return State;

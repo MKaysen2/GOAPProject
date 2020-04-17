@@ -10,7 +10,8 @@ FStateNode::FStateNode() :
 	unsatisfied(0),
 	Depth(0)
 {
-	UE_LOG(LogTemp, Warning, TEXT("FStateNode default constructor"));
+	//UE_LOG(LogTemp, Warning, TEXT("FStateNode default constructor"));
+	//Not sure this is ever used
 }
 
 FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldState> InitialState) :
@@ -46,11 +47,11 @@ int FStateNode::cost() const
 {
 	return forward_cost + unsatisfied;
 }
+
 bool FStateNode::IsGoal() 
 {
 	return unsatisfied <= 0;
 }
-
 
 void FStateNode::FindActions(const LookupTable& ActionMap, TArray<UGOAPAction*>& out_actions)
 {
@@ -85,8 +86,11 @@ void FStateNode::TakeAction(const UGOAPAction* Action)
 	{
 		return;
 	}
+
+	//resolve worldstate
 	Action->UnapplySymbolicEffects(this);
-	
+
+	//Add preconditions and determine if satisfied
 	Action->AddUnsatisfiedPreconditions(this);
 
 	unsatisfied = CountUnsatisfied();
@@ -113,9 +117,11 @@ void FStateNode::UnapplyProperty(const FWorldProperty& Property)
 
 void FStateNode::AddPrecondition(const FWorldProperty& Property)
 {
+
+	//Variable : lookup value in other prop 
+	//(non-recursive, props in all world states are assumed const)
 	if (Property.DataType == FWorldProperty::Type::kVariable && ParentNode.IsValid())
 	{
-
 		FWorldProperty PropCopy(ParentNode->CurrentState->GetProperty(Property.Data.kValue));
 		PropCopy.key = Property.key;
 		CurrentState->Apply(PropCopy);
@@ -130,7 +136,7 @@ void FStateNode::AddPrecondition(const FWorldProperty& Property)
 int FStateNode::CountUnsatisfied()
 {
 	int iNumUnsatisfied = 0;
-	auto& Container = CurrentState->expose_container();
+	auto& Container = CurrentState->expose_container(); //should change this now that all WS contain all props
 	for (auto& Property : Container) {
 		//if the prop is unsatisfied, find an action
 

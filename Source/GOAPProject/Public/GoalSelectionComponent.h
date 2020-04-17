@@ -32,11 +32,8 @@ public:
 	UFUNCTION()
 		UGOAPGoal* GetCurrentGoal();
 
-	//TODO: move this into a separate componennt
 	UFUNCTION()
 		void ReEvaluateGoals();
-	UFUNCTION()
-		bool HasGoalChanged();
 
 	//It would be cool to dynamically update available goals
 	UFUNCTION()

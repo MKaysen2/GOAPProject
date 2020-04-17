@@ -28,7 +28,7 @@ class AGOAPController;
 UCLASS(BlueprintType)
 class GOAPPROJECT_API UAStarComponent : public UActorComponent
 {
-	
+
 	GENERATED_BODY()
 protected:
 	typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
@@ -43,6 +43,7 @@ public:
 	UAStarComponent();
 	void OnRegister() override;
 	void OnUnregister() override;
+
 	TSharedPtr<FStateNode> Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState);
 
 	void ClearLookupTable();

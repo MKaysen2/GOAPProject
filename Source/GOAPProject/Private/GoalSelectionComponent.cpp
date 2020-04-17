@@ -60,14 +60,6 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 	}
 }
 
-
-bool UGoalSelectionComponent::HasGoalChanged()
-{
-	bool bGoalChanged = (NextGoal != CurrentGoal);
-	CurrentGoal = NextGoal;
-	return bGoalChanged;
-}
-
 void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 {
 	//Null if not a valid subclass
@@ -80,7 +72,6 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 
 void UGoalSelectionComponent::OnGoalCompleted()
 {
-	//TODO: deactivate goal here
 	CurrentGoal->Deactivate(AIOwner);
 	CurrentGoal = nullptr;
 	ReEvaluateGoals();
