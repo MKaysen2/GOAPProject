@@ -29,6 +29,8 @@ public:
 	UGoalSelectionComponent();
 	UFUNCTION()
 		virtual void OnRegister() override;
+	
+	void TickComponent( float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION()
 		UGOAPGoal* GetCurrentGoal();

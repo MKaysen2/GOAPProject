@@ -8,8 +8,8 @@
 
 UGoalSelectionComponent::UGoalSelectionComponent() : Super() 
 {
-	PrimaryComponentTick.bCanEverTick = false;
-	PrimaryComponentTick.TickInterval = .1f;
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.TickInterval = .2f;
 }
 
 void UGoalSelectionComponent::OnRegister()
@@ -18,6 +18,11 @@ void UGoalSelectionComponent::OnRegister()
 	CurrentGoal = nullptr;
 	NextGoal = nullptr;
 	AIOwner = Cast<AAIController>(GetOwner());
+}
+
+void UGoalSelectionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+
 }
 
 UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
