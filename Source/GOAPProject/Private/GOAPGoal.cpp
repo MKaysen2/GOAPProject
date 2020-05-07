@@ -55,7 +55,7 @@ float UGOAPGoal::Priority() const
 
 UAIGoal_KillEnemy::UAIGoal_KillEnemy() : Super()
 {
-	LastPriority = 30.0f; //constant value for now
+	LastPriority = 0.0f; //constant value for now
 	Goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
@@ -72,6 +72,19 @@ bool UAIGoal_KillEnemy::IsGoalValid(AAIController* Controller)
 void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 {
 	Super::Activate(Controller);
+
+	
+	if (CachedTarget == nullptr)
+	{
+		return;
+	}
+	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
+	BBComponent->SetValueAsObject(FName("Target"), CachedTarget);
+}
+
+void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
+{
+	LastPriority = 0.0f;
 
 	if (!Controller)
 	{
@@ -90,7 +103,7 @@ void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 	AActor* Target = nullptr;
 	FVector Location(ControlledPawn->GetActorLocation());
 	float TargetDistance = 0.0f;
-	for (auto Actor : PerceivedActors)
+	for (auto* Actor : PerceivedActors)
 	{
 		if (!Actor)
 		{
@@ -116,12 +129,8 @@ void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 	{
 		return;
 	}
-	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
-	BBComponent->SetValueAsObject(FName("Target"), Target);
-}
-
-void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
-{
+	LastPriority = TargetDistance;
+	CachedTarget = Target;
 }
 
 UAIGoal_InteractTest::UAIGoal_InteractTest() :
@@ -136,7 +145,7 @@ bool UAIGoal_InteractTest::IsGoalValid(AAIController* Controller)
 	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
 	TArray<AActor*> PerceivedActors;
 	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
-	for (auto Actor : PerceivedActors)
+	for (auto* Actor : PerceivedActors)
 	{
 		if (Actor->Implements<UInteractableObjectInterface>())
 		{

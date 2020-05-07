@@ -85,7 +85,7 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	GoalComponent->RegisterGoalSet(GOAPPawn->GetGoalSet());
 	GOAPActionsComponent->RegisterActionSet(GOAPPawn->GetActionSet());
 	AStarComponent->CreateLookupTable(GOAPActionsComponent->GetActionSet());
-	GoalComponent->ReEvaluateGoals();
+	//GoalComponent->ReEvaluateGoals();
 
 }
 
@@ -105,7 +105,7 @@ void AGOAPController::Tick(float DeltaSeconds)
 
 void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	GoalComponent->ReEvaluateGoals();
+	//GoalComponent->ReEvaluateGoals();
 }
 
 void AGOAPController::RePlan() 
@@ -124,8 +124,11 @@ void AGOAPController::RePlan()
 	
 	if (Node.IsValid())
 	{
-		CurrentGoal->Activate(this);
 		GOAPActionsComponent->StartPlan(Node);
+	}
+	else
+	{
+		GoalComponent->OnGoalCompleted();
 	}
 	
 }

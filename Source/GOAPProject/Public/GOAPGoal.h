@@ -48,6 +48,9 @@ UCLASS()
 class UAIGoal_KillEnemy : public UGOAPGoal
 {
 	GENERATED_BODY()
+
+		UPROPERTY()
+		AActor* CachedTarget;
 public:
 	UAIGoal_KillEnemy();
 	bool IsGoalValid(AAIController* Controller) override;

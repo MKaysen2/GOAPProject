@@ -22,7 +22,8 @@ void UGoalSelectionComponent::OnRegister()
 
 void UGoalSelectionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-
+	ReEvaluateGoals();
+	//If new active goal or change in active goal's priority, fire goalChanged delegate
 }
 
 UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
@@ -34,7 +35,7 @@ UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
 void UGoalSelectionComponent::ReEvaluateGoals()
 {
 	NextGoal = nullptr;
-	for (auto Goal : GoalSet)
+	for (auto* Goal : GoalSet)
 	{
 		if (Goal->IsGoalValid(AIOwner))
 		{
@@ -61,6 +62,7 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 			CurrentGoal->Deactivate(AIOwner);
 		}
 		CurrentGoal = NextGoal;
+		CurrentGoal->Activate(AIOwner);
 		OnGoalChanged.ExecuteIfBound(CurrentGoal);
 	}
 }
@@ -79,7 +81,6 @@ void UGoalSelectionComponent::OnGoalCompleted()
 {
 	CurrentGoal->Deactivate(AIOwner);
 	CurrentGoal = nullptr;
-	ReEvaluateGoals();
 }
 
 void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet)

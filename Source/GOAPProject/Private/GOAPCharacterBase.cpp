@@ -24,8 +24,8 @@ void AGOAPCharacterBase::PostInitProperties()
 TArray<TSubclassOf<UGOAPGoal>> AGOAPCharacterBase::GetGoalSet()
 {
 	return {
-		//UAIGoal_KillEnemy::StaticClass(), 
-		UAIGoal_InteractTest::StaticClass()
+		UAIGoal_KillEnemy::StaticClass(), 
+		//UAIGoal_InteractTest::StaticClass()
 	};
 }
 
@@ -33,10 +33,10 @@ TArray<TSubclassOf<UGOAPAction>> AGOAPCharacterBase::GetActionSet()
 {
 	return
 	{
-		//UAIAct_Attack::StaticClass(), 
-		UAIAct_Equip::StaticClass(),
-		UAIAct_MoveTo::StaticClass()
-		//UAIAct_Reload::StaticClass(), 
+		UAIAct_Attack::StaticClass(), 
+		//UAIAct_Equip::StaticClass(),
+		UAIAct_MoveTo::StaticClass(),
+		UAIAct_Reload::StaticClass(), 
 		//UAIAct_ReactDisturbance::StaticClass()
 	};
 }
