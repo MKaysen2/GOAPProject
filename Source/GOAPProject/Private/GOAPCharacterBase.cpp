@@ -24,16 +24,13 @@ void AGOAPCharacterBase::PostInitProperties()
 TArray<TSubclassOf<UGOAPGoal>> AGOAPCharacterBase::GetGoalSet()
 {
 	return {
-		//UAIGoal_Wander::StaticClass(), 
 		//UAIGoal_KillEnemy::StaticClass(), 
-		//UAIGoal_InvestigateNoise::StaticClass(),
 		UAIGoal_InteractTest::StaticClass()
 	};
 }
 
 TArray<TSubclassOf<UGOAPAction>> AGOAPCharacterBase::GetActionSet()
 {
-
 	return
 	{
 		//UAIAct_Attack::StaticClass(), 

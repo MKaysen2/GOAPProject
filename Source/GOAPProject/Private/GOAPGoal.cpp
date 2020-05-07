@@ -29,6 +29,11 @@ bool UGOAPGoal::IsGoalValid(AAIController* Controller)
 	return false;
 }
 
+bool UGOAPGoal::IsGoalStillValid(AAIController* Controller)
+{
+	return false;
+}
+
 void UGOAPGoal::ReCalcPriority(AAIController* Controller)
 {
 }
@@ -117,66 +122,6 @@ void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 
 void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
 {
-}
-
-UAIGoal_Wander::UAIGoal_Wander() : Super()
-{
-	LastPriority = 10.0f;
-	Goal.Add(FWorldProperty(EWorldKey::kAtLocation, true));
-}
-
-bool UAIGoal_Wander::IsGoalValid(AAIController* Controller)
-{
-	return false;
-}
-
-void UAIGoal_Wander::Activate(AAIController* Controller)
-{
-	Super::Activate(Controller);
-}
-
-void UAIGoal_Wander::ReCalcPriority(AAIController* Controller)
-{
-
-}
-
-UAIGoal_InvestigateNoise::UAIGoal_InvestigateNoise() :
-	Super()
-{
-	LastPriority = 20.0f;
-	Goal.Add(FWorldProperty(EWorldKey::kDisturbanceHandled, true));
-}
-
-bool UAIGoal_InvestigateNoise::IsGoalValid(AAIController* Controller)
-{
-	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
-	TArray<AActor*> PerceivedActors;
-	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceivedActors);
-	bool bSensedActor = PerceivedActors.Num() > 0;
-	CacheValidity(bSensedActor);
-	return bSensedActor;
-}
-
-void UAIGoal_InvestigateNoise::Activate(AAIController* Controller)
-{
-	Super::Activate(Controller);
-
-	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
-	TArray<AActor*> PerceivedActors;
-	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceivedActors);
-	AActor* Actor = PerceivedActors[0]; //just going to get the first actor for now
-	if (!Actor)
-	{
-		return;
-	}
-	const FActorPerceptionInfo* Info = PerceptionComponent->GetActorInfo(*Actor);
-
-	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
-	if (!Info || !BBComponent)
-	{
-		return;
-	}
-	BBComponent->SetValueAsVector(FName("TargetLocation"), Info->GetLastStimulusLocation());
 }
 
 UAIGoal_InteractTest::UAIGoal_InteractTest() :

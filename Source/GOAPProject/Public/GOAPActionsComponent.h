@@ -28,8 +28,10 @@ protected:
 	UPROPERTY(Transient)
 		TArray<UGOAPAction*> ActionQueue;
 
-	//variable values are solved through the planner and actions are not instanced,
+	//variable values are solved through the planner
 	//so a record of the solved world state is necessary to retrieve the correct context information
+	//That, or certain context info needs to be stored in the actions in a way that won't be
+	//affected during replanning
 	TArray<TSharedPtr<FWorldState>> StateQueue;
 
 	UPROPERTY(Transient)

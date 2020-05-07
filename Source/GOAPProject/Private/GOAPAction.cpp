@@ -72,7 +72,6 @@ void UGOAPAction::StopAction(AAIController* Controller)
 {
 
 	FString action_name = GetName();
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stopping action %s"), *action_name));
 	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
 	if (Character)
 	{

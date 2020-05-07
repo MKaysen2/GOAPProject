@@ -5,9 +5,9 @@
 
 class UGOAPGoal;
 class FGameplayDebuggerCategory;
-
-//TODO: Add a delegate for goal changed
+class UBrainComponent;
 DECLARE_DELEGATE_OneParam(FGoalChangedSignature, UGOAPGoal*);
+//TODO: Merge with BrainComponent and have goals add listeners for AIMessages
 
 UCLASS(BlueprintType)
 class GOAPPROJECT_API UGoalSelectionComponent : public UActorComponent 
@@ -24,6 +24,7 @@ protected:
 
 	UPROPERTY(Transient)
 		TArray<UGOAPGoal*> GoalSet;
+
 public:
 	UGoalSelectionComponent();
 	UFUNCTION()

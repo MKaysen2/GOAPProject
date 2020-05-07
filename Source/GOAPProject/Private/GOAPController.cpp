@@ -118,12 +118,6 @@ void AGOAPController::RePlan()
 		return;
 	}
 	//No goal -> No plan needed. By default, it'll play the idle animation
-	/*
-	for (auto Action : ActionSet)
-	{
-		GOAPActionsComponent->QueueAction(Action);
-	}
-	*/
 	
 	TArray<UGOAPAction*> Plan;
 	TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);

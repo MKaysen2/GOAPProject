@@ -36,9 +36,11 @@ public:
 
 	bool IsActive() { return bIsActive; }
 	virtual bool IsGoalValid(AAIController* Controller);
+	virtual bool IsGoalStillValid(AAIController* Controller);
 	virtual void Activate(AAIController* Controller);
 	virtual void Deactivate(AAIController* Controller);
 	virtual void ReCalcPriority(AAIController* Controller);
+
 	float Priority() const;
 };
 
@@ -51,27 +53,6 @@ public:
 	bool IsGoalValid(AAIController* Controller) override;
 	void Activate(AAIController* Controller) override;
 	void ReCalcPriority(AAIController* Controller) override;
-};
-
-UCLASS()
-class UAIGoal_Wander : public UGOAPGoal
-{
-	GENERATED_BODY()
-public:
-	UAIGoal_Wander();
-	bool IsGoalValid(AAIController* Controller) override;
-	void Activate(AAIController* Controller) override;
-	void ReCalcPriority(AAIController* Controller) override;
-};
-
-UCLASS()
-class UAIGoal_InvestigateNoise : public UGOAPGoal
-{
-	GENERATED_BODY()
-public:
-	UAIGoal_InvestigateNoise();
-	bool IsGoalValid(AAIController* Controller) override;
-	void Activate(AAIController* Controller) override;
 };
 
 UCLASS()
