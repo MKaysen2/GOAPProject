@@ -55,7 +55,7 @@ float UGOAPGoal::Priority() const
 
 UAIGoal_KillEnemy::UAIGoal_KillEnemy() : Super()
 {
-	LastPriority = 0.0f; //constant value for now
+	LastPriority = 0.0f; 
 	Goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
@@ -159,6 +159,22 @@ bool UAIGoal_InteractTest::IsGoalValid(AAIController* Controller)
 }
 
 void UAIGoal_InteractTest::Activate(AAIController* Controller)
+{
+	Super::Activate(Controller);
+}
+
+UAIGoal_Death::UAIGoal_Death()
+	: Super()
+{
+
+}
+
+bool UAIGoal_Death::IsGoalValid(AAIController* Controller)
+{
+	return false;
+}
+
+void UAIGoal_Death::Activate(AAIController* Controller)
 {
 	Super::Activate(Controller);
 }

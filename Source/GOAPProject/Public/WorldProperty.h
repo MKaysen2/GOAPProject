@@ -16,6 +16,9 @@ enum class EWorldKey : uint8
 	kTargetDead,
 	kDisturbanceHandled,
 	kUsingObject,
+	kTargetSuppressed,
+	kDead,
+	//kPathBlocked
 	SYMBOL_MAX
 };
 
