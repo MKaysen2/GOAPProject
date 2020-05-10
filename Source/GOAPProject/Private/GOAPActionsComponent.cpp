@@ -65,7 +65,12 @@ void UGOAPActionsComponent::RunNextAction()
 		CurrentAction->SetBBTargets(AIOwner, StateQueue[ActionIdx + 1]);
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
 		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::OnActionEnded);
-		CurrentAction->StartAction(AIOwner);
+		EActionStatus eStatus = CurrentAction->StartAction(AIOwner);
+		if (eStatus == EActionStatus::kFailed)
+		{
+			CurrentAction->OnActionEnded.Unbind();
+			OnPlanCompleted.ExecuteIfBound();
+		}
 	}
 }
 
