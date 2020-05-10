@@ -18,7 +18,8 @@ struct FAIRequestID;
 struct FPathFollowingResult;
 DECLARE_DELEGATE( FActionEndedDelegate );
 
-enum class EActStatus : uint8
+UENUM(BlueprintType)
+enum class EActionStatus : uint8
 {
 	kFailed,
 	kRunning,
@@ -85,7 +86,7 @@ public:
 	UFUNCTION()
 	virtual bool IsActionRunning();
 	UFUNCTION()
-	virtual void StartAction(AAIController* controller);
+	virtual EActionStatus StartAction(AAIController* controller);
 	UFUNCTION()
 	virtual void StopAction(AAIController* controller); //this might not be necessary
 };
@@ -103,7 +104,7 @@ public:
 	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result, AAIController* Controller);
 	
 	bool VerifyContext(AAIController* controller) override;
-	void StartAction(AAIController* controller) override;
+	EActionStatus StartAction(AAIController* controller) override;
 	void StopAction(AAIController* Controller) override;
 
 };
@@ -120,35 +121,7 @@ public:
 		return true;
 	}
 	void SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context) override;
-	void StartAction(AAIController* Controller) override;
-	void StopAction(AAIController* Controller) override;
-};
-
-UCLASS(BlueprintType)
-class GOAPPROJECT_API UAIAct_ReactDisturbance : public UGOAPAction
-{
-	GENERATED_BODY()
-
-		FTimerHandle TimerHandle;
-public:
-	UAIAct_ReactDisturbance();
-	bool VerifyContext(AAIController* Controller) override;
-	void StartAction(AAIController* Controller) override;
-	void StopAction(AAIController* Controller) override;
-};
-
-//wait 3 seconds before ending
-//for testing action callbacks without the planner, so no symbols defined
-UCLASS(BlueprintType)
-class GOAPPROJECT_API UAIAct_CallbackTest : public UGOAPAction
-{
-	GENERATED_BODY()
-		FTimerHandle TimerHandle;
-
-public:
-	UAIAct_CallbackTest();
-	bool VerifyContext(AAIController* Controller) override;
-	void StartAction(AAIController* Controller) override;
+	EActionStatus StartAction(AAIController* Controller) override;
 	void StopAction(AAIController* Controller) override;
 };
 

@@ -49,8 +49,6 @@ private:
 	UPROPERTY()
 		UGOAPActionsComponent* GOAPActionsComponent;
 
-	UPROPERTY()
-		UGOAPAction* CallbackTester;
 	///////////////////////////////////////
 	//Sense configs
 	UPROPERTY()

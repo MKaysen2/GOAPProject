@@ -12,5 +12,5 @@ class GOAPPROJECT_API UAIAct_Attack : public UGOAPAction
 public:
 	UAIAct_Attack();
 	bool VerifyContext(AAIController* controller) override;
-	void StartAction(AAIController* Controller) override;
+	EActionStatus StartAction(AAIController* Controller) override;
 };

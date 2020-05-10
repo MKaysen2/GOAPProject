@@ -55,7 +55,6 @@ AGOAPController::AGOAPController()
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
 	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
 
-	CallbackTester = CreateDefaultSubobject<UAIAct_CallbackTest>(TEXT("Callback Test Action"));
 
 }
 

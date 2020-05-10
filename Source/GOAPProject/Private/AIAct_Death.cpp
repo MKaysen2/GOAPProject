@@ -13,6 +13,7 @@ bool UAIAct_Death::VerifyContext(AAIController* controller)
 	return false;
 }
 
-void UAIAct_Death::StartAction(AAIController* Controller)
+EActionStatus UAIAct_Death::StartAction(AAIController* Controller)
 {
+	return EActionStatus::kFailed;
 }

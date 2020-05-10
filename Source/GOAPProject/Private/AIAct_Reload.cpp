@@ -29,7 +29,7 @@ bool UAIAct_Reload::VerifyContext(AAIController* Controller)
 	return true;
 }
 
-void UAIAct_Reload::StartAction(AAIController* Controller)
+EActionStatus UAIAct_Reload::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
 	APawn* Pawn = Controller->GetPawn();
@@ -38,17 +38,18 @@ void UAIAct_Reload::StartAction(AAIController* Controller)
 	//Need to handle failure/Unbind delegates etc
 	if (!Controller || !bInterface)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 
 	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
 	if (!BBComp)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 
 	//Currently, this is the workaround for not being able to add ActionBPs to the character
 	//Once I get around that, then I'll be able to execute animMontages/Movement in the
 	//BP event graph directly
 	ICombatInterface::Execute_Reload(Pawn);
+	return EActionStatus::kRunning;
 }

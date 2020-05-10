@@ -56,7 +56,7 @@ void UGOAPAction::AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const
 	}
 }
 
-void UGOAPAction::StartAction(AAIController* Controller) 
+EActionStatus UGOAPAction::StartAction(AAIController* Controller) 
 {
 	bIsRunning = true;
 	//FString action_name = GetName();
@@ -66,6 +66,7 @@ void UGOAPAction::StartAction(AAIController* Controller)
 	{
 		Character->TaskEndedDelegate.BindUObject(this, &UGOAPAction::StopAction, Controller);
 	}
+	return EActionStatus::kFailed; //Base class impl status should be ignored by children, so fail by default to prevent calling outside children
 }
 
 void UGOAPAction::StopAction(AAIController* Controller) 
@@ -143,31 +144,31 @@ bool UAIAct_MoveTo::VerifyContext(AAIController* Controller)
 	return true;
 }
 
-void UAIAct_MoveTo::StartAction(AAIController* Controller) 
+EActionStatus UAIAct_MoveTo::StartAction(AAIController* Controller) 
 {
 	bIsRunning = true;
 	if (!Controller)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
 	UPathFollowingComponent* PathComp = Controller->GetPathFollowingComponent();
 
 	if (!BBComp || !PathComp)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
 	if (!TargetActor)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 	
 	Controller->SetFocus(TargetActor);
 
 	MoveHandle = PathComp->OnRequestFinished.AddUObject(this, &UAIAct_MoveTo::OnMoveCompleted, Controller);
 	Controller->MoveToActor(TargetActor);
-
+	return EActionStatus::kRunning;
 }
 
 void UAIAct_MoveTo::StopAction(AAIController* Controller)
@@ -222,7 +223,7 @@ void UAIAct_Equip::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldStat
 	BBComp->SetValueAsObject(FName("Target"), Target);
 }
 
-void UAIAct_Equip::StartAction(AAIController* Controller)
+EActionStatus UAIAct_Equip::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
 	UE_LOG(LogTemp, Warning, TEXT("Equip::StartAction Called"));
@@ -233,20 +234,20 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 	//Need to handle failure/Unbind delegates etc
 	if (!Controller )
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 
 	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
 	if (!BBComp)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 
 
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
 	if (!TargetActor)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 
 	Controller->SetFocus(TargetActor);
@@ -254,7 +255,7 @@ void UAIAct_Equip::StartAction(AAIController* Controller)
 	//Once I get around that, then I'll be able to execute animMontages/Movement in the
 	//BP event graph directly
 	ICombatInterface::Execute_Equip(Pawn);
-
+	return EActionStatus::kRunning;
 }
 
 void UAIAct_Equip::StopAction(AAIController* Controller)
@@ -263,79 +264,4 @@ void UAIAct_Equip::StopAction(AAIController* Controller)
 	UE_LOG(LogTemp, Warning, TEXT("Equip::StopAction Called"));
 	Super::StopAction(Controller);
 
-}
-UAIAct_ReactDisturbance::UAIAct_ReactDisturbance() :
-	Super(
-		{},
-		{ FWorldProperty(EWorldKey::kDisturbanceHandled, true) },
-		1
-	)
-{
-}
-
-bool UAIAct_ReactDisturbance::VerifyContext(AAIController* Controller)
-{
-	return true;
-}
-
-void UAIAct_ReactDisturbance::StartAction(AAIController* Controller)
-{
-	Super::StartAction(Controller);
-	
-	if (!Controller)
-	{
-		return;
-	}
-	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
-	if (!BBComp)
-	{
-		return;
-	}
-	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
-	if (TargetActor)
-	{
-		Controller->SetFocus(TargetActor);
-	}
-	FTimerManager& TimerMgr = Controller->GetWorldTimerManager();
-	FTimerDelegate InDelegate;
-	InDelegate.BindUObject(this, &UAIAct_ReactDisturbance::StopAction, Controller);
-	TimerMgr.SetTimer(TimerHandle, InDelegate, 3.0f, false);
-}
-
-void UAIAct_ReactDisturbance::StopAction(AAIController* Controller)
-{
-	Controller->GetWorldTimerManager().ClearTimer(TimerHandle);
-	Super::StopAction(Controller);
-}
-
-UAIAct_CallbackTest::UAIAct_CallbackTest()
-	: Super()
-{
-
-}
-
-bool UAIAct_CallbackTest::VerifyContext(AAIController* Controller)
-{
-	return true;
-}
-
-void UAIAct_CallbackTest::StartAction(AAIController* Controller)
-{
-	Super::StartAction(Controller);
-
-	if (!Controller)
-	{
-		return;
-	}
-
-	FTimerManager& TimerMgr = Controller->GetWorldTimerManager();
-	FTimerDelegate InDelegate;
-	InDelegate.BindUObject(this, &UAIAct_CallbackTest::StopAction, Controller);
-	TimerMgr.SetTimer(TimerHandle, InDelegate, 3.0f, false);
-}
-
-void UAIAct_CallbackTest::StopAction(AAIController* Controller)
-{
-	Controller->GetWorldTimerManager().ClearTimer(TimerHandle);
-	Super::StopAction(Controller);
 }

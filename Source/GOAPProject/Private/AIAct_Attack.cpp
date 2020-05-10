@@ -32,7 +32,8 @@ bool UAIAct_Attack::VerifyContext(AAIController* Controller)
 	}
 	return true;
 }
-void UAIAct_Attack::StartAction(AAIController* Controller)
+
+EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
 	APawn* Pawn = Controller->GetPawn();
@@ -41,13 +42,13 @@ void UAIAct_Attack::StartAction(AAIController* Controller)
 	//Need to handle failure/Unbind delegates etc
 	if (!Controller || !bInterface)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 
 	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
 	if (!BBComp)
 	{
-		return;
+		return EActionStatus::kFailed;
 	}
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("Target")));
 	if (TargetActor)
@@ -59,4 +60,5 @@ void UAIAct_Attack::StartAction(AAIController* Controller)
 	//Once I get around that, then I'll be able to execute animMontages/Movement in the
 	//BP event graph directly
 	ICombatInterface::Execute_Attack(Pawn);
+	return EActionStatus::kRunning;
 }

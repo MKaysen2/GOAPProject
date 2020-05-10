@@ -13,5 +13,5 @@ class GOAPPROJECT_API UAIAct_Death : public UGOAPAction
 public:
 	UAIAct_Death();
 	bool VerifyContext(AAIController* controller) override;
-	void StartAction(AAIController* Controller) override;
+	EActionStatus StartAction(AAIController* Controller) override;
 };
