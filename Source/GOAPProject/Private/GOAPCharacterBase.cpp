@@ -37,7 +37,6 @@ TArray<TSubclassOf<UGOAPAction>> AGOAPCharacterBase::GetActionSet()
 		//UAIAct_Equip::StaticClass(),
 		UAIAct_MoveTo::StaticClass(),
 		UAIAct_Reload::StaticClass(), 
-		//UAIAct_ReactDisturbance::StaticClass()
 	};
 }
 
