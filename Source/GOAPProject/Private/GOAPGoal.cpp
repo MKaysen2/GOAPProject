@@ -166,7 +166,7 @@ void UAIGoal_InteractTest::Activate(AAIController* Controller)
 UAIGoal_Death::UAIGoal_Death()
 	: Super()
 {
-
+	Goal.Add(FWorldProperty(EWorldKey::kDead, true));
 }
 
 bool UAIGoal_Death::IsGoalValid(AAIController* Controller)

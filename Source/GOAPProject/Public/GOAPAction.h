@@ -18,6 +18,12 @@ struct FAIRequestID;
 struct FPathFollowingResult;
 DECLARE_DELEGATE( FActionEndedDelegate );
 
+enum class EActStatus : uint8
+{
+	kFailed,
+	kRunning,
+	kSuccess
+};
 
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
