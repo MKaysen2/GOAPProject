@@ -243,7 +243,6 @@ void UAIAct_Equip::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldStat
 EActionStatus UAIAct_Equip::StartAction(AAIController* Controller)
 {
 	Super::StartAction(Controller);
-	UE_LOG(LogTemp, Warning, TEXT("Equip::StartAction Called"));
 
 	APawn* Pawn = Controller->GetPawn();
 	bool bInterface = Pawn->Implements<UCombatInterface>();
@@ -278,7 +277,6 @@ EActionStatus UAIAct_Equip::StartAction(AAIController* Controller)
 void UAIAct_Equip::StopAction(AAIController* Controller)
 {
 
-	UE_LOG(LogTemp, Warning, TEXT("Equip::StopAction Called"));
 	Super::StopAction(Controller);
 
 }

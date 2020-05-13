@@ -118,7 +118,7 @@ void AGOAPController::RePlan()
 		return;
 	}
 	//No goal -> No plan needed. By default, it'll play the idle animation
-	
+	//TODO: if the plan fails, replan for the next highest goal
 	TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);
 	
 	if (Node.IsValid())

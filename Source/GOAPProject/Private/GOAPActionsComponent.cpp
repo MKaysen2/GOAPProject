@@ -107,7 +107,6 @@ void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
 
 void UGOAPActionsComponent::AbortPlan()
 {
-	UE_LOG(LogAction, Warning, TEXT("Plan aborted"));
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
 		CurrentAction->AbortAction(AIOwner);
