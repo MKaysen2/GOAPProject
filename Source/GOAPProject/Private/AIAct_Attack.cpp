@@ -107,7 +107,7 @@ void UAIAct_Attack::OnMontageLoop()
 	int32 NextID = AnimInstance->Montage_GetNextSectionID(MontageHandle,MontageHandle->GetSectionIndex(CurrentSection));
 	UE_LOG(LogAction, Warning, TEXT("Montage section %s, next sectionID %d"), *CurrentSection.ToString(), NextID);
 	++loopCount;
-	if (loopCount > 1)
+	if (loopCount > 5)
 	{
 		StopAction(AIOwner);
 	}
