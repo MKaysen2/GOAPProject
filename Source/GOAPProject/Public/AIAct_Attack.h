@@ -14,6 +14,8 @@ protected:
 	FTimerHandle MontageTimerHandle;
 
 	UPROPERTY()
+		int loopCount;
+	UPROPERTY()
 		UAnimMontage* MontageHandle;
 	UPROPERTY()
 		AAIController* AIOwner;
@@ -23,5 +25,6 @@ public:
 	EActionStatus StartAction(AAIController* Controller) override;
 	void StopAction(AAIController* Controller) override;
 	void OnMontageEnded();
+	void OnMontageLoop();
 	void AbortAction(AAIController* Controller) override;
 };

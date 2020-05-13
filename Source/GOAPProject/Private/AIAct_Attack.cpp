@@ -36,7 +36,7 @@ bool UAIAct_Attack::VerifyContext(AAIController* Controller)
 
 EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 {
-
+	loopCount = 0;
 	if (Super::StartAction(Controller) == EActionStatus::kFailed)
 	{
 		UE_LOG(LogAction, Error, TEXT("SUPER failed"));
@@ -76,7 +76,9 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));
 	}
-	float Duration = ControlledPawn->PlayAnimMontage(MontageHandle);
+	ControlledPawn->PlayAnimMontage(MontageHandle);
+	float Duration = MontageHandle->GetSectionLength(0);
+
 	/*
 	UAnimSequenceBase* FireSequence = Weapon->GetFireSequence();
 	if (!FireSequence)
@@ -84,19 +86,36 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 		UE_LOG(LogAction, Error, TEXT("Invalid Sequence"));
 		return EActionStatus::kFailed;
 	}
-	
-
 
 	MontageHandle = ControlledPawn->GetMesh()->GetAnimInstance()->PlaySlotAnimationAsDynamicMontage(FireSequence, FName(TEXT("DefaultSlot")));
 	float Duration = MontageHandle->GetSectionLength(0);
 	*/
-	Controller->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageEnded, Duration, false);
+	Controller->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageLoop, Duration, false);
 	return EActionStatus::kRunning;
 }
 
 void UAIAct_Attack::OnMontageEnded()
 {
 	StopAction(AIOwner);
+}
+
+void UAIAct_Attack::OnMontageLoop()
+{
+	ACharacter* Pawn = Cast<ACharacter>(AIOwner->GetPawn());
+	UAnimInstance* AnimInstance = Pawn->GetMesh()->GetAnimInstance();
+	FName CurrentSection = AnimInstance->Montage_GetCurrentSection(MontageHandle);
+	int32 NextID = AnimInstance->Montage_GetNextSectionID(MontageHandle,MontageHandle->GetSectionIndex(CurrentSection));
+	UE_LOG(LogAction, Warning, TEXT("Montage section %s, next sectionID %d"), *CurrentSection.ToString(), NextID);
+	++loopCount;
+	if (loopCount > 1)
+	{
+		StopAction(AIOwner);
+	}
+	else
+	{
+		float Duration = MontageHandle->GetSectionLength(NextID);
+		AIOwner->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageLoop, Duration, false);
+	}
 }
 
 void UAIAct_Attack::AbortAction(AAIController* Controller)
