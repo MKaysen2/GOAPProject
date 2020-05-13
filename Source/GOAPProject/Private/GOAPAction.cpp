@@ -13,6 +13,8 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "TimerManager.h"
 
+DEFINE_LOG_CATEGORY(LogAction);
+
 UGOAPAction::UGOAPAction() : Super()
 {
 	
@@ -61,27 +63,38 @@ EActionStatus UGOAPAction::StartAction(AAIController* Controller)
 	bIsRunning = true;
 	//FString action_name = GetName();
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
-	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
-	if (Character)
+	//TODO: Chagne AGOAPCharacterBase to ActionOwnerInterface
+	if (!Controller)
 	{
-		Character->TaskEndedDelegate.BindUObject(this, &UGOAPAction::StopAction, Controller);
+		return EActionStatus::kFailed;
 	}
-	return EActionStatus::kFailed; //Base class impl status should be ignored by children, so fail by default to prevent calling outside children
+	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
+	if (!Character)
+	{
+		return EActionStatus::kFailed;
+
+	}
+	return EActionStatus::kSuccess;
 }
 
 void UGOAPAction::StopAction(AAIController* Controller) 
 {
-
-	FString action_name = GetName();
-	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
-	if (Character)
+	//If we weren't running just don't call anything 
+	if (!bIsRunning)
 	{
-		Character->TaskEndedDelegate.Unbind();
+		return;
 	}
 	Controller->ClearFocus(EAIFocusPriority::Gameplay);
 	bIsRunning = false;
 
 	OnActionEnded.ExecuteIfBound();
+}
+
+void UGOAPAction::AbortAction(AAIController* Controller)
+{
+	bIsRunning = false;
+	Controller->ClearFocus(EAIFocusPriority::Gameplay);
+	OnActionEnded.Unbind();
 }
 
 bool UGOAPAction::IsActionRunning() 

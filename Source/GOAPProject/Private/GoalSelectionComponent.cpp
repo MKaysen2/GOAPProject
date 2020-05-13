@@ -37,7 +37,7 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 	NextGoal = nullptr;
 	for (auto* Goal : GoalSet)
 	{
-		if (Goal->IsGoalValid(AIOwner))
+		if (Goal && Goal->IsGoalValid(AIOwner))
 		{
 
 			//Recalculate prioirity if necessary
@@ -62,7 +62,10 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 			CurrentGoal->Deactivate(AIOwner);
 		}
 		CurrentGoal = NextGoal;
-		CurrentGoal->Activate(AIOwner);
+		if (CurrentGoal)
+		{
+			CurrentGoal->Activate(AIOwner);
+		}
 		OnGoalChanged.ExecuteIfBound(CurrentGoal);
 	}
 }
@@ -79,7 +82,10 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 
 void UGoalSelectionComponent::OnGoalCompleted()
 {
-	CurrentGoal->Deactivate(AIOwner);
+	if (CurrentGoal)
+	{
+		CurrentGoal->Deactivate(AIOwner);
+	}
 	CurrentGoal = nullptr;
 }
 

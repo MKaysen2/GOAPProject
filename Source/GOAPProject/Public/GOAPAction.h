@@ -12,6 +12,8 @@
 
 #include "GOAPAction.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogAction, Warning, All);
+
 class AAIController;
 struct FStateNode;
 struct FAIRequestID;
@@ -29,6 +31,7 @@ enum class EActionStatus : uint8
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
+//TODO: just add the controlled pawn as a property already, seriously
 UCLASS(ABSTRACT, BlueprintType, Blueprintable)
 class GOAPPROJECT_API UGOAPAction : public UObject 
 {
@@ -88,7 +91,11 @@ public:
 	UFUNCTION()
 	virtual EActionStatus StartAction(AAIController* controller);
 	UFUNCTION()
-	virtual void StopAction(AAIController* controller); //this might not be necessary
+	virtual void StopAction(AAIController* controller); 
+	
+	/*Deactivates action, stops all child tasks, and unbind delegates*/
+	UFUNCTION()
+		virtual void AbortAction(AAIController* Controller);
 };
 
 

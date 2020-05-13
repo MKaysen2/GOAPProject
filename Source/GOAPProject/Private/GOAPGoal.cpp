@@ -73,19 +73,20 @@ void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 {
 	Super::Activate(Controller);
 
-	
+	/*
 	if (CachedTarget == nullptr)
 	{
 		return;
 	}
 	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
 	BBComponent->SetValueAsObject(FName("Target"), CachedTarget);
+	*/
 }
 
 void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
 {
-	LastPriority = 0.0f;
-
+	LastPriority = 10.0f;
+	/*
 	if (!Controller)
 	{
 		return;
@@ -130,7 +131,7 @@ void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
 		return;
 	}
 	LastPriority = TargetDistance;
-	CachedTarget = Target;
+	CachedTarget = Target;*/
 }
 
 UAIGoal_InteractTest::UAIGoal_InteractTest() :

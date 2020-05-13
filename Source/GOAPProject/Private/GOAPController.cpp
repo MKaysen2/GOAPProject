@@ -41,7 +41,7 @@ AGOAPController::AGOAPController()
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("TargetLocation"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("FaceTracking"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("TorsoTracking"));
-
+	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("EquippedWeapon"));
 	Blackboard->InitializeBlackboard(*BBAsset);
 
 	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComponent"));
@@ -50,10 +50,8 @@ AGOAPController::AGOAPController()
 	CurrentState = MakeShared<FWorldState>();
 
 	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
-	GoalComponent->OnGoalChanged.BindUObject(this, &AGOAPController::OnGoalChanged);
 
 	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
-	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
 
 
 }
@@ -76,6 +74,9 @@ void AGOAPController::OnPossess(APawn * InPawn)
 	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
 
 	PerceptionComponent->ConfigureSense(*sightConfig);
+
+	GoalComponent->OnGoalChanged.BindUObject(this, &AGOAPController::OnGoalChanged);
+	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
 
 	TestObserverHandle = FAIMessageObserver::Create(BrainComponent, AGOAPController::DamageMsg, FAIRequestID(3), AIMessageDelegate);
 	AGOAPCharacterBase* GOAPPawn = Cast<AGOAPCharacterBase>(InPawn);

@@ -64,12 +64,20 @@ void UGOAPActionsComponent::RunNextAction()
 		}
 		CurrentAction->SetBBTargets(AIOwner, StateQueue[ActionIdx + 1]);
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
-		CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::OnActionEnded);
 		EActionStatus eStatus = CurrentAction->StartAction(AIOwner);
 		if (eStatus == EActionStatus::kFailed)
 		{
-			CurrentAction->OnActionEnded.Unbind();
+			UE_LOG(LogAction, Warning, TEXT("Action failed to activate"));
 			OnPlanCompleted.ExecuteIfBound();
+		}
+		else if (eStatus == EActionStatus::kSuccess)
+		{
+			//might want to time slice here
+			OnActionEnded();
+		}
+		else
+		{
+			CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::OnActionEnded);
 		}
 	}
 }
@@ -100,8 +108,7 @@ void UGOAPActionsComponent::AbortPlan()
 {
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
-		CurrentAction->OnActionEnded.Unbind();
-		CurrentAction->StopAction(AIOwner);
+		CurrentAction->AbortAction(AIOwner);
 		
 	}
 	
