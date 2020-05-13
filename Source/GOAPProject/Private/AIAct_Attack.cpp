@@ -70,24 +70,26 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 		UE_LOG(LogAction, Error, TEXT("Invalid weapon"));
 		return EActionStatus::kFailed;
 	}
-	/*	
-	UAnimMontage* FireMontage = Weapon->GetFireMontage();
-	if (!FireMontage)
+	
+	MontageHandle = Weapon->GetFireMontage();
+	if (!MontageHandle)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));
 	}
-	*/
+	float Duration = ControlledPawn->PlayAnimMontage(MontageHandle);
+	/*
 	UAnimSequenceBase* FireSequence = Weapon->GetFireSequence();
 	if (!FireSequence)
 	{
 		UE_LOG(LogAction, Error, TEXT("Invalid Sequence"));
 		return EActionStatus::kFailed;
 	}
+	
 
 
 	MontageHandle = ControlledPawn->GetMesh()->GetAnimInstance()->PlaySlotAnimationAsDynamicMontage(FireSequence, FName(TEXT("DefaultSlot")));
 	float Duration = MontageHandle->GetSectionLength(0);
-
+	*/
 	Controller->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageEnded, Duration, false);
 	return EActionStatus::kRunning;
 }
