@@ -64,6 +64,8 @@ EActionStatus UGOAPAction::StartAction(AAIController* Controller)
 	//FString action_name = GetName();
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
 	//TODO: Chagne AGOAPCharacterBase to ActionOwnerInterface
+	UE_LOG(LogTemp, Warning, TEXT("Action Started"));
+
 	if (!Controller)
 	{
 		return EActionStatus::kFailed;
@@ -84,6 +86,7 @@ void UGOAPAction::StopAction(AAIController* Controller)
 	{
 		return;
 	}
+	UE_LOG(LogAction, Warning, TEXT("Action Stopped"));
 	Controller->ClearFocus(EAIFocusPriority::Gameplay);
 	bIsRunning = false;
 
@@ -92,6 +95,7 @@ void UGOAPAction::StopAction(AAIController* Controller)
 
 void UGOAPAction::AbortAction(AAIController* Controller)
 {
+	UE_LOG(LogAction, Warning, TEXT("Action Aborted"));
 	bIsRunning = false;
 	Controller->ClearFocus(EAIFocusPriority::Gameplay);
 	OnActionEnded.Unbind();

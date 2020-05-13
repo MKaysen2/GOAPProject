@@ -85,6 +85,7 @@ void UGOAPActionsComponent::RunNextAction()
 
 void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
 {
+	UE_LOG(LogAction, Warning, TEXT("Plan Started"));
 	if (!CurrentNode.IsValid())
 	{
 		return;
@@ -106,6 +107,7 @@ void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
 
 void UGOAPActionsComponent::AbortPlan()
 {
+	UE_LOG(LogAction, Warning, TEXT("Plan aborted"));
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
 		CurrentAction->AbortAction(AIOwner);
@@ -117,7 +119,10 @@ void UGOAPActionsComponent::AbortPlan()
 	{
 		ACharacter* Avatar = Cast<ACharacter>(AIOwner->GetPawn());
 		if (Avatar)
+		{
+			UE_LOG(LogAction, Warning, TEXT("Stopped Active Montage"));
 			Avatar->StopAnimMontage();
+		}
 	}
 	if (AIOwner->IsFollowingAPath())
 	{

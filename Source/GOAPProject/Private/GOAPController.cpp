@@ -119,7 +119,6 @@ void AGOAPController::RePlan()
 	}
 	//No goal -> No plan needed. By default, it'll play the idle animation
 	
-	TArray<UGOAPAction*> Plan;
 	TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);
 	
 	if (Node.IsValid())

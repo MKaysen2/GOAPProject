@@ -10,10 +10,16 @@ UCLASS(BlueprintType)
 class GOAPPROJECT_API UAIAct_Attack : public UGOAPAction
 {
 	GENERATED_BODY()
+protected:
+	FTimerHandle MontageTimerHandle;
+
+	UPROPERTY()
+		AAIController* AIOwner;
 public:
 	UAIAct_Attack();
 	bool VerifyContext(AAIController* controller) override;
 	EActionStatus StartAction(AAIController* Controller) override;
-	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted, AAIController* Controller);
+	void StopAction(AAIController* Controller) override;
+	void OnMontageEnded();
 	void AbortAction(AAIController* Controller) override;
 };

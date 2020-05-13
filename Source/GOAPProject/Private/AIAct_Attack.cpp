@@ -1,6 +1,7 @@
 #include "..\Public\AIAct_Attack.h"
 #include "..\Public\CombatInterface.h"
 #include "..\Public\WeaponBase.h"
+#include "TimerManager.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -26,6 +27,7 @@ bool UAIAct_Attack::VerifyContext(AAIController* Controller)
 	{
 		return false;
 	}
+	AIOwner = Controller;
 	APawn* Pawn = Controller->GetPawn();
 	//would check ammo here
 	//Need to handle failure/Unbind delegates etc
@@ -73,21 +75,30 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));
 	}
-	FOnMontageEnded MontageEndedDel = FOnMontageEnded::CreateUObject(this, &UAIAct_Attack::OnMontageEnded, Controller);
 
-	ControlledPawn->PlayAnimMontage(FireMontage);
-	Mesh->GetAnimInstance()->Montage_SetEndDelegate(MontageEndedDel);
+	float Duration = ControlledPawn->PlayAnimMontage(FireMontage);
+
+	Controller->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageEnded, Duration, false);
 	return EActionStatus::kRunning;
 }
 
-void UAIAct_Attack::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted, AAIController* Controller)
+void UAIAct_Attack::OnMontageEnded()
 {
-	UE_LOG(LogAction, Warning, TEXT("MontageEnded Callback"));
-	StopAction(Controller);
+	StopAction(AIOwner);
 }
 
 void UAIAct_Attack::AbortAction(AAIController* Controller)
 {
 	Super::AbortAction(Controller);
-	
+	AIOwner->GetWorldTimerManager().ClearTimer(MontageTimerHandle);
+}
+
+void UAIAct_Attack::StopAction(AAIController* Controller)
+{
+	Super::StopAction(Controller);
+	bool bIsTimerActive = AIOwner->GetWorldTimerManager().IsTimerActive(MontageTimerHandle);
+	if (bIsTimerActive)
+	{
+		AIOwner->GetWorldTimerManager().ClearTimer(MontageTimerHandle);
+	}
 }

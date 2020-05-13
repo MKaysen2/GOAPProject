@@ -40,11 +40,14 @@ void UGOAPGoal::ReCalcPriority(AAIController* Controller)
 
 void UGOAPGoal::Activate(AAIController* Controller)
 {
+	UE_LOG(LogGoal, Warning, TEXT("Goal Activated"));
 	bIsActive = true;
 }
 
 void UGOAPGoal::Deactivate(AAIController* Controller)
 {
+	UE_LOG(LogGoal, Warning, TEXT("Goal Deactivated"));
+
 	bIsActive = false;
 }
 
