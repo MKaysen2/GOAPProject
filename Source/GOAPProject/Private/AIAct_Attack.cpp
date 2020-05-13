@@ -70,13 +70,23 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 		UE_LOG(LogAction, Error, TEXT("Invalid weapon"));
 		return EActionStatus::kFailed;
 	}
+	/*	
 	UAnimMontage* FireMontage = Weapon->GetFireMontage();
 	if (!FireMontage)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));
 	}
+	*/
+	UAnimSequenceBase* FireSequence = Weapon->GetFireSequence();
+	if (!FireSequence)
+	{
+		UE_LOG(LogAction, Error, TEXT("Invalid Sequence"));
+		return EActionStatus::kFailed;
+	}
 
-	float Duration = ControlledPawn->PlayAnimMontage(FireMontage);
+
+	MontageHandle = ControlledPawn->GetMesh()->GetAnimInstance()->PlaySlotAnimationAsDynamicMontage(FireSequence, FName(TEXT("DefaultSlot")));
+	float Duration = MontageHandle->GetSectionLength(0);
 
 	Controller->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageEnded, Duration, false);
 	return EActionStatus::kRunning;
@@ -91,6 +101,9 @@ void UAIAct_Attack::AbortAction(AAIController* Controller)
 {
 	Super::AbortAction(Controller);
 	AIOwner->GetWorldTimerManager().ClearTimer(MontageTimerHandle);
+	ACharacter* ControlledPawn = Cast<ACharacter>(Controller->GetPawn());
+	ControlledPawn->GetMesh()->GetAnimInstance()->Montage_Stop(0.5, MontageHandle);
+	MontageHandle = nullptr;
 }
 
 void UAIAct_Attack::StopAction(AAIController* Controller)
@@ -101,4 +114,11 @@ void UAIAct_Attack::StopAction(AAIController* Controller)
 	{
 		AIOwner->GetWorldTimerManager().ClearTimer(MontageTimerHandle);
 	}
+	if (MontageHandle == nullptr)
+	{
+		return;
+	}
+	ACharacter* ControlledPawn = Cast<ACharacter>(Controller->GetPawn());
+	ControlledPawn->GetMesh()->GetAnimInstance()->Montage_Stop(0.5, MontageHandle);
+	MontageHandle = nullptr;
 }

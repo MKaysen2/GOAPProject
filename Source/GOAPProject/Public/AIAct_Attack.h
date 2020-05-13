@@ -14,6 +14,8 @@ protected:
 	FTimerHandle MontageTimerHandle;
 
 	UPROPERTY()
+		UAnimMontage* MontageHandle;
+	UPROPERTY()
 		AAIController* AIOwner;
 public:
 	UAIAct_Attack();

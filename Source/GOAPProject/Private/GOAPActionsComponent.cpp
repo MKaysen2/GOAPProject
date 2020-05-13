@@ -110,11 +110,11 @@ void UGOAPActionsComponent::AbortPlan()
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
 		CurrentAction->AbortAction(AIOwner);
-		
 	}
 	
 	Reset();
-	if (AIOwner->IsPlayingMontage())
+	//all of this should probably be managed on a per-action basis
+	/*if (AIOwner->IsPlayingMontage())
 	{
 		ACharacter* Avatar = Cast<ACharacter>(AIOwner->GetPawn());
 		if (Avatar)
@@ -122,7 +122,7 @@ void UGOAPActionsComponent::AbortPlan()
 			UE_LOG(LogAction, Warning, TEXT("Stopped Active Montage"));
 			Avatar->StopAnimMontage();
 		}
-	}
+	}*/
 	if (AIOwner->IsFollowingAPath())
 	{
 		AIOwner->StopMovement();

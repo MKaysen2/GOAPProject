@@ -9,3 +9,8 @@ UAnimMontage* AWeaponBase::GetReloadMontage()
 {
 	return ReloadMontage;
 }
+
+UAnimSequenceBase* AWeaponBase::GetFireSequence()
+{
+	return FireSequence;
+}

@@ -16,10 +16,15 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 		UAnimMontage* ReloadMontage;
+	UPROPERTY(EditAnywhere)
+		UAnimSequenceBase* FireSequence;
 public:
 	UFUNCTION()
 		UAnimMontage* GetFireMontage();
 
 	UFUNCTION()
 		UAnimMontage* GetReloadMontage();
+
+	UFUNCTION()
+		UAnimSequenceBase* GetFireSequence();
 };

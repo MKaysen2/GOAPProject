@@ -15,7 +15,8 @@ class UActuatorInterface : public UInterface
 
 /**
  * Interface for actuation of animation system
- * Implemented by Controllers, probably
+ * This could either go in the Controller or the Character
+ * Still trying to figure out where to put it.
  */
 class GOAPPROJECT_API IActuatorInterface
 {
