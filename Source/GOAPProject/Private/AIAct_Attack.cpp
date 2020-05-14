@@ -8,6 +8,7 @@
 #include "Animation/AnimInstance.h"
 #include "..\Public\WorldProperty.h"
 #include "..\Public\WorldState.h"
+#include "..\Public\AITask_AnimMontage.h"
 #include "GameFramework/Pawn.h"
 
 
@@ -36,7 +37,6 @@ bool UAIAct_Attack::VerifyContext(AAIController* Controller)
 
 EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 {
-	loopCount = 0;
 	if (Super::StartAction(Controller) == EActionStatus::kFailed)
 	{
 		UE_LOG(LogAction, Error, TEXT("SUPER failed"));
@@ -71,75 +71,39 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 		return EActionStatus::kFailed;
 	}
 	
-	MontageHandle = Weapon->GetFireMontage();
+	UAnimMontage* MontageHandle = Weapon->GetFireMontage();
 	if (!MontageHandle)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));
 	}
-	ControlledPawn->PlayAnimMontage(MontageHandle);
-	float Duration = MontageHandle->GetSectionLength(0);
 
-	/*
-	UAnimSequenceBase* FireSequence = Weapon->GetFireSequence();
-	if (!FireSequence)
+	UAITask_AnimMontage* MontageTask = UAITask_AnimMontage::AIAnimMontage(AIOwner, MontageHandle, 1.0f, 5);
+	if (!MontageTask)
 	{
-		UE_LOG(LogAction, Error, TEXT("Invalid Sequence"));
 		return EActionStatus::kFailed;
 	}
-
-	MontageHandle = ControlledPawn->GetMesh()->GetAnimInstance()->PlaySlotAnimationAsDynamicMontage(FireSequence, FName(TEXT("DefaultSlot")));
-	float Duration = MontageHandle->GetSectionLength(0);
-	*/
-	Controller->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageLoop, Duration, false);
+	TaskHandle = MontageTask;
+	MontageTask->OnMontageTaskEnded.AddUObject(this, &UAIAct_Attack::OnMontageEnded);
+	MontageTask->Activate();
 	return EActionStatus::kRunning;
 }
 
 void UAIAct_Attack::OnMontageEnded()
 {
+	UE_LOG(LogAction, Warning, TEXT("ActionEnded"));
 	StopAction(AIOwner);
 }
 
 void UAIAct_Attack::OnMontageLoop()
 {
-	ACharacter* Pawn = Cast<ACharacter>(AIOwner->GetPawn());
-	UAnimInstance* AnimInstance = Pawn->GetMesh()->GetAnimInstance();
-	FName CurrentSection = AnimInstance->Montage_GetCurrentSection(MontageHandle);
-	int32 NextID = AnimInstance->Montage_GetNextSectionID(MontageHandle,MontageHandle->GetSectionIndex(CurrentSection));
-	UE_LOG(LogAction, Warning, TEXT("Montage section %s, next sectionID %d"), *CurrentSection.ToString(), NextID);
-	++loopCount;
-	if (loopCount > 5)
-	{
-		StopAction(AIOwner);
-	}
-	else
-	{
-		float Duration = MontageHandle->GetSectionLength(NextID);
-		AIOwner->GetWorldTimerManager().SetTimer(MontageTimerHandle, this, &UAIAct_Attack::OnMontageLoop, Duration, false);
-	}
 }
 
 void UAIAct_Attack::AbortAction(AAIController* Controller)
 {
 	Super::AbortAction(Controller);
-	AIOwner->GetWorldTimerManager().ClearTimer(MontageTimerHandle);
-	ACharacter* ControlledPawn = Cast<ACharacter>(Controller->GetPawn());
-	ControlledPawn->GetMesh()->GetAnimInstance()->Montage_Stop(0.5, MontageHandle);
-	MontageHandle = nullptr;
 }
 
 void UAIAct_Attack::StopAction(AAIController* Controller)
 {
 	Super::StopAction(Controller);
-	bool bIsTimerActive = AIOwner->GetWorldTimerManager().IsTimerActive(MontageTimerHandle);
-	if (bIsTimerActive)
-	{
-		AIOwner->GetWorldTimerManager().ClearTimer(MontageTimerHandle);
-	}
-	if (MontageHandle == nullptr)
-	{
-		return;
-	}
-	ACharacter* ControlledPawn = Cast<ACharacter>(Controller->GetPawn());
-	ControlledPawn->GetMesh()->GetAnimInstance()->Montage_Stop(0.5, MontageHandle);
-	MontageHandle = nullptr;
 }

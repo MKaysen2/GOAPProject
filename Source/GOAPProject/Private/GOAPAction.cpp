@@ -70,6 +70,7 @@ EActionStatus UGOAPAction::StartAction(AAIController* Controller)
 	{
 		return EActionStatus::kFailed;
 	}
+	//Should get rid of this and just check blackboard
 	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(Controller->GetPawn());
 	if (!Character)
 	{

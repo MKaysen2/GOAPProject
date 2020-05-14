@@ -5,20 +5,18 @@
 
 class AAIController;
 class UAnimMontage;
+class UAITask_AnimMontage;
 
 UCLASS(BlueprintType)
 class GOAPPROJECT_API UAIAct_Attack : public UGOAPAction
 {
 	GENERATED_BODY()
 protected:
-	FTimerHandle MontageTimerHandle;
 
 	UPROPERTY()
-		int loopCount;
-	UPROPERTY()
-		UAnimMontage* MontageHandle;
-	UPROPERTY()
 		AAIController* AIOwner;
+	UPROPERTY()
+		UAITask_AnimMontage* TaskHandle;
 public:
 	UAIAct_Attack();
 	bool VerifyContext(AAIController* controller) override;
