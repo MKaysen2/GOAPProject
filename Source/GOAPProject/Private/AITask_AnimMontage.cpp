@@ -37,8 +37,6 @@ void UAITask_AnimMontage::Activate()
 	{
 		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::OnMontageEnded, MontageDuration, false);
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Task Started Here"));
 }
 
 void UAITask_AnimMontage::MontageLoop()
@@ -69,7 +67,6 @@ void UAITask_AnimMontage::FinishMontageTask()
 
 void UAITask_AnimMontage::OnMontageEnded()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Task Ended"));
 	FinishMontageTask();
 	MontageHandle = nullptr;
 	AnimInstance = nullptr;
