@@ -6,6 +6,7 @@
 
 #include "ActuatorInterface.generated.h"
 
+class UAITask_AnimMontage;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UActuatorInterface : public UInterface
@@ -24,10 +25,12 @@ class GOAPPROJECT_API IActuatorInterface
 
 		// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION()
-		virtual void Act(FName Action)
-	{
 
+	//This should spawn an AnimMontage AI Task
+	UFUNCTION()
+		virtual UAITask_AnimMontage* Act(FName Action)
+	{
+		return nullptr;
 	}
 
 };
