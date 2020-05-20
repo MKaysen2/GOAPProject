@@ -24,7 +24,7 @@ UAStarComponent::UAStarComponent() :
 void UAStarComponent::OnRegister()
 {
 	Super::OnRegister();
-	AIOwner = Cast<AGOAPController>(GetOwner());
+	AIOwner = Cast<AAIController>(GetOuter());
 }
 
 void UAStarComponent::OnUnregister()
@@ -33,12 +33,14 @@ void UAStarComponent::OnUnregister()
 	Super::OnUnregister();
 }
 
-TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState) //graph needs to be V, E
+TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState>& InitialState) //graph needs to be V, E
 {
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
-	if (!Goal)
-		return false;
+	if (!IsValid(Goal))
+	{
+		return nullptr;
+	}
 	TArray<TSharedPtr<FStateNode>> fringe;
 	auto LessFn = TSharedPtrLess<FStateNode>(); //predicate, use in any heap functions
 	fringe.Heapify(LessFn);
@@ -55,12 +57,16 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 
 		//pop the lowest cost node from p-queue
 		fringe.HeapPop(CurrentNode, LessFn);
-		if (!CurrentNode)
+		if (!CurrentNode.IsValid())
+		{
 			break;
+		}
 		//This is a regressive search
 		//a goal node g is any node s.t. all values of the node's state match that of the initial state
 		if (CurrentNode->IsGoal())
+		{
 			break;
+		}
 
 		if (CurrentNode->Depth > MaxDepth)
 		{
@@ -77,9 +83,13 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			//remove node from closed set if cost is better
 			//o.w. just continue to next node
 			if ((*check_closed)->cost() < CurrentNode->cost())
+			{
 				closed_set.Remove(CurrentNode);
+			}
 			else
+			{
 				continue;
+			}
 		}
 
 		//Generate candidate edges (actions)
@@ -87,14 +97,16 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		CurrentNode->FindActions(ActionTable, CandidateActions);
 
 		TSet<UGOAPAction*> VisitedActions;
-		for (auto Action : CandidateActions) 
+		for (auto* Action : CandidateActions) 
 		{
 			check(IsValid(Action)); //sanity check
 
 			//verify context preconditions
 			//skip action if it has already been visited for this node
 			if (!Action->VerifyContext(AIOwner) || VisitedActions.Contains(Action))
+			{
 				continue;
+			}
 			
 			//mark edge as visited for current node
 			VisitedActions.Add(Action);
@@ -122,9 +134,9 @@ void UAStarComponent::ClearLookupTable()
 void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 {
 	//map effects symbols as keys to action objects for a regressive search
-	for (auto Action : Actions) 
+	for (auto* Action : Actions) 
 	{
-		for (auto Effect : Action->effects) 
+		for (auto& Effect : Action->effects) 
 		{
 			ActionTable.AddUnique(Effect.key, Action);
 		}

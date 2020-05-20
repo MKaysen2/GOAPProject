@@ -19,7 +19,7 @@
 class UGOAPAction;
 class UGOAPGoal;
 class UWorldState;
-class AGOAPController;
+class AAIController;
 
 /** 
   AStarComponent
@@ -35,7 +35,7 @@ protected:
 	LookupTable ActionTable;
 
 	UPROPERTY()
-		AGOAPController* AIOwner;
+		AAIController* AIOwner;
 
 	UPROPERTY()
 		int32 MaxDepth;
@@ -44,7 +44,7 @@ public:
 	void OnRegister() override;
 	void OnUnregister() override;
 
-	TSharedPtr<FStateNode> Search(UGOAPGoal* Goal, TSharedPtr<FWorldState> InitialState);
+	TSharedPtr<FStateNode> Search(UGOAPGoal* Goal, TSharedPtr<FWorldState>& InitialState);
 
 	void ClearLookupTable();
 	void CreateLookupTable(TArray<UGOAPAction*>& actions);

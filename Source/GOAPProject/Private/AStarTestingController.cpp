@@ -13,18 +13,20 @@ AAStarTestingController::AAStarTestingController()
 	AStarComponent = CreateDefaultSubobject<UAStarComponent>(FName("AStarComponent"));
 
 	CurrentState = MakeShared<FWorldState>();
-
+	DummyGoal = nullptr;
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = .2f;
 }
 
 void AAStarTestingController::BeginPlay()
 {
+	Super::BeginPlay();
 }
 
 void AAStarTestingController::Tick(float DeltaSeconds)
 {
-	if (IsValid(DummyGoal))
+	Super::Tick(DeltaSeconds);
+	if (GetPawn() && IsValid(DummyGoal))
 	{
 		AStarComponent->Search(DummyGoal, CurrentState);
 	}
@@ -32,6 +34,7 @@ void AAStarTestingController::Tick(float DeltaSeconds)
 
 void AAStarTestingController::OnPossess(APawn* InPawn)
 {
+	Super::OnPossess(InPawn);
 	DummyGoal = NewObject<UAIGoal_AlwaysValid>(this);
 	DummyGoal->InitGoal(this);
 	UGOAPAction* NewAction = NewObject<UAIAct_Attack>(this);
