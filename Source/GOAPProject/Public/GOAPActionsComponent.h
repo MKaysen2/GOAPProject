@@ -63,6 +63,7 @@ public:
 	UFUNCTION()
 	void AbortPlan();
 
+	//DON'T CALL THIS UNLESS YOU REALLY WANT YOUR ACTIONS TO BE GC'D
 	UFUNCTION()
 	void Reset();
 
@@ -77,9 +78,16 @@ public:
 	UFUNCTION()
 		TArray<UGOAPAction*>& GetActionSet();
 
+protected:
+
+	UFUNCTION()
+		void ClearCurrentPlan();
+
+public:
 
 
 #if WITH_GAMEPLAY_DEBUGGER
+
 	virtual void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
 #endif //WITH_GAMEPLAY_DEBUGGER
 

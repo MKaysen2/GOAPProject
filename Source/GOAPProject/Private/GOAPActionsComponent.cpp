@@ -50,7 +50,7 @@ void UGOAPActionsComponent::RunNextAction()
 {
 	if (ActionIdx >= ActionQueue.Num())
 	{
-		Reset();
+		ClearCurrentPlan();
 		OnPlanCompleted.ExecuteIfBound();
 		return;
 	}
@@ -113,7 +113,8 @@ void UGOAPActionsComponent::AbortPlan()
 		CurrentAction->AbortAction();
 	}
 	
-	Reset();
+	ClearCurrentPlan();
+
 	//all of this should probably be managed on a per-action basis
 	/*if (AIOwner->IsPlayingMontage())
 	{
@@ -130,14 +131,19 @@ void UGOAPActionsComponent::AbortPlan()
 	}
 }
 
-void UGOAPActionsComponent::Reset()
+void UGOAPActionsComponent::ClearCurrentPlan()
 {
 	bPlanComplete = true;
 	ActionIdx = 0;
 	CurrentAction = nullptr;
 	ActionQueue.Reset();
-	ActionSet.Reset();
 	StateQueue.Reset();
+}
+void UGOAPActionsComponent::Reset()
+{
+	ClearCurrentPlan();
+	ActionSet.Reset(); //DURRRRR WHY ARE MY POINTERS DYING IF THE ACTIONSET ISN'T BEING MODIFIED
+	//oh yeah I wonder why
 }
 
 void UGOAPActionsComponent::QueueAction(UGOAPAction* Action)
