@@ -53,11 +53,13 @@ bool FStateNode::IsGoal()
 	return unsatisfied <= 0;
 }
 
-void FStateNode::FindActions(const LookupTable& ActionMap, TArray<UGOAPAction*>& out_actions)
+void FStateNode::FindActions(const LookupTable& ActionMap, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions)
 {
 	if (!GoalState)
+	{
 		return;
-	auto& Container = CurrentState->expose_container();
+	}
+	const auto& Container = CurrentState->expose_container();
 	for (uint8 Key = 0U; Key < (uint8)EWorldKey::SYMBOL_MAX; ++Key)
 	{
 		if (!CurrentState->IsSatisfied((EWorldKey)Key))

@@ -93,14 +93,21 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		}
 
 		//Generate candidate edges (actions)
-		TArray<UGOAPAction*> CandidateActions;
+		TArray<TWeakObjectPtr<UGOAPAction>> CandidateActions;
 		CurrentNode->FindActions(ActionTable, CandidateActions);
 
 		TSet<UGOAPAction*> VisitedActions;
-		for (auto* Action : CandidateActions) 
+		for (auto ActionHandle : CandidateActions) 
 		{
-			check(IsValid(Action)); //sanity check
 
+			
+			if (!ActionHandle.IsValid())
+			{
+				UE_LOG(LogAction, Error, TEXT("Bad Action access in planner!!"));
+				//Bail. Bail HARD
+				return nullptr;
+			}
+			UGOAPAction* Action = ActionHandle.Get();
 			//verify context preconditions
 			//skip action if it has already been visited for this node
 			if (!Action->VerifyContext(AIOwner) || VisitedActions.Contains(Action))
@@ -113,7 +120,10 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 
 			//Create the Child node 
 			TSharedPtr<FStateNode> ChildNode(new FStateNode(CurrentNode, Action));
-			
+			if (!ChildNode.IsValid())
+			{
+				continue;
+			}
 			//Apply the action and add node to fringe
 			ChildNode->TakeAction(Action);
 			fringe.HeapPush(ChildNode, LessFn);

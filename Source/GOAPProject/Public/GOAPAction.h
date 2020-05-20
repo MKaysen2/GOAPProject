@@ -107,4 +107,4 @@ public:
 		virtual void AbortAction();
 };
 
-typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
+typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

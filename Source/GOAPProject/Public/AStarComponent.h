@@ -31,7 +31,7 @@ class GOAPPROJECT_API UAStarComponent : public UActorComponent
 
 	GENERATED_BODY()
 protected:
-	typedef TMultiMap<EWorldKey, UGOAPAction*> LookupTable;
+	typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
 	LookupTable ActionTable;
 
 	UPROPERTY()

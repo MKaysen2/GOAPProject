@@ -54,7 +54,7 @@ public:
 	void AddPrecondition(const FWorldProperty& Property);
 
 	bool IsGoal();
-	void FindActions(const LookupTable& action_map, TArray<UGOAPAction*>& out_actions);
+	void FindActions(const LookupTable& action_map, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions);
 	void LogNode() const;
 
 	void LogGoal() const 

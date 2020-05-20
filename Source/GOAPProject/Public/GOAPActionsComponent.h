@@ -34,7 +34,7 @@ protected:
 	//affected during replanning
 	TArray<TSharedPtr<FWorldState>> StateQueue;
 
-	UPROPERTY(Transient)
+	UPROPERTY()
 		TArray<UGOAPAction*> ActionSet;
 
 	int32 ActionIdx;

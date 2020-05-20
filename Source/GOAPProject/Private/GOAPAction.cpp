@@ -63,7 +63,6 @@ EActionStatus UGOAPAction::StartAction()
 	bIsRunning = true;
 	//FString action_name = GetName();
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
-	UE_LOG(LogTemp, Warning, TEXT("Action Started"));
 
 	if (!AIOwner)
 	{
@@ -80,14 +79,12 @@ void UGOAPAction::StopAction()
 	{
 		return;
 	}
-	UE_LOG(LogAction, Warning, TEXT("Action Stopped"));
 	bIsRunning = false;
 	OnActionEnded.ExecuteIfBound();
 }
 
 void UGOAPAction::AbortAction()
 {
-	UE_LOG(LogAction, Warning, TEXT("Action Aborted"));
 	bIsRunning = false;
 	OnActionEnded.Unbind();
 }

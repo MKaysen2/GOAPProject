@@ -87,7 +87,6 @@ void UGOAPActionsComponent::RunNextAction()
 
 void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
 {
-	UE_LOG(LogAction, Warning, TEXT("Plan Started"));
 	if (!CurrentNode.IsValid())
 	{
 		return;
