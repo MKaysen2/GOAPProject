@@ -28,6 +28,7 @@ private:
 	
 		TSharedPtr<FWorldState> GoalState; //Not a new object
 
+		//Shouldn't this be a weakptr??
 		TSharedPtr<FStateNode> ParentNode;
 
 	UPROPERTY()

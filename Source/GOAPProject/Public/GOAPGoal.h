@@ -71,3 +71,12 @@ public:
 	bool IsGoalValid() override;
 	void Activate() override;
 };
+
+UCLASS()
+class UAIGoal_AlwaysValid : public UGOAPGoal
+{
+	GENERATED_BODY()
+public:
+	UAIGoal_AlwaysValid();
+	bool IsGoalValid() override;
+};

@@ -45,8 +45,9 @@ AGOAPController::AGOAPController()
 	Blackboard->InitializeBlackboard(*BBAsset);
 
 	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComponent"));
-	AIMessageDelegate.BindUObject(this, &AGOAPController::OnDamageReceived);
 
+	//TODO: make sure controllers aren't using the same world state.
+	//This should probably be a unique ptr
 	CurrentState = MakeShared<FWorldState>();
 
 	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));

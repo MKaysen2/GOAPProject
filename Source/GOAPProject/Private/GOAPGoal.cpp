@@ -160,3 +160,14 @@ void UAIGoal_Death::Activate()
 {
 	Super::Activate();
 }
+
+UAIGoal_AlwaysValid::UAIGoal_AlwaysValid() : Super()
+{
+	Goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
+	LastPriority = 1.0f;
+}
+
+bool UAIGoal_AlwaysValid::IsGoalValid()
+{
+	return IsValid(AIOwner);
+}
