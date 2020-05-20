@@ -39,6 +39,15 @@ void UAITask_AnimMontage::Activate()
 	}
 }
 
+void UAITask_AnimMontage::ExternalCancel()
+{
+	EndTask();
+	OwnerController->GetWorldTimerManager().ClearTimer(MontageSectionTimerHandle);
+	AnimInstance->Montage_Stop(0.2f, MontageHandle);
+	AnimInstance = nullptr;
+	MontageHandle = nullptr;
+}
+
 void UAITask_AnimMontage::MontageLoop()
 {
 	FName CurrentSection = AnimInstance->Montage_GetCurrentSection(MontageHandle);

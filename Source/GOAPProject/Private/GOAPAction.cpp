@@ -63,19 +63,13 @@ EActionStatus UGOAPAction::StartAction()
 	bIsRunning = true;
 	//FString action_name = GetName();
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
-	//TODO: Chagne AGOAPCharacterBase to ActionOwnerInterface
 	UE_LOG(LogTemp, Warning, TEXT("Action Started"));
 
 	if (!AIOwner)
 	{
 		return EActionStatus::kFailed;
 	}
-	//Should get rid of this and just check blackboard
-	AGOAPCharacterBase* Character = Cast<AGOAPCharacterBase>(AIOwner->GetPawn());
-	if (!Character)
-	{
-		return EActionStatus::kFailed;
-	}
+
 	return EActionStatus::kSuccess;
 }
 
@@ -87,9 +81,7 @@ void UGOAPAction::StopAction()
 		return;
 	}
 	UE_LOG(LogAction, Warning, TEXT("Action Stopped"));
-	AIOwner->ClearFocus(EAIFocusPriority::Gameplay);
 	bIsRunning = false;
-
 	OnActionEnded.ExecuteIfBound();
 }
 
@@ -97,7 +89,6 @@ void UGOAPAction::AbortAction()
 {
 	UE_LOG(LogAction, Warning, TEXT("Action Aborted"));
 	bIsRunning = false;
-	AIOwner->ClearFocus(EAIFocusPriority::Gameplay);
 	OnActionEnded.Unbind();
 }
 

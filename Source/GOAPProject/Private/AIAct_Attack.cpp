@@ -57,12 +57,6 @@ EActionStatus UAIAct_Attack::StartAction()
 		return EActionStatus::kFailed;
 	}
 
-	USkeletalMeshComponent* Mesh = ControlledPawn->GetMesh();
-	if (!Mesh)
-	{
-		UE_LOG(LogAction, Error, TEXT("Invalid Skelmesh"));
-		return EActionStatus::kFailed;
-	}
 	AWeaponBase* Weapon = Cast<AWeaponBase>(BBComp->GetValueAsObject(FName("EquippedWeapon")));
 	if (!Weapon)
 	{
@@ -75,6 +69,7 @@ EActionStatus UAIAct_Attack::StartAction()
 	if (!MontageHandle)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));
+		return EActionStatus::kFailed;
 	}
 
 	UAITask_AnimMontage* MontageTask = UAITask_AnimMontage::AIAnimMontage(AIOwner, MontageHandle, 1.0f, 5);
@@ -100,7 +95,11 @@ void UAIAct_Attack::OnMontageLoop()
 void UAIAct_Attack::AbortAction()
 {
 	Super::AbortAction();
-	//TODO: kill task?
+	if (TaskHandle)
+	{
+		TaskHandle->ExternalCancel();
+	}
+	TaskHandle = nullptr;
 }
 
 void UAIAct_Attack::StopAction()

@@ -16,6 +16,7 @@ UAStarComponent::UAStarComponent() :
 {
 	MaxDepth = 10;
 	UE_LOG(LogTemp, Warning, TEXT("Is FWorldProperty Trivial: %d"), TIsTrivial<FWorldProperty>::Value);
+	UE_LOG(LogTemp, Warning, TEXT("Is FVector Trivial?: %d"), TIsTrivial<FVector>::Value);
 	UE_LOG(LogTemp, Warning, TEXT("Is TSharedRef<FWorldProperty> Trivial: %d"), TIsTrivial<TSharedRef<FWorldProperty>>::Value);
 	UE_LOG(LogTemp, Warning, TEXT("Is FWorldState Trivial: %d"), TIsTrivial<FWorldState>::Value);
 }

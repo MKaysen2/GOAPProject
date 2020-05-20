@@ -48,9 +48,11 @@ public:
 
 	virtual void Activate() override;
 
+	virtual void ExternalCancel() override;
 	FAnimTaskEndedSignature OnMontageTaskEnded;
-
+	
 protected:
+
 	void MontageLoop();
 
 	void FinishMontageTask();
