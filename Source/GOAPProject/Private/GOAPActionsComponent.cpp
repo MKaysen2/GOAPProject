@@ -26,7 +26,9 @@ void UGOAPActionsComponent::RegisterAction(TSubclassOf<UGOAPAction> ActionClass)
 	{
 		return;
 	}
-	ActionSet.Add(NewObject<UGOAPAction>(this, ActionClass));
+	UGOAPAction* NewAction = NewObject<UGOAPAction>(this, ActionClass);
+	NewAction->InitAction(AIOwner);
+	ActionSet.Add(NewAction);
 }
 
 void UGOAPActionsComponent::RegisterActionSet(const TArray<TSubclassOf<UGOAPAction>>& NewActionSet)
@@ -64,7 +66,7 @@ void UGOAPActionsComponent::RunNextAction()
 		}
 		CurrentAction->SetBBTargets(AIOwner, StateQueue[ActionIdx + 1]);
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
-		EActionStatus eStatus = CurrentAction->StartAction(AIOwner);
+		EActionStatus eStatus = CurrentAction->StartAction();
 		if (eStatus == EActionStatus::kFailed)
 		{
 			UE_LOG(LogAction, Warning, TEXT("Action failed to activate"));
@@ -109,7 +111,7 @@ void UGOAPActionsComponent::AbortPlan()
 {
 	if (CurrentAction && CurrentAction->IsActionRunning())
 	{
-		CurrentAction->AbortAction(AIOwner);
+		CurrentAction->AbortAction();
 	}
 	
 	Reset();

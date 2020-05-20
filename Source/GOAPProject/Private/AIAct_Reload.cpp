@@ -29,19 +29,21 @@ bool UAIAct_Reload::VerifyContext(AAIController* Controller)
 	return true;
 }
 
-EActionStatus UAIAct_Reload::StartAction(AAIController* Controller)
+EActionStatus UAIAct_Reload::StartAction()
 {
-	Super::StartAction(Controller);
-	APawn* Pawn = Controller->GetPawn();
+	Super::StartAction();
+	APawn* Pawn = AIOwner->GetPawn();
 	bool bInterface = !Pawn || Pawn->Implements<UCombatInterface>();
 
 	//Need to handle failure/Unbind delegates etc
-	if (!Controller || !bInterface)
+	//Just realized I said almost the exact same thing for VerifyContext
+	//TODO: this code should be moved there
+	if (!AIOwner || !bInterface)
 	{
 		return EActionStatus::kFailed;
 	}
 
-	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
 	if (!BBComp)
 	{
 		return EActionStatus::kFailed;

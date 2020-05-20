@@ -14,6 +14,6 @@ public:
 	UAIAct_Reload();
 
 	bool VerifyContext(AAIController* controller) override;
-	EActionStatus StartAction(AAIController* controller) override;
+	EActionStatus StartAction() override;
 
 };

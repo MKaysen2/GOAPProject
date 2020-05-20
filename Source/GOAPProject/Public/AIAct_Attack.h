@@ -12,17 +12,14 @@ class GOAPPROJECT_API UAIAct_Attack : public UGOAPAction
 {
 	GENERATED_BODY()
 protected:
-
-	UPROPERTY()
-		AAIController* AIOwner;
 	UPROPERTY()
 		UAITask_AnimMontage* TaskHandle;
 public:
 	UAIAct_Attack();
 	bool VerifyContext(AAIController* controller) override;
-	EActionStatus StartAction(AAIController* Controller) override;
-	void StopAction(AAIController* Controller) override;
+	EActionStatus StartAction() override;
+	void StopAction() override;
 	void OnMontageEnded();
 	void OnMontageLoop();
-	void AbortAction(AAIController* Controller) override;
+	void AbortAction() override;
 };

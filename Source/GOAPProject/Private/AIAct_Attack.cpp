@@ -28,31 +28,30 @@ bool UAIAct_Attack::VerifyContext(AAIController* Controller)
 	{
 		return false;
 	}
-	AIOwner = Controller;
 	APawn* Pawn = Controller->GetPawn();
 	//would check ammo here
 	//Need to handle failure/Unbind delegates etc
 	return true;
 }
 
-EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
+EActionStatus UAIAct_Attack::StartAction()
 {
-	if (Super::StartAction(Controller) == EActionStatus::kFailed)
+	if (Super::StartAction() == EActionStatus::kFailed)
 	{
 		UE_LOG(LogAction, Error, TEXT("SUPER failed"));
 		return EActionStatus::kFailed;
 	}
 
-	//TODO: separate all of this to an ai task
+	//TODO: These are so common that they should just be cached
 	
-	UBlackboardComponent* BBComp = Controller->GetBlackboardComponent();
+	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
 	if (!BBComp)
 	{
 		UE_LOG(LogAction, Error, TEXT("Invalid blackboard"));
 
 		return EActionStatus::kFailed;
 	}
-	ACharacter* ControlledPawn = Cast<ACharacter>(Controller->GetPawn());
+	ACharacter* ControlledPawn = Cast<ACharacter>(AIOwner->GetPawn());
 	if (!ControlledPawn)
 	{
 		return EActionStatus::kFailed;
@@ -71,6 +70,7 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 		return EActionStatus::kFailed;
 	}
 	
+	//Should go in verify context
 	UAnimMontage* MontageHandle = Weapon->GetFireMontage();
 	if (!MontageHandle)
 	{
@@ -90,20 +90,20 @@ EActionStatus UAIAct_Attack::StartAction(AAIController* Controller)
 
 void UAIAct_Attack::OnMontageEnded()
 {
-	UE_LOG(LogAction, Warning, TEXT("ActionEnded"));
-	StopAction(AIOwner);
+	StopAction();
 }
 
 void UAIAct_Attack::OnMontageLoop()
 {
 }
 
-void UAIAct_Attack::AbortAction(AAIController* Controller)
+void UAIAct_Attack::AbortAction()
 {
-	Super::AbortAction(Controller);
+	Super::AbortAction();
+	//TODO: kill task?
 }
 
-void UAIAct_Attack::StopAction(AAIController* Controller)
+void UAIAct_Attack::StopAction()
 {
-	Super::StopAction(Controller);
+	Super::StopAction();
 }
