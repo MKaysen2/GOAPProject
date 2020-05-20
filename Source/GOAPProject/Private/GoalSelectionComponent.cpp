@@ -37,11 +37,11 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 	NextGoal = nullptr;
 	for (auto* Goal : GoalSet)
 	{
-		if (Goal && Goal->IsGoalValid(AIOwner))
+		if (Goal && Goal->IsGoalValid())
 		{
 
 			//Recalculate prioirity if necessary
-			Goal->ReCalcPriority(AIOwner);
+			Goal->ReCalcPriority();
 
 			//Highest priority goal becomes next goal
 			if (NextGoal == nullptr)
@@ -59,12 +59,12 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 	{
 		if (CurrentGoal && CurrentGoal->IsActive())
 		{
-			CurrentGoal->Deactivate(AIOwner);
+			CurrentGoal->Deactivate();
 		}
 		CurrentGoal = NextGoal;
-		if (CurrentGoal)
+		if (IsValid(CurrentGoal))
 		{
-			CurrentGoal->Activate(AIOwner);
+			CurrentGoal->Activate();
 		}
 		OnGoalChanged.ExecuteIfBound(CurrentGoal);
 	}
@@ -77,23 +77,25 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 	{
 		return;
 	}
-	GoalSet.Add(NewObject<UGOAPGoal>(this, GoalClass));
+	UGOAPGoal* NewGoal = NewObject<UGOAPGoal>(this, GoalClass);
+	NewGoal->InitGoal(AIOwner);
+	GoalSet.Add(NewGoal);
 }
 
 void UGoalSelectionComponent::OnGoalCompleted()
 {
 	if (CurrentGoal)
 	{
-		CurrentGoal->Deactivate(AIOwner);
+		CurrentGoal->Deactivate();
 	}
 	CurrentGoal = nullptr;
 }
 
 void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet)
 {
-	for (auto Goal : NewGoalSet)
+	for (const TSubclassOf<UGOAPGoal>& GoalClass : NewGoalSet)
 	{
-		RegisterGoal(Goal);
+		RegisterGoal(GoalClass);
 	}
 }
 

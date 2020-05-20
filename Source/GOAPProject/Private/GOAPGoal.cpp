@@ -12,6 +12,7 @@ DEFINE_LOG_CATEGORY(LogGoal);
 UGOAPGoal::UGOAPGoal() :
 	Super(),
 	Goal(),
+	AIOwner(nullptr),
 	LastPriority(0.0f),
 	bIsActive(false),
 	bCachedValidity(false)
@@ -24,26 +25,31 @@ const TArray<FWorldProperty>& UGOAPGoal::container()
 	return Goal;
 }
 
-bool UGOAPGoal::IsGoalValid(AAIController* Controller)
+void UGOAPGoal::InitGoal(AAIController* Controller)
+{
+	AIOwner = Controller;
+}
+
+bool UGOAPGoal::IsGoalValid()
 {
 	return false;
 }
 
-bool UGOAPGoal::IsGoalStillValid(AAIController* Controller)
+bool UGOAPGoal::IsGoalStillValid()
 {
 	return false;
 }
 
-void UGOAPGoal::ReCalcPriority(AAIController* Controller)
+void UGOAPGoal::ReCalcPriority()
 {
 }
 
-void UGOAPGoal::Activate(AAIController* Controller)
+void UGOAPGoal::Activate()
 {
 	bIsActive = true;
 }
 
-void UGOAPGoal::Deactivate(AAIController* Controller)
+void UGOAPGoal::Deactivate()
 {
 
 	bIsActive = false;
@@ -60,9 +66,13 @@ UAIGoal_KillEnemy::UAIGoal_KillEnemy() : Super()
 	Goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
-bool UAIGoal_KillEnemy::IsGoalValid(AAIController* Controller)
+bool UAIGoal_KillEnemy::IsGoalValid()
 {
-	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
+	if (!AIOwner)
+	{
+		return false;
+	}
+	UAIPerceptionComponent* PerceptionComponent = AIOwner->GetPerceptionComponent();
 	TArray<AActor*> PerceivedActors;
 	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
 	bool bSensedActor = PerceivedActors.Num() > 0;
@@ -70,9 +80,9 @@ bool UAIGoal_KillEnemy::IsGoalValid(AAIController* Controller)
 	return bSensedActor;
 }
 
-void UAIGoal_KillEnemy::Activate(AAIController* Controller)
+void UAIGoal_KillEnemy::Activate()
 {
-	Super::Activate(Controller);
+	Super::Activate();
 
 	/*
 	if (CachedTarget == nullptr)
@@ -84,7 +94,7 @@ void UAIGoal_KillEnemy::Activate(AAIController* Controller)
 	*/
 }
 
-void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
+void UAIGoal_KillEnemy::ReCalcPriority()
 {
 	LastPriority = 10.0f;
 	/*
@@ -135,48 +145,18 @@ void UAIGoal_KillEnemy::ReCalcPriority(AAIController* Controller)
 	CachedTarget = Target;*/
 }
 
-UAIGoal_InteractTest::UAIGoal_InteractTest() :
-	Super()
-{
-	LastPriority = 20.0f;
-	Goal.Add(FWorldProperty(EWorldKey::kUsingObject, true));
-}
-
-bool UAIGoal_InteractTest::IsGoalValid(AAIController* Controller)
-{
-	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
-	TArray<AActor*> PerceivedActors;
-	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
-	for (auto* Actor : PerceivedActors)
-	{
-		if (Actor->Implements<UInteractableObjectInterface>())
-		{
-			Goal[0].Apply(FWorldProperty(EWorldKey::kUsingObject, Actor));
-			CacheValidity(true);
-			return true;
-		}
-	}
-	CacheValidity(false);
-	return false;
-}
-
-void UAIGoal_InteractTest::Activate(AAIController* Controller)
-{
-	Super::Activate(Controller);
-}
-
 UAIGoal_Death::UAIGoal_Death()
 	: Super()
 {
 	Goal.Add(FWorldProperty(EWorldKey::kDead, true));
 }
 
-bool UAIGoal_Death::IsGoalValid(AAIController* Controller)
+bool UAIGoal_Death::IsGoalValid()
 {
 	return false;
 }
 
-void UAIGoal_Death::Activate(AAIController* Controller)
+void UAIGoal_Death::Activate()
 {
-	Super::Activate(Controller);
+	Super::Activate();
 }

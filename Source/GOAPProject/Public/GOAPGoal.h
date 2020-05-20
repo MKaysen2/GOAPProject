@@ -18,6 +18,9 @@ protected:
 	TArray<FWorldProperty> Goal;
 
 	UPROPERTY()
+		AAIController* AIOwner;
+
+	UPROPERTY()
 	float LastPriority;
 
 	UPROPERTY()
@@ -34,12 +37,13 @@ public:
 
 	bool GetLastValidity() { return bCachedValidity; }
 
+	void InitGoal(AAIController* Controller);
 	bool IsActive() { return bIsActive; }
-	virtual bool IsGoalValid(AAIController* Controller);
-	virtual bool IsGoalStillValid(AAIController* Controller);
-	virtual void Activate(AAIController* Controller);
-	virtual void Deactivate(AAIController* Controller);
-	virtual void ReCalcPriority(AAIController* Controller);
+	virtual bool IsGoalValid();
+	virtual bool IsGoalStillValid();
+	virtual void Activate();
+	virtual void Deactivate();
+	virtual void ReCalcPriority();
 
 	float Priority() const;
 };
@@ -53,19 +57,9 @@ class UAIGoal_KillEnemy : public UGOAPGoal
 		AActor* CachedTarget;
 public:
 	UAIGoal_KillEnemy();
-	bool IsGoalValid(AAIController* Controller) override;
-	void Activate(AAIController* Controller) override;
-	void ReCalcPriority(AAIController* Controller) override;
-};
-
-UCLASS()
-class UAIGoal_InteractTest : public UGOAPGoal
-{
-	GENERATED_BODY()
-public:
-	UAIGoal_InteractTest();
-	bool IsGoalValid(AAIController* Controller) override;
-	void Activate(AAIController* Controller) override;
+	bool IsGoalValid() override;
+	void Activate() override;
+	void ReCalcPriority() override;
 };
 
 UCLASS()
@@ -74,6 +68,6 @@ class UAIGoal_Death : public UGOAPGoal
 	GENERATED_BODY()
 public:
 	UAIGoal_Death();
-	bool IsGoalValid(AAIController* Controller) override;
-	void Activate(AAIController* Controller) override;
+	bool IsGoalValid() override;
+	void Activate() override;
 };
