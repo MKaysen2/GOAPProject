@@ -139,6 +139,7 @@ void UGOAPActionsComponent::ClearCurrentPlan()
 	ActionQueue.Reset();
 	StateQueue.Reset();
 }
+
 void UGOAPActionsComponent::Reset()
 {
 	ClearCurrentPlan();

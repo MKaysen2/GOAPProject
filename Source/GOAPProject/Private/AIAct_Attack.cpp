@@ -11,8 +11,7 @@
 #include "..\Public\AITask_AnimMontage.h"
 #include "GameFramework/Pawn.h"
 
-
-UAIAct_Attack::UAIAct_Attack() : 
+UAIAct_Attack::UAIAct_Attack() :
 	Super(
 		{ /*FWorldProperty(EWorldKey::kWeaponLoaded, true)*/ },
 		{ FWorldProperty(EWorldKey::kTargetDead, true) },
@@ -29,6 +28,29 @@ bool UAIAct_Attack::VerifyContext(AAIController* Controller)
 		return false;
 	}
 	APawn* Pawn = Controller->GetPawn();
+
+	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
+	if (!BBComp)
+	{
+		UE_LOG(LogAction, Error, TEXT("Invalid blackboard"));
+
+		return false;
+	}
+	AWeaponBase* Weapon = Cast<AWeaponBase>(BBComp->GetValueAsObject(FName("EquippedWeapon")));
+	if (!Weapon)
+	{
+		UE_LOG(LogAction, Error, TEXT("Invalid weapon"));
+		return false;
+	}
+	//Would also make sure we have ammo right here
+
+	UAnimMontage* MontageHandle = Weapon->GetFireMontage();
+	if (!MontageHandle)
+	{
+		UE_LOG(LogAction, Error, TEXT("invalid montage"));
+		return false;
+	}
+	CachedMontage = MontageHandle;
 	//would check ammo here
 	//Need to handle failure/Unbind delegates etc
 	return true;
@@ -42,67 +64,31 @@ EActionStatus UAIAct_Attack::StartAction()
 		return EActionStatus::kFailed;
 	}
 
-	//TODO: These are so common that they should just be cached
-	
-	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
-	if (!BBComp)
-	{
-		UE_LOG(LogAction, Error, TEXT("Invalid blackboard"));
-
-		return EActionStatus::kFailed;
-	}
-	ACharacter* ControlledPawn = Cast<ACharacter>(AIOwner->GetPawn());
-	if (!ControlledPawn)
+	MontageTaskHandle = UAITask_AnimMontage::AIAnimMontage(AIOwner, CachedMontage, 1.0f, 3);
+	if (!MontageTaskHandle)
 	{
 		return EActionStatus::kFailed;
 	}
-
-	AWeaponBase* Weapon = Cast<AWeaponBase>(BBComp->GetValueAsObject(FName("EquippedWeapon")));
-	if (!Weapon)
-	{
-		UE_LOG(LogAction, Error, TEXT("Invalid weapon"));
-		return EActionStatus::kFailed;
-	}
-	
-	//Should go in verify context
-	UAnimMontage* MontageHandle = Weapon->GetFireMontage();
-	if (!MontageHandle)
-	{
-		UE_LOG(LogAction, Error, TEXT("invalid montage"));
-		return EActionStatus::kFailed;
-	}
-
-	UAITask_AnimMontage* MontageTask = UAITask_AnimMontage::AIAnimMontage(AIOwner, MontageHandle, 1.0f, 5);
-	if (!MontageTask)
-	{
-		return EActionStatus::kFailed;
-	}
-	TaskHandle = MontageTask;
-	MontageTask->OnMontageTaskEnded.AddUObject(this, &UAIAct_Attack::OnMontageEnded);
-	MontageTask->Activate();
+	MontageTaskHandle->OnMontageTaskEnded.AddUObject(this, &UAIAct_Attack::StopAction);
+	MontageTaskHandle->Activate();
 	return EActionStatus::kRunning;
-}
-
-void UAIAct_Attack::OnMontageEnded()
-{
-	StopAction();
-}
-
-void UAIAct_Attack::OnMontageLoop()
-{
 }
 
 void UAIAct_Attack::AbortAction()
 {
 	Super::AbortAction();
-	if (TaskHandle)
+	if (MontageTaskHandle)
 	{
-		TaskHandle->ExternalCancel();
+		MontageTaskHandle->OnMontageTaskEnded.RemoveAll(this);
+		MontageTaskHandle->ExternalCancel();
 	}
-	TaskHandle = nullptr;
+	MontageTaskHandle = nullptr;
+	CachedMontage = nullptr;
 }
 
 void UAIAct_Attack::StopAction()
 {
+	MontageTaskHandle = nullptr;
+	CachedMontage = nullptr;
 	Super::StopAction();
 }

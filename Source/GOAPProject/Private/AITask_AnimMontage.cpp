@@ -43,7 +43,10 @@ void UAITask_AnimMontage::ExternalCancel()
 {
 	EndTask();
 	OwnerController->GetWorldTimerManager().ClearTimer(MontageSectionTimerHandle);
-	AnimInstance->Montage_Stop(0.2f, MontageHandle);
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Stop(0.2f, MontageHandle);
+	}
 	AnimInstance = nullptr;
 	MontageHandle = nullptr;
 }

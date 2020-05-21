@@ -25,10 +25,11 @@ struct GOAPPROJECT_API FStateNode
 	GENERATED_BODY()
 private:
 		TSharedPtr<FWorldState> CurrentState;
-	
+		
+		//TODO: Should be weakptr
 		TSharedPtr<FWorldState> GoalState; //Not a new object
 
-		//Shouldn't this be a weakptr??
+		//TODO: Should be a weakptr to prevent reference cycles
 		TSharedPtr<FStateNode> ParentNode;
 
 	UPROPERTY()

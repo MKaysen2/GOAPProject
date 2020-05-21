@@ -51,7 +51,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 	TSharedPtr<FStateNode> CurrentNode(new FStateNode(Goal->container(), InitialState));
 
 	fringe.HeapPush(CurrentNode, LessFn);
-
+	//TODO: empty the fringe before exiting
 	while (fringe.Num() != 0) 
 	{
 
@@ -104,6 +104,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			if (!ActionHandle.IsValid())
 			{
 				UE_LOG(LogAction, Error, TEXT("Bad Action access in planner!!"));
+				UE_LOG(LogAction, Error, TEXT("You probably dumped the ActionSet somewhere, again"));
 				//Bail. Bail HARD
 				return nullptr;
 			}
