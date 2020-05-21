@@ -46,28 +46,44 @@ protected:
 	UPROPERTY()
 		AAIController* AIOwner;
 
-public:
-	//TODO: probably make these protected, declare Planner as friend class
 	UPROPERTY(EditAnywhere)
-		TArray<FWorldProperty> preconditions;
+		TArray<FWorldProperty> Preconditions;
 
 	UPROPERTY(EditAnywhere)
-		TArray<FWorldProperty> effects;
+		TArray<FWorldProperty> Effects;
+
+	//If the union member prevents us from correctly using FWorldProperty
+	//in Blueprints, we should subclass it and add a map of EWorldKey to TUnion
+	//and use that to construct BP subclasses
+
 	UPROPERTY()
-		int edge_cost; 
+	int EdgeCost;
 
 	UPROPERTY()
 	bool bIsRunning = false;
 
+public:
+
+	UFUNCTION()
+		const TArray<FWorldProperty>& GetEffects() const 
+	{
+		return Effects;
+	}
+
 	UFUNCTION()
 	virtual int Cost() const 
 	{
-		return edge_cost;
+		return EdgeCost;
 	}
 	
 	virtual void SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context);
 	//Try to access cached values here rather than perform direct computation
 
+	/**VerifyContext
+	  * Used to verify context preconditions and cache data dependencies
+	  * By default, returns false so must be overridden
+	  * @return bool whether Action can be run
+	  */
 	UFUNCTION()
 	virtual bool VerifyContext()
 	{

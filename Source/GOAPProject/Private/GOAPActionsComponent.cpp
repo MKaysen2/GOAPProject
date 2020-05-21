@@ -1,9 +1,9 @@
 #include "../Public/GOAPActionsComponent.h"
-#include "../Public/GOAPController.h"
 #include "../Public/GOAPAction.h"
 #include "../Public/StateNode.h"
 #include "../Public/WorldState.h"
 #include "GameFramework/Character.h"
+#include "AIController.h"
 
 
 #if WITH_GAMEPLAY_DEBUGGER
@@ -16,7 +16,7 @@ void UGOAPActionsComponent::OnRegister()
 	Super::OnRegister();
 	ActionIdx = 0;
 	bPlanComplete = true;
-	AIOwner = Cast<AGOAPController>(GetOwner());
+	AIOwner = Cast<AAIController>(GetOwner());
 }
 
 void UGOAPActionsComponent::RegisterAction(TSubclassOf<UGOAPAction> ActionClass)

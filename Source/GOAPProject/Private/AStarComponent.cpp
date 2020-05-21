@@ -147,7 +147,7 @@ void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 	//map effects symbols as keys to action objects for a regressive search
 	for (auto* Action : Actions) 
 	{
-		for (auto& Effect : Action->effects) 
+		for (const auto& Effect : Action->GetEffects()) 
 		{
 			ActionTable.AddUnique(Effect.key, Action);
 		}

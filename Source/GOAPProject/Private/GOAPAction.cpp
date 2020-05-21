@@ -22,9 +22,9 @@ UGOAPAction::UGOAPAction() : Super()
 
 UGOAPAction::UGOAPAction(TArray<FWorldProperty>&& Pre, TArray<FWorldProperty>&& Post, int _Cost) :
 	Super(),
-	preconditions{ Pre },
-	effects{ Post },
-	edge_cost(_Cost)
+	Preconditions{ Pre },
+	Effects{ Post },
+	EdgeCost(_Cost)
 {
 
 }
@@ -35,7 +35,7 @@ void UGOAPAction::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState
 
 void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
 {
-	for (auto& Property : effects)
+	for (auto& Property : Effects)
 	{
 		State.Apply(Property);
 	}
@@ -44,7 +44,7 @@ void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
 void UGOAPAction::UnapplySymbolicEffects(FStateNode* Node) const
 {
 
-	for (auto& Prop : effects)
+	for (auto& Prop : Effects)
 	{
 		Node->UnapplyProperty(Prop);
 	}
@@ -52,7 +52,7 @@ void UGOAPAction::UnapplySymbolicEffects(FStateNode* Node) const
 
 void UGOAPAction::AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const
 {
-	for (auto& Property : preconditions) //by value so should be ok to modify
+	for (auto& Property : Preconditions) //by value so should be ok to modify
 	{
 		CurrentNode->AddPrecondition(Property);
 	}

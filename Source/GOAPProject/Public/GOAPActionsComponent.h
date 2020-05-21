@@ -4,7 +4,7 @@
 #include "GOAPActionsComponent.generated.h"
 
 class FGameplayDebuggerCategory;
-class AGOAPController;
+class AAIController;
 class UGOAPAction;
 struct FStateNode;
 struct FWorldState;
@@ -19,7 +19,7 @@ class GOAPPROJECT_API UGOAPActionsComponent : public UActorComponent
 protected:
 
 	UPROPERTY(Transient)
-		AGOAPController* AIOwner;
+		AAIController* AIOwner;
 	
 	//This should be changed to WeakPtr to avoid increasing ref count
 	UPROPERTY(Transient)
