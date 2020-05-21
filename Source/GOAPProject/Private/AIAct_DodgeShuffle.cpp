@@ -37,15 +37,27 @@ bool UAIAct_DodgeShuffle::VerifyContext(AAIController* Controller)
 EActionStatus UAIAct_DodgeShuffle::StartAction()
 {
 	UWorld* World = AIOwner->GetWorld();
+	FName TraceTag(TEXT("DodgeQuery"));
+	World->DebugDrawTraceTag = TraceTag;
+
+	FCollisionQueryParams QueryParams = FCollisionQueryParams(TraceTag, false, AIOwner->GetPawn());
 	FHitResult HitResult;
-	bool bHitStatic = World->LineTraceSingleByChannel(HitResult, AIOwner->GetPawn()->GetActorLocation(), GoalLocation, ECollisionChannel::ECC_WorldStatic);
+	bool bHitStatic = World->LineTraceSingleByChannel(
+		HitResult, 
+		AIOwner->GetPawn()->GetActorLocation(), 
+		GoalLocation, 
+		ECollisionChannel::ECC_WorldStatic,
+		QueryParams);
+
 	if (bHitStatic)
 	{
+		UE_LOG(LogAction, Error, TEXT("Hit a static object %s"), *HitResult.GetActor()->GetName());
 		return EActionStatus::kFailed;
 	}
 	MoveTask = UAITask_MoveTo::AIMoveTo(AIOwner, GoalLocation, nullptr, -1.0f, EAIOptionFlag::Default, EAIOptionFlag::Default, false, false);
 	if (!MoveTask)
 	{
+		UE_LOG(LogAction, Error, TEXT("MoveTo Task was bogus"));
 		return EActionStatus::kFailed;
 	}
 	AIOwner->ReceiveMoveCompleted.AddDynamic(this, &UAIAct_DodgeShuffle::OnMoveCompleted);
@@ -61,6 +73,7 @@ void UAIAct_DodgeShuffle::OnMoveCompleted(FAIRequestID RequestID, EPathFollowing
 void UAIAct_DodgeShuffle::StopAction()
 {
 	MoveTask = nullptr;
+	AIOwner->ReceiveMoveCompleted.RemoveAll(this);
 	Super::StopAction();
 }
 

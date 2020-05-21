@@ -10,14 +10,14 @@ class UGOAPAction;
 /**
  * Meant to run an Action by keypress
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class GOAPPROJECT_API AActionTestingController : public AAIController
 {
 	GENERATED_BODY()
 	
 protected:
 	//Want to allow this to be easy to edit without recompiling
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
 		TSubclassOf<UGOAPAction> ActionClass;
 
 	UPROPERTY(transient)
