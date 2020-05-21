@@ -14,13 +14,13 @@ UAIAct_Reload::UAIAct_Reload() :
 {
 }
 
-bool UAIAct_Reload::VerifyContext(AAIController* Controller)
+bool UAIAct_Reload::VerifyContext()
 {
-	if (!Controller)
+	if (!AIOwner)
 	{
 		return false;
 	}
-	APawn* Pawn = Controller->GetPawn();
+	APawn* Pawn = AIOwner->GetPawn();
 
 	if (!Pawn || !Pawn->Implements<UCombatInterface>())
 	{

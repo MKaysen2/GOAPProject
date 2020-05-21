@@ -12,6 +12,6 @@ class GOAPPROJECT_API UAIAct_Death : public UGOAPAction
 	GENERATED_BODY()
 public:
 	UAIAct_Death();
-	bool VerifyContext(AAIController* controller) override;
+	bool VerifyContext() override;
 	EActionStatus StartAction() override;
 };

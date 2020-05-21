@@ -26,7 +26,7 @@ protected:
 		FVector GoalLocation;
 public:
 	UAIAct_DodgeShuffle();
-	bool VerifyContext(AAIController* Controller) override;
+	bool VerifyContext() override;
 	EActionStatus StartAction() override;
 	UFUNCTION()
 		void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);

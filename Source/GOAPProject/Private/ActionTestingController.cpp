@@ -28,7 +28,12 @@ void AActionTestingController::PlayAction()
 		UE_LOG(LogTemp, Error, TEXT("Action was null!!"));
 		return;
 	}
-	if (!Action->VerifyContext(this))
+	if (Action->IsActionRunning())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("the action was running already"));
+		return;
+	}
+	if (!Action->VerifyContext())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Verify context failed!!"));
 

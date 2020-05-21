@@ -22,7 +22,7 @@ protected:
 
 public:
 	UAIAct_Attack();
-	bool VerifyContext(AAIController* controller) override;
+	bool VerifyContext() override;
 	EActionStatus StartAction() override;
 	void StopAction() override;
 	void AbortAction() override;

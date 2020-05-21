@@ -16,26 +16,31 @@ UAIAct_DodgeShuffle::UAIAct_DodgeShuffle() :
 	GoalLocation = FAISystem::InvalidLocation;
 }
 
-bool UAIAct_DodgeShuffle::VerifyContext(AAIController* Controller)
+bool UAIAct_DodgeShuffle::VerifyContext()
 {
-	if (!Controller)
+	if (!AIOwner)
 	{
 		return false;
 	}
-	APawn* Pawn = Controller->GetPawn();
+	APawn* Pawn = AIOwner->GetPawn();
 
 	if (!Pawn)
 	{
 		return false;
 	}
 
-	GoalLocation = Pawn->GetActorLocation() + (Pawn->GetActorRightVector() * 300.0f);
+	GoalLocation = Pawn->GetActorLocation() + (Pawn->GetActorRightVector() * 100.0f);
 	
 	return true;
 }
 
 EActionStatus UAIAct_DodgeShuffle::StartAction()
 {
+	if (Super::StartAction() == EActionStatus::kFailed)
+	{
+		return EActionStatus::kFailed;
+	}
+
 	UWorld* World = AIOwner->GetWorld();
 	FName TraceTag(TEXT("DodgeQuery"));
 	World->DebugDrawTraceTag = TraceTag;

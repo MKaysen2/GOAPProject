@@ -20,14 +20,14 @@ UAIAct_Attack::UAIAct_Attack() :
 {
 }
 
-bool UAIAct_Attack::VerifyContext(AAIController* Controller)
+bool UAIAct_Attack::VerifyContext()
 {
 
-	if (!Controller)
+	if (!AIOwner)
 	{
 		return false;
 	}
-	APawn* Pawn = Controller->GetPawn();
+	APawn* Pawn = AIOwner->GetPawn();
 
 	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
 	if (!BBComp)

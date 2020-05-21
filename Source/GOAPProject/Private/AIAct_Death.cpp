@@ -8,7 +8,7 @@ UAIAct_Death::UAIAct_Death() : Super(
 	
 }
 
-bool UAIAct_Death::VerifyContext(AAIController* controller)
+bool UAIAct_Death::VerifyContext()
 {
 	return false;
 }

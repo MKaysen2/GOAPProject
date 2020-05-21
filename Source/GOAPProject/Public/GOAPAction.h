@@ -69,7 +69,7 @@ public:
 	//Try to access cached values here rather than perform direct computation
 
 	UFUNCTION()
-	virtual bool VerifyContext(AAIController* Controller) 
+	virtual bool VerifyContext()
 	{
 		//prevent accidental base class instances from being valid
 		return false;

@@ -111,7 +111,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			UGOAPAction* Action = ActionHandle.Get();
 			//verify context preconditions
 			//skip action if it has already been visited for this node
-			if (!Action->VerifyContext(AIOwner) || VisitedActions.Contains(Action))
+			if (!Action->VerifyContext() || VisitedActions.Contains(Action))
 			{
 				continue;
 			}

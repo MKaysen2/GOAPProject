@@ -13,7 +13,7 @@ class GOAPPROJECT_API UAIAct_Reload : public UGOAPAction
 public:
 	UAIAct_Reload();
 
-	bool VerifyContext(AAIController* controller) override;
+	bool VerifyContext() override;
 	EActionStatus StartAction() override;
 
 };

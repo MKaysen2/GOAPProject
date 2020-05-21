@@ -58,7 +58,7 @@ void UGOAPActionsComponent::RunNextAction()
 
 	if (CurrentAction)
 	{
-		if (!CurrentAction->VerifyContext(AIOwner))
+		if (!CurrentAction->VerifyContext())
 		{
 			CurrentAction = nullptr;
 			//TODO fire delegate here I think
