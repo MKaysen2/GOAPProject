@@ -138,6 +138,19 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 	return nullptr;
 }
 
+void UAStarComponent::AddAction(UGOAPAction* Action)
+{
+	for (const auto& Effect : Action->GetEffects())
+	{
+		ActionTable.AddUnique(Effect.key, Action);
+	}
+}
+
+void UAStarComponent::RemoveAction(UGOAPAction* Action)
+{
+	//Nothing for now
+}
+
 void UAStarComponent::ClearLookupTable()
 {
 	ActionTable.Empty();

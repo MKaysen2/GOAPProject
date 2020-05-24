@@ -46,6 +46,12 @@ public:
 
 	TSharedPtr<FStateNode> Search(UGOAPGoal* Goal, TSharedPtr<FWorldState>& InitialState);
 
+	UFUNCTION()
+	void AddAction(UGOAPAction* Action);
+
+	UFUNCTION()
+	void RemoveAction(UGOAPAction* Action);
+
 	void ClearLookupTable();
 	void CreateLookupTable(TArray<UGOAPAction*>& actions);
 };
