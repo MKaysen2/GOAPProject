@@ -38,6 +38,7 @@ AGOAPController::AGOAPController()
 	Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	UBlackboardData* BBAsset = NewObject<UBlackboardData>(Blackboard);
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("Target"));
+	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("CombatTarget"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("TargetLocation"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("FaceTracking"));
 	BBAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("TorsoTracking"));
