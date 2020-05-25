@@ -82,6 +82,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		{
 			//remove node from closed set if cost is better
 			//o.w. just continue to next node
+			//If we use a different heuristic then we can use IDA* and not even use a closed set
 			if ((*check_closed)->cost() < CurrentNode->cost())
 			{
 				closed_set.Remove(CurrentNode);

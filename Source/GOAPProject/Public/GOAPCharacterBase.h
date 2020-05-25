@@ -16,7 +16,7 @@ class GOAPPROJECT_API AGOAPCharacterBase : public ACharacter
 	GENERATED_BODY()
 protected:
 
-	/* soon...
+	/*
 	UPROPERTY()
 		TArray<TSubclassOf<UGOAPGoal>> GoalSet;
 		*/
@@ -27,6 +27,7 @@ public:
 	
 	AGOAPCharacterBase();
 
+	//Move these to their own interface and then create a GOAPBP base class that implements it
 	UFUNCTION()
 		TArray<TSubclassOf<UGOAPGoal>> GetGoalSet();
 

@@ -32,8 +32,10 @@ private:
 	/////////////////////////////////////////////////////
 	// GOAP related components and members
 	
+		//TODO: Should be managed by component
 		TSharedPtr<FWorldState> CurrentState;
 
+		//Should add to separate BrainComponent
 	UPROPERTY()
 		UAStarComponent* AStarComponent;
 		
@@ -79,6 +81,7 @@ public:
 
 		void OnDamageReceived(UBrainComponent* BrainComp, const FAIMessage& Message);
 
+		//TODO: move to component
 		UFUNCTION(BlueprintCallable)
 			void ApplyWorldProp(const EWorldKey Key, const bool bValue);
 	UFUNCTION()

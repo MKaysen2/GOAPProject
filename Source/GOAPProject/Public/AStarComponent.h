@@ -3,10 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Containers/Array.h"
-#include "IAStarNode.h"
 #include "StateNode.h"
-#include "Containers/Map.h"
 #include "UObject/NoExportTypes.h"
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
