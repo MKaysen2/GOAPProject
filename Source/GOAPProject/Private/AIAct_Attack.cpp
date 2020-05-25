@@ -1,15 +1,9 @@
 #include "..\Public\AIAct_Attack.h"
-#include "..\Public\CombatInterface.h"
 #include "..\Public\WeaponBase.h"
-#include "TimerManager.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Animation/AnimInstance.h"
 #include "..\Public\WorldProperty.h"
-#include "..\Public\WorldState.h"
 #include "..\Public\AITask_AnimMontage.h"
-#include "GameFramework/Pawn.h"
 
 UAIAct_Attack::UAIAct_Attack() :
 	Super(

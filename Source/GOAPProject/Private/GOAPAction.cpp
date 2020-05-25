@@ -8,10 +8,6 @@
 
 #include "AIController.h"
 #include "GameFramework/Character.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "Animation/AnimInstance.h"
-#include "Navigation/PathFollowingComponent.h"
-#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogAction);
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "WorldProperty.h"
-#include "EngineDefines.h"
 #include "GOAPGoal.generated.h"
 
 class AGOAPCharacterBase;

@@ -1,6 +1,5 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\GOAPCharacterBase.h"
-#include "..\Public\InteractableObjectInterface.h"
 
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -72,12 +71,9 @@ bool UAIGoal_KillEnemy::IsGoalValid()
 	{
 		return false;
 	}
-	UAIPerceptionComponent* PerceptionComponent = AIOwner->GetPerceptionComponent();
-	TArray<AActor*> PerceivedActors;
-	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
-	bool bSensedActor = PerceivedActors.Num() > 0;
-	CacheValidity(bSensedActor);
-	return bSensedActor;
+	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
+	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("CombatTarget")));
+	return (TargetActor != nullptr);
 }
 
 void UAIGoal_KillEnemy::Activate()
@@ -85,64 +81,13 @@ void UAIGoal_KillEnemy::Activate()
 	Super::Activate();
 
 	/*
-	if (CachedTarget == nullptr)
-	{
-		return;
-	}
-	UBlackboardComponent* BBComponent = Controller->GetBlackboardComponent();
-	BBComponent->SetValueAsObject(FName("Target"), CachedTarget);
 	*/
 }
 
 void UAIGoal_KillEnemy::ReCalcPriority()
 {
 	LastPriority = 10.0f;
-	/*
-	if (!Controller)
-	{
-		return;
-	}
-	UAIPerceptionComponent* PerceptionComponent = Controller->GetPerceptionComponent();
 
-	APawn* ControlledPawn = Controller->GetPawn();
-	if (!ControlledPawn || !PerceptionComponent)
-	{
-		return;
-	}
-
-	TArray<AActor*> PerceivedActors;
-	PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
-	AActor* Target = nullptr;
-	FVector Location(ControlledPawn->GetActorLocation());
-	float TargetDistance = 0.0f;
-	for (auto* Actor : PerceivedActors)
-	{
-		if (!Actor)
-		{
-			continue;
-		}
-
-		if (!Target)
-		{
-			Target = Actor;
-			TargetDistance = ControlledPawn->GetDistanceTo(Target);
-		}
-		else
-		{
-			float TestDistance = ControlledPawn->GetDistanceTo(Actor);
-			if (TestDistance < TargetDistance)
-			{
-				Target = Actor;
-				TargetDistance = TestDistance;
-			}
-		}
-	}
-	if (!Target)
-	{
-		return;
-	}
-	LastPriority = TargetDistance;
-	CachedTarget = Target;*/
 }
 
 UAIGoal_Death::UAIGoal_Death()

@@ -48,10 +48,10 @@ void UTargetSelectorComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		return;
 	}
-
 	TArray<AActor*> PerceivedActors;
 	PerceptionComp->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
 	AActor* Target = nullptr;
+
 	FVector Location(ControlledPawn->GetActorLocation());
 	float MinDistance = TNumericLimits<float>::Max();
 	for (auto* Actor : PerceivedActors)

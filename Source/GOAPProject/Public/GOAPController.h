@@ -90,11 +90,14 @@ public:
 	UFUNCTION()
 		void OnPlanCompleted();
 
+	//TODO: move to interface
 	UFUNCTION()
 		UGOAPActionsComponent* GetGOAPActionsComponent() { return GOAPActionsComponent; }
 
+	//TODO: move to interface
 	UFUNCTION()
 		UGoalSelectionComponent* GetGoalSelectionComponent() { return GoalComponent; }
 
+	//TODO: move to component
 	TSharedPtr<FWorldState> GetWorldState() { return CurrentState; }
 };
