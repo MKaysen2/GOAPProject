@@ -46,6 +46,7 @@ public:
 	UFUNCTION()
 	void AddAction(UGOAPAction* Action);
 
+	//Not implemented yet
 	UFUNCTION()
 	void RemoveAction(UGOAPAction* Action);
 
