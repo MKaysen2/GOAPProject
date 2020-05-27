@@ -24,6 +24,7 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 	unsatisfied(0),
 	Depth(0)
 {
+	//This should really be in a static method, it's extremely confusing the way it is now
 	CurrentState = MakeShared<FWorldState>();
 	for (auto Property : GoalSet)
 	{

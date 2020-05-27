@@ -4,6 +4,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "..\Public\WorldProperty.h"
 #include "..\Public\AITask_AnimMontage.h"
+#include "..\Public\MontageMapComponent.h"
 
 UAIAct_Attack::UAIAct_Attack() :
 	Super(
@@ -30,15 +31,15 @@ bool UAIAct_Attack::VerifyContext()
 
 		return false;
 	}
-	AWeaponBase* Weapon = Cast<AWeaponBase>(BBComp->GetValueAsObject(FName("EquippedWeapon")));
-	if (!Weapon)
+	UMontageMapComponent* MontageMapComp = Cast<UMontageMapComponent>(BBComp->GetValueAsObject(FName("MontageMapComp")));
+	if (!MontageMapComp)
 	{
-		UE_LOG(LogAction, Error, TEXT("Invalid weapon"));
+		UE_LOG(LogAction, Error, TEXT("Invalid MontageMapper"));
 		return false;
 	}
 	//Would also make sure we have ammo right here
 
-	UAnimMontage* MontageHandle = Weapon->GetFireMontage();
+	UAnimMontage* MontageHandle = MontageMapComp->GetMontageByName(FName("Grenade"));
 	if (!MontageHandle)
 	{
 		UE_LOG(LogAction, Error, TEXT("invalid montage"));

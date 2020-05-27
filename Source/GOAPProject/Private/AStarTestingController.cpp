@@ -14,8 +14,14 @@ AAStarTestingController::AAStarTestingController()
 
 	CurrentState = MakeShared<FWorldState>();
 	DummyGoal = nullptr;
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = .2f;
+}
+
+void AAStarTestingController::Plan()
+{
+	if (GetPawn() && IsValid(DummyGoal))
+	{
+		AStarComponent->Search(DummyGoal, CurrentState);
+	}
 }
 
 void AAStarTestingController::BeginPlay()
@@ -23,28 +29,22 @@ void AAStarTestingController::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AAStarTestingController::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (GetPawn() && IsValid(DummyGoal))
-	{
-		AStarComponent->Search(DummyGoal, CurrentState);
-	}
-}
-
 void AAStarTestingController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	DummyGoal = NewObject<UAIGoal_AlwaysValid>(this);
+	DummyGoal = NewObject<UGOAPGoal>(this, GoalClass);
 	DummyGoal->InitGoal(this);
-	UGOAPAction* NewAction = NewObject<UAIAct_Attack>(this);
-	NewAction->InitAction(this);
-	Action.Add(NewAction);
-	AStarComponent->CreateLookupTable(Action);
+	for (auto& ActionClass : ActionClasses)
+	{
+		UGOAPAction* NewAction = NewObject<UGOAPAction>(this, ActionClass);
+		NewAction->InitAction(this);
+		Actions.Add(NewAction);
+	}
+	AStarComponent->CreateLookupTable(Actions);
 }
 
 void AAStarTestingController::OnUnPossess()
 {
 	DummyGoal = nullptr;
-	Action.Reset();
+	Actions.Reset();
 }

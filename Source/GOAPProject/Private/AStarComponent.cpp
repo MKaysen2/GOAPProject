@@ -127,6 +127,10 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 				continue;
 			}
 			//Apply the action and add node to fringe
+			//Need to check the open set too
+			//Since both open and closed set need to be checked
+			//We should add a flag to the node itself
+			//and store them in a single pool of nodes
 			ChildNode->TakeAction(Action);
 			fringe.HeapPush(ChildNode, LessFn);
 		}

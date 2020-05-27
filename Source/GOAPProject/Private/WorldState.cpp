@@ -59,12 +59,6 @@ bool FWorldState::ApplyFromOther(const FWorldState* Other, EWorldKey eKey)
 	return true;
 }
 
-bool FWorldState::Satisfied(const FWorldProperty& Property) const
-{
-	int Idx = (int32)Property.key;
-	return !(State[Idx].bUnsatisfied);
-}
-
 bool FWorldState::IsSatisfied(EWorldKey Key) const
 {
 	int Idx = (int32)Key;
@@ -77,9 +71,9 @@ const FWorldProperty& FWorldState::GetProperty(EWorldKey Key)
 	return State[Idx];
 }
 
-FWorldState* FWorldState::Clone()
+TSharedPtr<FWorldState> FWorldState::Clone()
 {
-	return (new FWorldState(*this));
+	return TSharedPtr<FWorldState>(new FWorldState(*this));
 }
 
 void FWorldState::LogWS(const FWorldState* Other) const

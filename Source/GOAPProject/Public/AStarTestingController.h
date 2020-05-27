@@ -25,22 +25,25 @@ protected:
 	UPROPERTY()
 		UAStarComponent* AStarComponent;
 
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<UGOAPGoal> GoalClass;
 	//always valid, I think
-	UPROPERTY()
+	UPROPERTY(transient)
 		UGOAPGoal* DummyGoal;
 
+	UPROPERTY(EditAnywhere)
+		TArray<TSubclassOf<UGOAPAction>> ActionClasses;
 	//The only action
-	UPROPERTY()
-		TArray<UGOAPAction*> Action;
+	UPROPERTY(transient)
+		TArray<UGOAPAction*> Actions;
 
 public:
 
 	AAStarTestingController();
-
+	UFUNCTION(BlueprintCallable)
+		void Plan();
 	UFUNCTION()
 		void BeginPlay() override;
-	UFUNCTION()
-		void Tick(float DeltaSeconds) override;
 
 	UFUNCTION()
 		void OnPossess(APawn* InPawn) override;
