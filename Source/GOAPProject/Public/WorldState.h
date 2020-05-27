@@ -36,6 +36,11 @@ public:
 		return State;
 	}
 
+	uint32 GetArrayTypeHash()
+	{
+		return GetTypeHash(State);
+	}
+
 	bool EqualsTest(const FWorldState* Other, EWorldKey Key) const
 	{
 		if (!Other)

@@ -71,6 +71,10 @@ public:
 		return (uint32)Prop.key;
 	}
 
+	uint32 GetValueTypeHash()
+	{
+		return HashCombine(GetTypeHash(DataType), GetTypeHash(*(uint32*)&Data));
+	}
 	friend bool operator==(const FWorldProperty& lhs, const FWorldProperty& rhs) 
 	{
 		return lhs.key == rhs.key;
@@ -91,3 +95,12 @@ public:
 	FString ToString() const;
 
 };
+
+//Copyright Epic Games, Inc.All Rights Reserved.
+static uint32 GetTypeHash(const TArray<FWorldProperty>& Array)
+{
+	uint32 Seed = 0;
+	for (const auto& Elem : Array)
+		Seed ^= GetTypeHash(Elem) + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
+	return Seed;
+}

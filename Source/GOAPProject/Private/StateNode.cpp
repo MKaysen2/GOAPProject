@@ -1,5 +1,6 @@
 #include "..\Public\StateNode.h"
 #include "..\Public\WorldState.h"
+#include "..\Public\GOAPAction.h"
 
 FStateNode::FStateNode() :
 	CurrentState(),

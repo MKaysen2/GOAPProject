@@ -3,12 +3,12 @@
 #include "Containers/Set.h"
 #include "UObject/NoExportTypes.h"
 #include "WorldProperty.h"
-#include "GOAPAction.h"
-#include "IAStarNode.h"
+#include "WorldState.h"
 #include "Templates/UniquePtr.h"
 #include "Templates/SharedPointer.h"
 #include "StateNode.generated.h"
 
+class UGOAPAction;
 template <typename T>
 struct GOAPPROJECT_API TSharedPtrLess 
 {
@@ -24,6 +24,8 @@ struct GOAPPROJECT_API FStateNode
 {
 	GENERATED_BODY()
 private:
+	typedef TMultiMap < EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
+	//Can make sharedref or uniqueptr to show ownership
 		TSharedPtr<FWorldState> CurrentState;
 		
 		//TODO: Should be weakptr
@@ -63,6 +65,11 @@ public:
 		UE_LOG(LogWS, Warning, TEXT("(Goal)"));
 		GoalState->LogWS();
 	}
+
+	uint32 GetWSTypeHash()
+	{
+		return CurrentState->GetArrayTypeHash();
+	}
 	TSharedPtr<FWorldState> GetState()
 	{
 		return CurrentState;
@@ -75,4 +82,33 @@ public:
 	{
 		return ParentNode;
 	}
+
+	struct SetKeyFuncs : public BaseKeyFuncs<TSharedPtr<FStateNode>, TSharedPtr<FStateNode>>
+	{
+		typedef typename TCallTraits<TSharedPtr<FStateNode>>::ParamType KeyInitType;
+		typedef typename TCallTraits<TSharedPtr<FStateNode>>::ParamType ElementInitType;
+
+		/**
+		 * @return The key used to index the given element.
+		 */
+		static FORCEINLINE KeyInitType GetSetKey(ElementInitType Element)
+		{
+			return Element;
+		}
+
+		/**
+		 * @return True if the keys match.
+		 */
+		template<typename ComparableKey>
+		static FORCEINLINE bool Matches(KeyInitType A, ComparableKey B)
+		{
+			return (A.IsValid() && B.IsValid()) ? A->KeyMatches(*B) : 
+		}
+
+		/** Calculates a hash index for a key. */
+		static FORCEINLINE uint32 GetKeyHash(KeyInitType Key)
+		{
+			return Key.IsValid() ? Key->GetWSTypeHash() : GetTypeHash(NULL);
+		}
+	};
 };
