@@ -29,11 +29,43 @@ class GOAPPROJECT_API UAStarComponent : public UActorComponent
 	GENERATED_BODY()
 protected:
 	typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
+	typedef TSharedPtr<FStateNode> NodePtr;
+
+	struct FPriorityQueue
+	{
+		TArray<NodePtr> Heap;
+		TSharedPtrLess<FStateNode> LessFn;
+		
+		FPriorityQueue() : Heap(), LessFn()
+		{
+			Heap.Heapify(LessFn);
+		}
+		void Push(const NodePtr& InItem)
+		{
+			Heap.HeapPush(InItem, LessFn);
+		}
+
+		void Pop(NodePtr& OutItem)
+		{
+			Heap.HeapPop(OutItem, LessFn);
+		}
+
+		void ReSort()
+		{
+			Heap.HeapSort(LessFn);
+		}
+
+		TArray<NodePtr>::SizeType Num() const
+		{
+			return Heap.Num();
+		}
+	};
 	LookupTable ActionTable;
 
 	UPROPERTY()
 		AAIController* AIOwner;
 
+	
 	UPROPERTY()
 		int32 MaxDepth;
 public:

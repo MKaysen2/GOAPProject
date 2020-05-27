@@ -7,9 +7,10 @@ FStateNode::FStateNode() :
 	GoalState(),
 	ParentNode(),
 	ParentEdge(),
-	forward_cost(0),
+	ForwardCost(0),
 	unsatisfied(0),
-	Depth(0)
+	Depth(0),
+	Closed(false)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("FStateNode default constructor"));
 	//Not sure this is ever used
@@ -20,9 +21,10 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 	GoalState(InitialState),
 	ParentNode(),
 	ParentEdge(),
-	forward_cost(0),
+	ForwardCost(0),
 	unsatisfied(0),
-	Depth(0)
+	Depth(0),
+	Closed(false)
 {
 	//This should really be in a static method, it's extremely confusing the way it is now
 	CurrentState = MakeShared<FWorldState>();
@@ -31,6 +33,7 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 		CurrentState->Add(Property);
 		CurrentState->ValidateProperty(GoalState.Get(), Property.key);
 	}
+	CurrentState->CacheArrayTypeHash();
 	unsatisfied = CountUnsatisfied();
 }
 
@@ -39,7 +42,7 @@ FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
 	GoalState(Node->GoalState),
 	ParentNode(Node),
 	ParentEdge(Edge),
-	forward_cost(Node->cost()),
+	ForwardCost(Node->GetForwardCost()),
 	unsatisfied(Node->unsatisfied),
 	Depth(Node->Depth + 1)
 {
@@ -47,7 +50,32 @@ FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
 
 int FStateNode::cost() const 
 {
-	return forward_cost + unsatisfied;
+	return ForwardCost + unsatisfied;
+}
+
+int FStateNode::GetDepth() const
+{
+	return Depth;
+}
+
+void FStateNode::MarkClosed()
+{
+	Closed = true;
+}
+
+void FStateNode::MarkOpened()
+{
+	Closed = false;
+}
+
+bool FStateNode::IsClosed()
+{
+	return Closed;
+}
+
+int FStateNode::GetForwardCost()
+{
+	return ForwardCost;
 }
 
 bool FStateNode::IsGoal() 
@@ -84,7 +112,17 @@ void FStateNode::LogNode() const
 	CurrentState->LogWS(GoalState.Get());
 }
 
-void FStateNode::TakeAction(const UGOAPAction* Action) 
+
+void FStateNode::ReParent(const FStateNode& OtherNode)
+{
+	ParentNode = OtherNode.ParentNode;
+	ParentEdge = OtherNode.ParentEdge;
+	//this should be correct since we're swapping the parent
+	//Unsatisfied should not be 
+	ForwardCost = OtherNode.ForwardCost;
+}
+
+void FStateNode::TakeAction(const UGOAPAction* Action)
 {
 	if (!CurrentState.IsValid() || !GoalState.IsValid())
 	{
@@ -97,10 +135,12 @@ void FStateNode::TakeAction(const UGOAPAction* Action)
 	//Add preconditions and determine if satisfied
 	Action->AddUnsatisfiedPreconditions(this);
 
+	CurrentState->CacheArrayTypeHash();
 	unsatisfied = CountUnsatisfied();
 	
+
 	//add cost of action to produce current total forward cost
-	forward_cost += Action->Cost();
+	ForwardCost += Action->Cost();
 }
 
 void FStateNode::UnapplyProperty(const FWorldProperty& Property)

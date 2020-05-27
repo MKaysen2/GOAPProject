@@ -71,7 +71,7 @@ public:
 		return (uint32)Prop.key;
 	}
 
-	uint32 GetValueTypeHash()
+	uint32 GetValueTypeHash() const
 	{
 		return HashCombine(GetTypeHash(DataType), GetTypeHash(*(uint32*)&Data));
 	}
@@ -101,6 +101,6 @@ static uint32 GetTypeHash(const TArray<FWorldProperty>& Array)
 {
 	uint32 Seed = 0;
 	for (const auto& Elem : Array)
-		Seed ^= GetTypeHash(Elem) + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
+		Seed ^= Elem.GetValueTypeHash() + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
 	return Seed;
 }

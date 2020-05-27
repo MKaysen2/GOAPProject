@@ -20,6 +20,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		TArray<FWorldProperty> State;
 
+	uint32 CachedTypeHash;
 public:
 	FWorldState();
 	void Add(const FWorldProperty& prop);
@@ -33,12 +34,16 @@ public:
 		return State;
 	}
 
-	uint32 GetArrayTypeHash()
+	void CacheArrayTypeHash()
 	{
 		//Should cache this result
-		return GetTypeHash(State);
+		CachedTypeHash = GetTypeHash(State);
 	}
 
+	uint32 GetArrayTypeHash()
+	{
+		return CachedTypeHash;
+	}
 	bool EqualsTest(const FWorldState* Other, EWorldKey Key) const
 	{
 		if (!Other)

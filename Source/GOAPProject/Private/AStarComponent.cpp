@@ -41,26 +41,27 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 	{
 		return nullptr;
 	}
-	TArray<TSharedPtr<FStateNode>> fringe;
-	auto LessFn = TSharedPtrLess<FStateNode>(); //predicate, use in any heap functions
-	fringe.Heapify(LessFn);
+	FPriorityQueue Fringe;
 
-	//there are optimizations to be made here by someone smarter than me
-	TSet<TSharedPtr<FStateNode>> closed_set; //probably have to figure out keyfuncs for this
+	//To save time, ALL nodes are added to a single set, and keep track of whether they're closed
+	//This does mean that we're using additional space, but it's easier and faster, I think
+	TSet<TSharedPtr<FStateNode>, FStateNode::SetKeyFuncs> NodePool;
 
 	TSharedPtr<FStateNode> CurrentNode(new FStateNode(Goal->container(), InitialState));
 
-	fringe.HeapPush(CurrentNode, LessFn);
+	Fringe.Push(CurrentNode);
+	NodePool.Add(CurrentNode);
 	//TODO: empty the fringe before exiting
-	while (fringe.Num() != 0) 
+	while (Fringe.Num() != 0) 
 	{
 
 		//pop the lowest cost node from p-queue
-		fringe.HeapPop(CurrentNode, LessFn);
+		Fringe.Pop(CurrentNode);
 		if (!CurrentNode.IsValid())
 		{
 			break;
 		}
+		CurrentNode->MarkClosed();
 		//This is a regressive search
 		//a goal node g is any node s.t. all values of the node's state match that of the initial state
 		if (CurrentNode->IsGoal())
@@ -68,29 +69,12 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			break;
 		}
 
-		if (CurrentNode->Depth > MaxDepth)
+		if (CurrentNode->GetDepth() > MaxDepth)
 		{
 			//Do not want to accidentally generate partial plan
 			//if last node in fringe went over MaxDepth
 			CurrentNode = nullptr;
 			continue;
-		}
-		//check closed set for current node
-		//this prob doesn't work as expected rn.
-		auto check_closed = closed_set.Find(CurrentNode);
-		if (check_closed) 
-		{
-			//remove node from closed set if cost is better
-			//o.w. just continue to next node
-			//If we use a different heuristic then we can use IDA* and not even use a closed set
-			if ((*check_closed)->cost() < CurrentNode->cost())
-			{
-				closed_set.Remove(CurrentNode);
-			}
-			else
-			{
-				continue;
-			}
 		}
 
 		//Generate candidate edges (actions)
@@ -126,13 +110,34 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			{
 				continue;
 			}
-			//Apply the action and add node to fringe
-			//Need to check the open set too
-			//Since both open and closed set need to be checked
-			//We should add a flag to the node itself
-			//and store them in a single pool of nodes
+
+			//Actually generate the neighbor
 			ChildNode->TakeAction(Action);
-			fringe.HeapPush(ChildNode, LessFn);
+
+			//check if node exists already
+			const auto* FindNode = NodePool.Find(ChildNode);
+			if(FindNode != nullptr && FindNode->IsValid())
+			{
+				TSharedPtr<FStateNode> ExistingNode = *FindNode;
+				if (CurrentNode->GetForwardCost() < ExistingNode->GetForwardCost())
+				{
+					ExistingNode->ReParent(*CurrentNode);
+					if (ExistingNode->IsClosed())
+					{
+						ExistingNode->MarkOpened();
+						Fringe.Push(ExistingNode);
+					}
+					else
+					{
+						Fringe.ReSort();
+					}
+				}
+			}
+			else
+			{
+				Fringe.Push(ChildNode);
+				NodePool.Add(ChildNode);
+			}
 		}
 	}
 	

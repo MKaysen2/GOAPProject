@@ -38,11 +38,13 @@ private:
 		UGOAPAction* ParentEdge;
 
 		int CountUnsatisfied();
-	int forward_cost;
-
-public:
+	int ForwardCost;
 	int unsatisfied;
 	int Depth = 0;
+
+	bool Closed;
+public:
+	
 
 	friend FORCEINLINE bool operator<(const FStateNode& lhs, const FStateNode& rhs) {
 		return lhs.cost() < rhs.cost();
@@ -52,6 +54,16 @@ public:
 	FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge);
 
 	int cost() const;
+	int GetDepth() const;
+	void MarkClosed();
+	void MarkOpened();
+	bool IsClosed();
+
+	int GetForwardCost();
+	/** Reparent the node to use another Node's parent node and Edge
+	  * Also update the forward cost to match
+	  */
+	void ReParent(const FStateNode& OtherNode);
 	void TakeAction(const UGOAPAction* action);
 	void UnapplyProperty(const FWorldProperty& Property);
 	void AddPrecondition(const FWorldProperty& Property);
@@ -102,7 +114,7 @@ public:
 		template<typename ComparableKey>
 		static FORCEINLINE bool Matches(KeyInitType A, ComparableKey B)
 		{
-			return (A.IsValid() && B.IsValid()) ? A->KeyMatches(*B) : 
+			return (A.IsValid() && B.IsValid()) && (A->GetWSTypeHash() == B->GetWSTypeHash());
 		}
 
 		/** Calculates a hash index for a key. */
