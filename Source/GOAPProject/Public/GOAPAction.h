@@ -62,6 +62,8 @@ protected:
 	UPROPERTY()
 	bool bIsRunning = false;
 
+	//Should add effects and preconditions in InitAction or something
+	//which will make it easier to create BP subclasses
 public:
 
 	UFUNCTION()
