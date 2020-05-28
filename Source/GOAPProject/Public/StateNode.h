@@ -37,9 +37,14 @@ private:
 	UPROPERTY()
 		UGOAPAction* ParentEdge;
 
+	/**Properties flags (just Unsatisfied for now). Indexed by EWorldKey
+	  * might make this into uint8 and add some flags if I need to */
+	UPROPERTY()
+		TArray<bool> PropFlags;
+
 		int CountUnsatisfied();
 	int ForwardCost;
-	int unsatisfied;
+	int NumUnsatisfied;
 	int Depth = 0;
 
 	bool Closed;
@@ -69,7 +74,11 @@ public:
 	void AddPrecondition(const FWorldProperty& Property);
 
 	bool IsGoal();
-	void FindActions(const LookupTable& action_map, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions);
+	void GetNeighboringEdges(const LookupTable& action_map, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions);
+
+
+	static TSharedPtr<FStateNode> GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action);
+
 	void LogNode() const;
 
 	void LogGoal() const 

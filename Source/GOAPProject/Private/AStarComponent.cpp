@@ -78,11 +78,11 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 		}
 
 		//Generate candidate edges (actions)
-		TArray<TWeakObjectPtr<UGOAPAction>> CandidateActions;
-		CurrentNode->FindActions(ActionTable, CandidateActions);
+		TArray<TWeakObjectPtr<UGOAPAction>> CandidateEdges;
+		CurrentNode->GetNeighboringEdges(ActionTable, CandidateEdges);
 
 		TSet<UGOAPAction*> VisitedActions;
-		for (auto ActionHandle : CandidateActions) 
+		for (auto ActionHandle : CandidateEdges) 
 		{
 
 			
@@ -159,6 +159,10 @@ void UAStarComponent::AddAction(UGOAPAction* Action)
 void UAStarComponent::RemoveAction(UGOAPAction* Action)
 {
 	//Nothing for now
+	for (const auto& Effect : Action->GetEffects())
+	{
+		ActionTable.RemoveSingle(Effect.key, Action);
+	}
 }
 
 void UAStarComponent::ClearLookupTable()

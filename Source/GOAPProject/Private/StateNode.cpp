@@ -7,8 +7,9 @@ FStateNode::FStateNode() :
 	GoalState(),
 	ParentNode(),
 	ParentEdge(),
+	PropFlags(),
 	ForwardCost(0),
-	unsatisfied(0),
+	NumUnsatisfied(0),
 	Depth(0),
 	Closed(false)
 {
@@ -21,11 +22,13 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 	GoalState(InitialState),
 	ParentNode(),
 	ParentEdge(),
+	PropFlags(),
 	ForwardCost(0),
-	unsatisfied(0),
+	NumUnsatisfied(0),
 	Depth(0),
 	Closed(false)
 {
+	PropFlags.Init(false, (uint8)EWorldKey::SYMBOL_MAX);
 	//This should really be in a static method, it's extremely confusing the way it is now
 	CurrentState = MakeShared<FWorldState>();
 	for (auto Property : GoalSet)
@@ -34,7 +37,7 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 		CurrentState->ValidateProperty(GoalState.Get(), Property.key);
 	}
 	CurrentState->CacheArrayTypeHash();
-	unsatisfied = CountUnsatisfied();
+	NumUnsatisfied = CountUnsatisfied();
 }
 
 FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
@@ -42,15 +45,16 @@ FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
 	GoalState(Node->GoalState),
 	ParentNode(Node),
 	ParentEdge(Edge),
+	PropFlags(Node->PropFlags),
 	ForwardCost(Node->GetForwardCost()),
-	unsatisfied(Node->unsatisfied),
+	NumUnsatisfied(Node->NumUnsatisfied),
 	Depth(Node->Depth + 1)
 {
 }
 
 int FStateNode::cost() const 
 {
-	return ForwardCost + unsatisfied;
+	return ForwardCost + NumUnsatisfied;
 }
 
 int FStateNode::GetDepth() const
@@ -80,10 +84,10 @@ int FStateNode::GetForwardCost()
 
 bool FStateNode::IsGoal() 
 {
-	return unsatisfied <= 0;
+	return NumUnsatisfied <= 0;
 }
 
-void FStateNode::FindActions(const LookupTable& ActionMap, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions)
+void FStateNode::GetNeighboringEdges(const LookupTable& ActionMap, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions)
 {
 	if (!GoalState)
 	{
@@ -97,6 +101,11 @@ void FStateNode::FindActions(const LookupTable& ActionMap, TArray<TWeakObjectPtr
 			ActionMap.MultiFind((EWorldKey)Key, out_actions);
 		}
 	}
+}
+
+TSharedPtr<FStateNode> FStateNode::GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action)
+{
+	return TSharedPtr<FStateNode>();
 }
 
 void FStateNode::LogNode() const
@@ -136,7 +145,7 @@ void FStateNode::TakeAction(const UGOAPAction* Action)
 	Action->AddUnsatisfiedPreconditions(this);
 
 	CurrentState->CacheArrayTypeHash();
-	unsatisfied = CountUnsatisfied();
+	NumUnsatisfied = CountUnsatisfied();
 	
 
 	//add cost of action to produce current total forward cost
@@ -186,6 +195,7 @@ int FStateNode::CountUnsatisfied()
 
 		if (Property.bUnsatisfied)
 		{
+			PropFlags[(uint8)Property.key] = true;
 			++iNumUnsatisfied;
 		}
 	}
