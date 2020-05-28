@@ -26,13 +26,13 @@ struct GOAPPROJECT_API FStateNode
 private:
 	typedef TMultiMap < EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
 	//Can make sharedref or uniqueptr to show ownership
-		TSharedPtr<FWorldState> CurrentState;
+		TSharedRef<FWorldState> CurrentState;
 		
-		//TODO: Should be weakptr
-		TSharedPtr<FWorldState> GoalState; //Not a new object
+		//The true current state, that we are regressing to
+		//Can probably be a sharedref too since it's not supposed to be null, ever
+		TSharedPtr<FWorldState> GoalState;
 
-		//TODO: Should be a weakptr to prevent reference cycles
-		TSharedPtr<FStateNode> ParentNode;
+		TWeakPtr<FStateNode> ParentNode;
 
 	UPROPERTY()
 		UGOAPAction* ParentEdge;
@@ -42,42 +42,45 @@ private:
 	UPROPERTY()
 		TArray<bool> PropFlags;
 
-		int CountUnsatisfied();
 	int ForwardCost;
 	int NumUnsatisfied;
 	int Depth = 0;
-
+		
 	bool Closed;
+
+	int CountUnsatisfied();
+
 public:
 	
-
-	friend FORCEINLINE bool operator<(const FStateNode& lhs, const FStateNode& rhs) {
-		return lhs.cost() < rhs.cost();
-	}
 	FStateNode();
 	FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldState> InitialState);
-	FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge);
+	FStateNode(const TSharedRef<FWorldState>& WorldState, const TSharedPtr<FStateNode>& Node);
 
-	int cost() const;
+	static TSharedPtr<FStateNode> CreateStartNode(const TArray<FWorldProperty>& GoalSet, const TSharedPtr<FWorldState>& InitialState);
+	static TSharedPtr<FStateNode> GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action);
+
+	friend FORCEINLINE bool operator<(const FStateNode& lhs, const FStateNode& rhs) {
+		return lhs.Cost() < rhs.Cost();
+	}
+
+	int Cost() const;
+	int GetForwardCost();
 	int GetDepth() const;
 	void MarkClosed();
 	void MarkOpened();
 	bool IsClosed();
+	void SetUnsatisfied(EWorldKey Key);
 
-	int GetForwardCost();
 	/** Reparent the node to use another Node's parent node and Edge
 	  * Also update the forward cost to match
 	  */
 	void ReParent(const FStateNode& OtherNode);
-	void TakeAction(const UGOAPAction* action);
+	bool ChainBackward(UGOAPAction* action);
 	void UnapplyProperty(const FWorldProperty& Property);
 	void AddPrecondition(const FWorldProperty& Property);
 
 	bool IsGoal();
 	void GetNeighboringEdges(const LookupTable& action_map, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions);
-
-
-	static TSharedPtr<FStateNode> GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action);
 
 	void LogNode() const;
 
@@ -91,17 +94,10 @@ public:
 	{
 		return CurrentState->GetArrayTypeHash();
 	}
-	TSharedPtr<FWorldState> GetState()
-	{
-		return CurrentState;
-	}
+
 	UGOAPAction* edge() 
 	{
 		return ParentEdge;
-	}
-	TSharedPtr<FStateNode> previous() 
-	{
-		return ParentNode;
 	}
 
 	struct SetKeyFuncs : public BaseKeyFuncs<TSharedPtr<FStateNode>, TSharedPtr<FStateNode>>

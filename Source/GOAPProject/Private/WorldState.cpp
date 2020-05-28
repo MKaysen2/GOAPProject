@@ -71,9 +71,9 @@ const FWorldProperty& FWorldState::GetProperty(EWorldKey Key)
 	return State[Idx];
 }
 
-TSharedPtr<FWorldState> FWorldState::Clone()
+TSharedRef<FWorldState> FWorldState::Clone()
 {
-	return TSharedPtr<FWorldState>(new FWorldState(*this));
+	return TSharedRef<FWorldState>(new FWorldState(*this));
 }
 
 void FWorldState::LogWS(const FWorldState* Other) const

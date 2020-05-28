@@ -32,6 +32,7 @@ enum class EActionStatus : uint8
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
 //TODO: just add the controlled pawn as a property already, seriously
+//TODO: Make this not reference stateNode at all, just WorldState
 UCLASS(ABSTRACT, BlueprintType, Blueprintable)
 class GOAPPROJECT_API UGOAPAction : public UObject 
 {

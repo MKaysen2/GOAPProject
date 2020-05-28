@@ -23,6 +23,7 @@ private:
 	uint32 CachedTypeHash;
 public:
 	FWorldState();
+
 	void Add(const FWorldProperty& prop);
 	bool Apply(const FWorldProperty& property);
 	bool ApplyFromOther(const FWorldState* Other, EWorldKey Key);
@@ -53,7 +54,7 @@ public:
 		uint8 Idx = (uint8)Key;
 		return State[Idx].Equals(Other->State[Idx]);
 	}
-	TSharedPtr<FWorldState> Clone();
+	TSharedRef<FWorldState> Clone();
 
 	void LogWS(const FWorldState* Other = nullptr) const;
 #if WITH_GAMEPLAY_DEBUGGER

@@ -125,7 +125,7 @@ void AGOAPController::RePlan()
 	
 	if (Node.IsValid())
 	{
-		GOAPActionsComponent->StartPlan(Node);
+		//GOAPActionsComponent->StartPlan(Node);
 	}
 	else
 	{

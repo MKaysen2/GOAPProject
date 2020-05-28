@@ -48,7 +48,7 @@ void UGOAPAction::UnapplySymbolicEffects(FStateNode* Node) const
 
 void UGOAPAction::AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const
 {
-	for (auto& Property : Preconditions) //by value so should be ok to modify
+	for (auto& Property : Preconditions)
 	{
 		CurrentNode->AddPrecondition(Property);
 	}

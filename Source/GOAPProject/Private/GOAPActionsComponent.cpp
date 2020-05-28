@@ -91,6 +91,7 @@ void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
 	{
 		return;
 	}
+	/*
 	//The starting node should have a nullptr for the parent node+edge
 	while (CurrentNode.IsValid() )
 	{
@@ -103,6 +104,7 @@ void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
 		StateQueue.Emplace(CurrentNode->GetState());
 		CurrentNode = CurrentNode->previous();
 	}
+	*/
 	RunNextAction();
 }
 

@@ -105,23 +105,16 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			VisitedActions.Add(Action);
 
 			//Create the Child node 
-			TSharedPtr<FStateNode> ChildNode(new FStateNode(CurrentNode, Action));
-			if (!ChildNode.IsValid())
-			{
-				continue;
-			}
-
-			//Actually generate the neighbor
-			ChildNode->TakeAction(Action);
+			TSharedPtr<FStateNode> ChildNode(FStateNode::GenerateNeighbor(CurrentNode, Action));
 
 			//check if node exists already
 			const auto* FindNode = NodePool.Find(ChildNode);
 			if(FindNode != nullptr && FindNode->IsValid())
 			{
 				TSharedPtr<FStateNode> ExistingNode = *FindNode;
-				if (CurrentNode->GetForwardCost() < ExistingNode->GetForwardCost())
+				if (ChildNode->GetForwardCost() < ExistingNode->GetForwardCost())
 				{
-					ExistingNode->ReParent(*CurrentNode);
+					ExistingNode->ReParent(*ChildNode);
 					if (ExistingNode->IsClosed())
 					{
 						ExistingNode->MarkOpened();
@@ -135,6 +128,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			}
 			else
 			{
+				ChildNode->MarkOpened(); //just in case we haven't
 				Fringe.Push(ChildNode);
 				NodePool.Add(ChildNode);
 			}

@@ -3,11 +3,11 @@
 #include "..\Public\GOAPAction.h"
 
 FStateNode::FStateNode() :
-	CurrentState(),
-	GoalState(),
-	ParentNode(),
-	ParentEdge(),
-	PropFlags(),
+	CurrentState(MakeShared<FWorldState>()),
+	GoalState(nullptr),
+	ParentNode(nullptr),
+	ParentEdge(nullptr),
+	PropFlags(false, (uint8)EWorldKey::SYMBOL_MAX),
 	ForwardCost(0),
 	NumUnsatisfied(0),
 	Depth(0),
@@ -18,19 +18,17 @@ FStateNode::FStateNode() :
 }
 
 FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldState> InitialState) :
-	CurrentState(),
+	CurrentState(MakeShared<FWorldState>()),
 	GoalState(InitialState),
-	ParentNode(),
-	ParentEdge(),
-	PropFlags(),
+	ParentNode(nullptr),
+	ParentEdge(nullptr),
+	PropFlags(false, (uint8)EWorldKey::SYMBOL_MAX),
 	ForwardCost(0),
 	NumUnsatisfied(0),
 	Depth(0),
 	Closed(false)
 {
-	PropFlags.Init(false, (uint8)EWorldKey::SYMBOL_MAX);
 	//This should really be in a static method, it's extremely confusing the way it is now
-	CurrentState = MakeShared<FWorldState>();
 	for (auto Property : GoalSet)
 	{
 		CurrentState->Add(Property);
@@ -40,19 +38,21 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 	NumUnsatisfied = CountUnsatisfied();
 }
 
-FStateNode::FStateNode(TSharedPtr<FStateNode> Node, UGOAPAction* Edge) :
-	CurrentState(Node->CurrentState->Clone()),
+FStateNode::FStateNode(const TSharedRef<FWorldState>& WorldState, const TSharedPtr<FStateNode>& Node) :
+	CurrentState(WorldState),
 	GoalState(Node->GoalState),
 	ParentNode(Node),
-	ParentEdge(Edge),
+	ParentEdge(nullptr),
 	PropFlags(Node->PropFlags),
 	ForwardCost(Node->GetForwardCost()),
 	NumUnsatisfied(Node->NumUnsatisfied),
-	Depth(Node->Depth + 1)
+	Depth(Node->Depth + 1),
+	Closed(false)
 {
+
 }
 
-int FStateNode::cost() const 
+int FStateNode::Cost() const 
 {
 	return ForwardCost + NumUnsatisfied;
 }
@@ -77,6 +77,10 @@ bool FStateNode::IsClosed()
 	return Closed;
 }
 
+void FStateNode::SetUnsatisfied(EWorldKey Key)
+{
+
+}
 int FStateNode::GetForwardCost()
 {
 	return ForwardCost;
@@ -103,9 +107,24 @@ void FStateNode::GetNeighboringEdges(const LookupTable& ActionMap, TArray<TWeakO
 	}
 }
 
-TSharedPtr<FStateNode> FStateNode::GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action)
+TSharedPtr<FStateNode> FStateNode::CreateStartNode(const TArray<FWorldProperty>& GoalSet, const TSharedPtr<FWorldState>& InitialState)
 {
 	return TSharedPtr<FStateNode>();
+}
+
+TSharedPtr<FStateNode> FStateNode::GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action)
+{
+	TSharedPtr<FStateNode> ChildNode(new FStateNode(CurrentNode->CurrentState->Clone(), CurrentNode));
+	if (!ChildNode.IsValid())
+	{
+		return nullptr;
+	}
+	if (!ChildNode->ChainBackward(Action))
+	{
+		return nullptr;
+	}
+	//Actually generate the neighbor
+	return ChildNode;
 }
 
 void FStateNode::LogNode() const
@@ -127,17 +146,17 @@ void FStateNode::ReParent(const FStateNode& OtherNode)
 	ParentNode = OtherNode.ParentNode;
 	ParentEdge = OtherNode.ParentEdge;
 	//this should be correct since we're swapping the parent
-	//Unsatisfied should not be 
 	ForwardCost = OtherNode.ForwardCost;
+	//Also need to change the depth
+	Depth = OtherNode.Depth;
+	//Unsatisfied should not be different so we won't change that
+
 }
 
-void FStateNode::TakeAction(const UGOAPAction* Action)
+bool FStateNode::ChainBackward(UGOAPAction* Action)
 {
-	if (!CurrentState.IsValid() || !GoalState.IsValid())
-	{
-		return;
-	}
 
+	ParentEdge = Action;
 	//resolve worldstate
 	Action->UnapplySymbolicEffects(this);
 
@@ -146,10 +165,10 @@ void FStateNode::TakeAction(const UGOAPAction* Action)
 
 	CurrentState->CacheArrayTypeHash();
 	NumUnsatisfied = CountUnsatisfied();
-	
 
 	//add cost of action to produce current total forward cost
 	ForwardCost += Action->Cost();
+	return true;
 }
 
 void FStateNode::UnapplyProperty(const FWorldProperty& Property)
@@ -157,6 +176,7 @@ void FStateNode::UnapplyProperty(const FWorldProperty& Property)
 	if (Property.DataType == FWorldProperty::Type::kVariable)
 	{
 		//I'm not sure if this should be different in the inverse application
+		//this isn't even correct lol it the key should be the property value
 		CurrentState->ApplyFromOther(GoalState.Get(), Property.key);
 	}
 	else
@@ -175,9 +195,12 @@ void FStateNode::AddPrecondition(const FWorldProperty& Property)
 	//(non-recursive, props in all world states are assumed const)
 	if (Property.DataType == FWorldProperty::Type::kVariable && ParentNode.IsValid())
 	{
-		FWorldProperty PropCopy(ParentNode->CurrentState->GetProperty(Property.Data.kValue));
-		PropCopy.key = Property.key;
-		CurrentState->Apply(PropCopy);
+		if (TSharedPtr<FStateNode> ParentShared = ParentNode.Pin())
+		{
+			FWorldProperty PropCopy(ParentShared->CurrentState->GetProperty(Property.Data.kValue));
+			PropCopy.key = Property.key;
+			CurrentState->Apply(PropCopy);
+		}
 	}
 	else
 	{
