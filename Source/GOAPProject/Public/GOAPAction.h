@@ -74,6 +74,12 @@ public:
 	}
 
 	UFUNCTION()
+		const TArray<FWorldProperty>& GetPreconditions() const
+	{
+		return Preconditions;
+	}
+
+	UFUNCTION()
 	virtual int Cost() const 
 	{
 		return EdgeCost;
@@ -100,11 +106,6 @@ public:
 	UFUNCTION()
 	void ApplySymbolicEffects(FWorldState& State) const;
 
-	//reverse application of action
-	//Returns number of successfully satisfied properties
-	virtual void UnapplySymbolicEffects(FStateNode* CurrentNode) const;
-
-	void AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const;
 	FActionEndedDelegate OnActionEnded;
 
 	//Should be called when actions are created

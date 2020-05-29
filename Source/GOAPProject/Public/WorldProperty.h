@@ -32,27 +32,13 @@ public:
 
 	EWorldKey Key = EWorldKey::kIdle;
 
-	enum class Type
-	{
-		kBool,
-		kVariable
-	} DataType = Type::kBool;
-
-	uint8 nValue;
-	//I believe this should only ever be marked by the planner
-	bool bUnsatisfied = false;
+	uint8 Value;
 
 
 	FWorldProperty() = default;
-	FWorldProperty(EWorldKey _Key, bool _bValue) : Key(_Key), DataType(Type::kBool)
+	FWorldProperty(EWorldKey _Key, bool _bValue) : Key(_Key)
 	{
-		nValue = _bValue;
-	}
-
-	//Planner assumes const properties in world states - only use variable types in actions for now
-	FWorldProperty(EWorldKey _Key, EWorldKey varLookup) : Key(_Key), DataType(Type::kVariable)
-	{
-		nValue = (uint8)varLookup;
+		Value = _bValue;
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
@@ -62,26 +48,12 @@ public:
 
 	uint32 GetValueTypeHash() const
 	{
-		return HashCombine(GetTypeHash(DataType), GetTypeHash(nValue));
+		return GetTypeHash(Value);
 	}
 	friend bool operator==(const FWorldProperty& lhs, const FWorldProperty& rhs) 
 	{
-		return lhs.Key == rhs.Key;
+		return lhs.Value == rhs.Value;
 	}
-
-	//eventually this will be moved into == operator after I make Keyfuncs
-	bool Equals(const FWorldProperty& rhs);
-
-	bool Equals(const FWorldProperty& rhs) const;
-
-	void Apply(const FWorldProperty& Other);
-
-	void MarkSatisfied(bool bNewSatisfied)
-	{
-		bUnsatisfied = !bNewSatisfied;
-	}
-
-	FString ToString() const;
 
 };
 

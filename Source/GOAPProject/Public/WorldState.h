@@ -18,45 +18,27 @@ struct GOAPPROJECT_API FWorldState
 
 private: 
 	UPROPERTY(VisibleAnywhere)
-		TArray<FWorldProperty> State;
+		TArray<uint8> State;
 
 	uint32 CachedTypeHash;
 public:
 	FWorldState();
 
-	void Add(const FWorldProperty& prop);
-	bool Apply(const FWorldProperty& property);
-	bool ApplyFromOther(const FWorldState* Other, EWorldKey Key);
-	void ValidateProperty(const FWorldState* Other, EWorldKey Key);
+	void SetProp(EWorldKey Key, uint8 Value);
 
-	bool IsSatisfied(EWorldKey Key) const;
-	const FWorldProperty& GetProperty(EWorldKey Key);
-	const TArray<FWorldProperty>& expose_container()const { //i don't want to but i feel like i have to
-		return State;
-	}
+	const uint8& GetProp(EWorldKey Key) const;
+	
+	//Hamming distance by default, o.w. the absolute value of the difference
+	uint8 HeuristicDist(EWorldKey Key, uint8 Value, bool bHamming=true) const;
 
-	void CacheArrayTypeHash()
-	{
-		//Should cache this result
-		CachedTypeHash = GetTypeHash(State);
-	}
+	void CacheArrayTypeHash();
 
 	uint32 GetArrayTypeHash()
 	{
 		return CachedTypeHash;
 	}
-	bool EqualsTest(const FWorldState* Other, EWorldKey Key) const
-	{
-		if (!Other)
-		{
-			return false;
-		}
-		uint8 Idx = (uint8)Key;
-		return State[Idx].Equals(Other->State[Idx]);
-	}
-	TSharedRef<FWorldState> Clone();
 
-	void LogWS(const FWorldState* Other = nullptr) const;
+	void LogWS() const;
 #if WITH_GAMEPLAY_DEBUGGER
 	void DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* DebuggerCategory) const;
 #endif //WITH_GAMEPLAY_DEBUGGER

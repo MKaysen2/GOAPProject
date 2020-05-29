@@ -1,5 +1,5 @@
 #include "..\Public\WorldState.h"
-
+#include "Hash/CityHash.h"
 #if WITH_GAMEPLAY_DEBUGGER
 #include "GameplayDebuggerTypes.h"
 #include "GameplayDebuggerCategory.h"
@@ -9,89 +9,43 @@ DEFINE_LOG_CATEGORY(LogWS);
 
 FWorldState::FWorldState()
 {
-	State.Reserve((int32)EWorldKey::SYMBOL_MAX);
-	
-	for (uint8 Key = 0; Key < (uint8)EWorldKey::SYMBOL_MAX; ++Key)
-	{
-		State.Emplace(FWorldProperty((EWorldKey)Key, false));
-	}
+	State.Init(0, (int32)EWorldKey::SYMBOL_MAX);
 }
 
-void FWorldState::Add(const FWorldProperty& Prop)
+void FWorldState::SetProp(EWorldKey Key, uint8 nValue) 
 {
-	uint8 Key = (uint8)Prop.Key;
-	FWorldProperty& Property = State[Key];
-	Property.Apply(Prop);
-	Property.bUnsatisfied = true;
+	uint8 Idx = (uint8)Key;
+	State[Idx] = nValue;
 }
 
-bool FWorldState::Apply(const FWorldProperty& Prop) 
-{
-
-	uint8 Key = (uint8)Prop.Key;
-	State[Key].Apply(Prop);
-	State[Key].bUnsatisfied = false;
-	return true;
-}
-
-void FWorldState::ValidateProperty(const FWorldState* Other, EWorldKey Key)
-{
-	uint8 eKey = (uint8)Key;
-	if (!Other)
-	{
-		return;
-	}
-	bool bEquals = State[eKey].Equals(Other->State[eKey]);
-	State[eKey].MarkSatisfied(bEquals);
-}
-
-bool FWorldState::ApplyFromOther(const FWorldState* Other, EWorldKey eKey)
-{
-
-	if (!Other)
-	{
-		return false;
-	}
-
-	uint8 Key = (uint8)eKey;
-	State[Key].Apply(Other->State[Key]);
-	State[Key].MarkSatisfied(true);
-	return true;
-}
-
-bool FWorldState::IsSatisfied(EWorldKey Key) const
-{
-	int Idx = (int32)Key;
-	return !(State[Idx].bUnsatisfied);
-}
-
-const FWorldProperty& FWorldState::GetProperty(EWorldKey Key)
+const uint8& FWorldState::GetProp(EWorldKey Key) const
 {
 	uint8 Idx = (uint8)Key;
 	return State[Idx];
 }
 
-TSharedRef<FWorldState> FWorldState::Clone()
+uint8 FWorldState::HeuristicDist(EWorldKey Key, uint8 Value, bool bHamming) const
 {
-	return TSharedRef<FWorldState>(new FWorldState(*this));
+	const uint8& StateVal = State[(uint8)Key];
+	return (bHamming) ? 
+		(StateVal != Value) :
+		((StateVal >= Value) ?
+			(StateVal - Value) : (Value - StateVal));
 }
 
-void FWorldState::LogWS(const FWorldState* Other) const
+void FWorldState::CacheArrayTypeHash()
 {
-	if (!Other)
+	//Should cache this result
+	CachedTypeHash = CityHash32((const char*)State.GetData(), State.Num());
+}
+
+void FWorldState::LogWS() const
+{
+	uint8 Key = 0;
+	for (const auto& Value : State)
 	{
-		for (auto& Property : State)
-		{
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *Property.ToString());
-		}
-	}
-	else
-	{
-		for (auto& Property : State)
-		{
-			bool bWasValid = EqualsTest(Other, Property.Key);
-			UE_LOG(LogTemp, Warning, TEXT("%s | test result: %d"), *Property.ToString(), bWasValid);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("< k%d | v%d >"), Key, (uint8)Value);
+		++Key;
 	}
 }
 
@@ -101,10 +55,12 @@ void FWorldState::DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* Debu
 {
 	DebuggerCategory->AddTextLine(FString(TEXT("WorldState")));
 
-	for (auto& Property : State)
+	uint8 Key = 0;
+	for (const auto& Value : State)
 	{
-		DebuggerCategory->AddTextLine(Property.ToString());
+		FString PropText = FString::Printf(TEXT("< k%d | v%d >"), Key, (uint8)Value);
+		DebuggerCategory->AddTextLine(PropText);
+		++Key;
 	}
 }
-
 #endif //WITH_GAMEPLAY_DEBUGGER

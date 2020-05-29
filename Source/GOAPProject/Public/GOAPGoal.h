@@ -14,7 +14,7 @@ class UGOAPGoal : public UObject
 	GENERATED_BODY()
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TArray<FWorldProperty> Goal;
+	TArray<FWorldProperty> Symbols;
 
 	UPROPERTY()
 		AAIController* AIOwner;
@@ -32,7 +32,7 @@ protected:
 		void CacheValidity(bool Validity) { bCachedValidity = Validity; }
 public:
 	UGOAPGoal();
-	const TArray<FWorldProperty>& container();
+	const TArray<FWorldProperty>& GetSymbolSet();
 
 	bool GetLastValidity() { return bCachedValidity; }
 

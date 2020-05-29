@@ -2,59 +2,44 @@
 #include "..\Public\WorldState.h"
 #include "..\Public\GOAPAction.h"
 
-FStateNode::FStateNode() :
-	CurrentState(MakeShared<FWorldState>()),
-	GoalState(nullptr),
+FStateNode::FStateNode( const FWorldState& InitialState, const TArray<FWorldProperty>& SymbolSet ) :
+	CurrentState(MakeShared<FWorldState>(InitialState)),
+	GoalState(MakeShared<FWorldState>(InitialState)), //two copies of the initial world state
 	ParentNode(nullptr),
 	ParentEdge(nullptr),
+	UnsatisfiedKeys(),
 	PropFlags(false, (uint8)EWorldKey::SYMBOL_MAX),
 	ForwardCost(0),
-	NumUnsatisfied(0),
-	Depth(0),
-	Closed(false)
+	Heuristic(0),
+	TotalCost(0),
+	Closed(false),
+	Depth(0)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("FStateNode default constructor"));
-	//Not sure this is ever used
-}
-
-FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldState> InitialState) :
-	CurrentState(MakeShared<FWorldState>()),
-	GoalState(InitialState),
-	ParentNode(nullptr),
-	ParentEdge(nullptr),
-	PropFlags(false, (uint8)EWorldKey::SYMBOL_MAX),
-	ForwardCost(0),
-	NumUnsatisfied(0),
-	Depth(0),
-	Closed(false)
-{
-	//This should really be in a static method, it's extremely confusing the way it is now
-	for (auto Property : GoalSet)
+	for (const auto& Symbol : SymbolSet)
 	{
-		CurrentState->Add(Property);
-		CurrentState->ValidateProperty(GoalState.Get(), Property.Key);
+		
 	}
-	CurrentState->CacheArrayTypeHash();
-	NumUnsatisfied = CountUnsatisfied();
 }
 
-FStateNode::FStateNode(const TSharedRef<FWorldState>& WorldState, const TSharedPtr<FStateNode>& Node) :
-	CurrentState(WorldState),
-	GoalState(Node->GoalState),
-	ParentNode(Node),
+FStateNode::FStateNode(const FStateNode& Node) :
+	CurrentState(MakeShared<FWorldState>(Node.CurrentState.Get())),
+	GoalState(Node.GoalState),
+	ParentNode(Node.AsShared()),
 	ParentEdge(nullptr),
-	PropFlags(Node->PropFlags),
-	ForwardCost(Node->GetForwardCost()),
-	NumUnsatisfied(Node->NumUnsatisfied),
-	Depth(Node->Depth + 1),
-	Closed(false)
+	UnsatisfiedKeys(Node.UnsatisfiedKeys),
+	PropFlags(Node.PropFlags),
+	ForwardCost(Node.ForwardCost),
+	Heuristic(Node.Heuristic),
+	TotalCost(Node.TotalCost),
+	Closed(false),
+	Depth(Node.Depth + 1)
 {
 
 }
 
-int FStateNode::Cost() const 
+int FStateNode::GetCost() const 
 {
-	return ForwardCost + NumUnsatisfied;
+	return TotalCost;
 }
 
 int FStateNode::GetDepth() const
@@ -72,7 +57,7 @@ void FStateNode::MarkOpened()
 	Closed = false;
 }
 
-bool FStateNode::IsClosed()
+bool FStateNode::IsClosed() const
 {
 	return Closed;
 }
@@ -81,55 +66,29 @@ void FStateNode::SetUnsatisfied(EWorldKey Key)
 {
 
 }
-int FStateNode::GetForwardCost()
+
+int FStateNode::GetForwardCost() const
 {
 	return ForwardCost;
 }
 
 bool FStateNode::IsGoal() 
 {
-	return NumUnsatisfied <= 0;
+	return Heuristic <= 0;
 }
 
 void FStateNode::GetNeighboringEdges(const LookupTable& ActionMap, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions)
 {
-	if (!GoalState)
+	//change this
+	for (const auto& Key : UnsatisfiedKeys)
 	{
-		return;
+		ActionMap.MultiFind(Key, out_actions);
 	}
-	const auto& Container = CurrentState->expose_container();
-	for (uint8 Key = 0U; Key < (uint8)EWorldKey::SYMBOL_MAX; ++Key)
-	{
-		if (!CurrentState->IsSatisfied((EWorldKey)Key))
-		{
-			ActionMap.MultiFind((EWorldKey)Key, out_actions);
-		}
-	}
-}
-
-TSharedPtr<FStateNode> FStateNode::CreateStartNode(const TArray<FWorldProperty>& GoalSet, const TSharedPtr<FWorldState>& InitialState)
-{
-	return TSharedPtr<FStateNode>();
-}
-
-TSharedPtr<FStateNode> FStateNode::GenerateNeighbor(const TSharedPtr<FStateNode>& CurrentNode, UGOAPAction* Action)
-{
-	TSharedPtr<FStateNode> ChildNode(new FStateNode(CurrentNode->CurrentState->Clone(), CurrentNode));
-	if (!ChildNode.IsValid())
-	{
-		return nullptr;
-	}
-	if (!ChildNode->ChainBackward(Action))
-	{
-		return nullptr;
-	}
-	//Actually generate the neighbor
-	return ChildNode;
 }
 
 void FStateNode::LogNode() const
 {
-	if (ParentEdge)
+	if (ParentEdge.IsValid())
 	{
 		UE_LOG(LogWS, Warning, TEXT("Parent edge: %.8s"), *ParentEdge->GetName());
 	}
@@ -137,7 +96,7 @@ void FStateNode::LogNode() const
 	{
 		UE_LOG(LogWS, Warning, TEXT("Node (start)"));
 	}
-	CurrentState->LogWS(GoalState.Get());
+	CurrentState->LogWS();
 }
 
 
@@ -150,78 +109,59 @@ void FStateNode::ReParent(const FStateNode& OtherNode)
 	//Also need to change the depth
 	Depth = OtherNode.Depth;
 	//Unsatisfied should not be different so we won't change that
-
+	CacheTotalCost();
 }
 
-bool FStateNode::ChainBackward(UGOAPAction* Action)
+bool FStateNode::ChainBackward(UGOAPAction& Action)
 {
 
-	ParentEdge = Action;
+	ParentEdge = &Action;
 	//resolve worldstate
-	Action->UnapplySymbolicEffects(this);
+	for (const auto& Effect : Action.GetEffects())
+	{
+		InvertEffect(Effect.Key);
+	}
 
-	//Add preconditions and determine if satisfied
-	Action->AddUnsatisfiedPreconditions(this);
-
+	for (const auto& Precondition : Action.GetPreconditions())
+	{
+		AddPrecondition(Precondition.Key, Precondition.Value);
+	}
 	CurrentState->CacheArrayTypeHash();
-	NumUnsatisfied = CountUnsatisfied();
 
 	//add cost of action to produce current total forward cost
-	ForwardCost += Action->Cost();
+	ForwardCost += Action.Cost();
+	CacheTotalCost();
 	return true;
 }
 
-void FStateNode::UnapplyProperty(const FWorldProperty& Property)
+bool FStateNode::InvertEffect(const EWorldKey& Key)
 {
-	if (Property.DataType == FWorldProperty::Type::kVariable)
-	{
-		//I'm not sure if this should be different in the inverse application
-		//this isn't even correct lol it the Key should be the property value
-		CurrentState->ApplyFromOther(GoalState.Get(), Property.Key);
-	}
-	else
-	{
-		//This is correct
-		CurrentState->ApplyFromOther(GoalState.Get(), Property.Key);
-	}
-	CurrentState->ValidateProperty(GoalState.Get(), Property.Key);
-
+	uint8 DistanceBefore = GoalState->HeuristicDist(Key, CurrentState->GetProp(Key));
+	uint8 NewValue = GoalState->GetProp(Key); //Replace with inverse effect call
+	CurrentState->SetProp(Key, NewValue);
+	uint8 DistanceAfter = GoalState->HeuristicDist(Key, NewValue);
+	Heuristic += (DistanceAfter - DistanceBefore);
+	return (DistanceAfter < DistanceBefore);
 }
 
-void FStateNode::AddPrecondition(const FWorldProperty& Property)
+void FStateNode::AddPrecondition(const EWorldKey& Key, const uint8& Value)
 {
-
-	//Variable : lookup value in other prop 
-	//(non-recursive, props in all world states are assumed const)
-	if (Property.DataType == FWorldProperty::Type::kVariable && ParentNode.IsValid())
+	CurrentState->SetProp(Key, Value);
+	uint8 Distance = GoalState->HeuristicDist(Key, Value);
+	if (Distance != 0)
 	{
-		if (TSharedPtr<FStateNode> ParentShared = ParentNode.Pin())
-		{
-			FWorldProperty PropCopy(ParentShared->CurrentState->GetProperty((EWorldKey)Property.nValue));
-			PropCopy.Key = Property.Key;
-			CurrentState->Apply(PropCopy);
-		}
+		UnsatisfiedKeys.Add(Key);
+		Heuristic += Distance;
 	}
-	else
-	{
-		CurrentState->Apply(Property);
-	}
-	CurrentState->ValidateProperty(GoalState.Get(), Property.Key);
 }
 
-int FStateNode::CountUnsatisfied()
+void FStateNode::CacheTotalCost()
 {
-	int iNumUnsatisfied = 0;
-	auto& Container = CurrentState->expose_container(); //should change this now that all WS contain all props
-	for (auto& Property : Container) {
-		//if the prop is unsatisfied, find an action
+	TotalCost = ForwardCost + Heuristic;
+}
 
-		if (Property.bUnsatisfied)
-		{
-			PropFlags[(uint8)Property.Key] = true;
-			++iNumUnsatisfied;
-		}
-	}
-
-	return iNumUnsatisfied;
+bool FStateNode::IsSatisfied(EWorldKey Key) const
+{
+	uint8 Idx = (uint8)Key;
+	return PropFlags[Idx];
 }

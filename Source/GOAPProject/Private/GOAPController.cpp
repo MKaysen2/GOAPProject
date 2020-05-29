@@ -121,8 +121,8 @@ void AGOAPController::RePlan()
 	}
 	//No goal -> No plan needed. By default, it'll play the idle animation
 	//TODO: if the plan fails, replan for the next highest goal
-	TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);
-	
+	//TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);
+	/*
 	if (Node.IsValid())
 	{
 		//GOAPActionsComponent->StartPlan(Node);
@@ -131,13 +131,13 @@ void AGOAPController::RePlan()
 	{
 		GoalComponent->OnGoalCompleted();
 	}
+	*/
 	
 }
 
 void AGOAPController::ApplyWorldProp(const EWorldKey kWorldKey, const bool bValue)
 {
 	
-	CurrentState->Apply(FWorldProperty(kWorldKey, bValue));
 }
 
 bool AGOAPController::IsPlayingMontage()

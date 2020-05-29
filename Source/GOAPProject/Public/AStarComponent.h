@@ -15,7 +15,6 @@
 
 class UGOAPAction;
 class UGOAPGoal;
-class UWorldState;
 class AAIController;
 
 /** 
@@ -73,7 +72,7 @@ public:
 	void OnRegister() override;
 	void OnUnregister() override;
 
-	TSharedPtr<FStateNode> Search(UGOAPGoal* Goal, TSharedPtr<FWorldState>& InitialState);
+	TSharedPtr<FStateNode> Search(UGOAPGoal* Goal, const FWorldState& InitialState);
 
 	UFUNCTION()
 	void AddAction(UGOAPAction* Action);

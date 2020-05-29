@@ -10,18 +10,18 @@ DEFINE_LOG_CATEGORY(LogGoal);
 
 UGOAPGoal::UGOAPGoal() :
 	Super(),
-	Goal(),
+	Symbols(),
 	AIOwner(nullptr),
 	LastPriority(0.0f),
 	bIsActive(false),
 	bCachedValidity(false)
 {
-	Goal.Empty();
+	Symbols.Empty();
 }
 
-const TArray<FWorldProperty>& UGOAPGoal::container() 
+const TArray<FWorldProperty>& UGOAPGoal::GetSymbolSet() 
 {
-	return Goal;
+	return Symbols;
 }
 
 void UGOAPGoal::InitGoal(AAIController* Controller)
@@ -62,7 +62,7 @@ float UGOAPGoal::Priority() const
 UAIGoal_KillEnemy::UAIGoal_KillEnemy() : Super()
 {
 	LastPriority = 0.0f; 
-	Goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
+	Symbols.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 }
 
 bool UAIGoal_KillEnemy::IsGoalValid()
@@ -93,7 +93,7 @@ void UAIGoal_KillEnemy::ReCalcPriority()
 UAIGoal_Death::UAIGoal_Death()
 	: Super()
 {
-	Goal.Add(FWorldProperty(EWorldKey::kDead, true));
+	Symbols.Add(FWorldProperty(EWorldKey::kDead, true));
 }
 
 bool UAIGoal_Death::IsGoalValid()
@@ -108,7 +108,7 @@ void UAIGoal_Death::Activate()
 
 UAIGoal_AlwaysValid::UAIGoal_AlwaysValid() : Super()
 {
-	Goal.Add(FWorldProperty(EWorldKey::kTargetDead, true));
+	Symbols.Add(FWorldProperty(EWorldKey::kTargetDead, true));
 	LastPriority = 1.0f;
 }
 

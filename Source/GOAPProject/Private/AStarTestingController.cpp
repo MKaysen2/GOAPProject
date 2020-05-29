@@ -20,7 +20,7 @@ void AAStarTestingController::Plan()
 {
 	if (GetPawn() && IsValid(DummyGoal))
 	{
-		AStarComponent->Search(DummyGoal, CurrentState);
+		AStarComponent->Search(DummyGoal, *CurrentState);
 	}
 }
 

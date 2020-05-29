@@ -29,27 +29,6 @@ void UGOAPAction::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState
 
 void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
 {
-	for (auto& Property : Effects)
-	{
-		State.Apply(Property);
-	}
-}
-
-void UGOAPAction::UnapplySymbolicEffects(FStateNode* Node) const
-{
-
-	for (auto& Prop : Effects)
-	{
-		Node->UnapplyProperty(Prop);
-	}
-}
-
-void UGOAPAction::AddUnsatisfiedPreconditions(FStateNode* CurrentNode) const
-{
-	for (auto& Property : Preconditions)
-	{
-		CurrentNode->AddPrecondition(Property);
-	}
 }
 
 EActionStatus UGOAPAction::StartAction() 

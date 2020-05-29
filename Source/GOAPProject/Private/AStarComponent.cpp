@@ -33,7 +33,7 @@ void UAStarComponent::OnUnregister()
 	Super::OnUnregister();
 }
 
-TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorldState>& InitialState) //graph needs to be V, E
+TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, const FWorldState& InitialState) //graph needs to be V, E
 {
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
@@ -45,9 +45,9 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 
 	//To save time, ALL nodes are added to a single set, and keep track of whether they're closed
 	//This does mean that we're using additional space, but it's easier and faster, I think
-	TSet<TSharedPtr<FStateNode>, FStateNode::SetKeyFuncs> NodePool;
+	TSet<NodePtr, FStateNode::SetKeyFuncs> NodePool;
 
-	TSharedPtr<FStateNode> CurrentNode(new FStateNode(Goal->container(), InitialState));
+	NodePtr CurrentNode = MakeShared<FStateNode>(InitialState, Goal->GetSymbolSet());
 
 	Fringe.Push(CurrentNode);
 	NodePool.Add(CurrentNode);
@@ -90,8 +90,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			{
 				UE_LOG(LogAction, Error, TEXT("Bad Action access in planner!!"));
 				UE_LOG(LogAction, Error, TEXT("You probably dumped the ActionSet somewhere, again"));
-				//Bail. Bail HARD
-				return nullptr;
+				continue;
 			}
 			UGOAPAction* Action = ActionHandle.Get();
 			//verify context preconditions
@@ -105,13 +104,20 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, TSharedPtr<FWorl
 			VisitedActions.Add(Action);
 
 			//Create the Child node 
-			TSharedPtr<FStateNode> ChildNode(FStateNode::GenerateNeighbor(CurrentNode, Action));
-
+			NodePtr ChildNode = MakeShared<FStateNode>(*CurrentNode);
+			if (!ChildNode.IsValid())
+			{
+				continue;
+			}
+			if (!ChildNode->ChainBackward(*Action))
+			{
+				continue;
+			}
 			//check if node exists already
 			const auto* FindNode = NodePool.Find(ChildNode);
 			if(FindNode != nullptr && FindNode->IsValid())
 			{
-				TSharedPtr<FStateNode> ExistingNode = *FindNode;
+				NodePtr ExistingNode = *FindNode;
 				if (ChildNode->GetForwardCost() < ExistingNode->GetForwardCost())
 				{
 					ExistingNode->ReParent(*ChildNode);
@@ -165,7 +171,7 @@ void UAStarComponent::ClearLookupTable()
 }
 void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 {
-	//map effects symbols as Keys to action objects for a regressive search
+	//map effects symbols as keys to action objects for a regressive search
 	for (auto* Action : Actions) 
 	{
 		for (const auto& Effect : Action->GetEffects()) 
