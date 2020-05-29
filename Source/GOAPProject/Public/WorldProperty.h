@@ -30,57 +30,46 @@ struct GOAPPROJECT_API FWorldProperty
 	GENERATED_BODY()
 public:
 
-	EWorldKey key = EWorldKey::kIdle;
+	EWorldKey Key = EWorldKey::kIdle;
 
 	enum class Type
 	{
 		kBool,
-		kVariable,
-		kObj
+		kVariable
 	} DataType = Type::kBool;
 
-	union
-	{
-		bool bValue;
-		EWorldKey kValue; 
-		UObject* objValue; //should make this an actor pointer, not object ptr
-	} Data = { false };
+	uint8 nValue;
 	//I believe this should only ever be marked by the planner
 	bool bUnsatisfied = false;
 
 
 	FWorldProperty() = default;
-	FWorldProperty(EWorldKey _key, bool _bValue) : key(_key), DataType(Type::kBool)
+	FWorldProperty(EWorldKey _Key, bool _bValue) : Key(_Key), DataType(Type::kBool)
 	{
-		Data.bValue = _bValue;
+		nValue = _bValue;
 	}
 
 	//Planner assumes const properties in world states - only use variable types in actions for now
-	FWorldProperty(EWorldKey _key, EWorldKey varLookup) : key(_key), DataType(Type::kVariable)
+	FWorldProperty(EWorldKey _Key, EWorldKey varLookup) : Key(_Key), DataType(Type::kVariable)
 	{
-		Data.kValue = varLookup;
-	}
-
-	FWorldProperty(EWorldKey _key, UObject* objValue) : key(_key), DataType(Type::kObj)
-	{
-		Data.objValue = objValue;
+		nValue = (uint8)varLookup;
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{
-		return (uint32)Prop.key;
+		return (uint32)Prop.Key;
 	}
 
 	uint32 GetValueTypeHash() const
 	{
-		return HashCombine(GetTypeHash(DataType), GetTypeHash(*(uint32*)&Data));
+		return HashCombine(GetTypeHash(DataType), GetTypeHash(nValue));
 	}
 	friend bool operator==(const FWorldProperty& lhs, const FWorldProperty& rhs) 
 	{
-		return lhs.key == rhs.key;
+		return lhs.Key == rhs.Key;
 	}
 
-	//eventually this will be moved into == operator after I make keyfuncs
+	//eventually this will be moved into == operator after I make Keyfuncs
 	bool Equals(const FWorldProperty& rhs);
 
 	bool Equals(const FWorldProperty& rhs) const;

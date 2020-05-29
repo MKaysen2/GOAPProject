@@ -1,10 +1,8 @@
 
 
 #include "..\Public\GOAPAction.h"
-#include "..\Public\GOAPCharacterBase.h"
-#include "..\Public\CombatInterface.h"
+
 #include "..\Public\StateNode.h"
-#include "../Public/GOAPController.h"
 
 #include "AIController.h"
 #include "GameFramework/Character.h"

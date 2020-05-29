@@ -19,7 +19,7 @@ FWorldState::FWorldState()
 
 void FWorldState::Add(const FWorldProperty& Prop)
 {
-	uint8 Key = (uint8)Prop.key;
+	uint8 Key = (uint8)Prop.Key;
 	FWorldProperty& Property = State[Key];
 	Property.Apply(Prop);
 	Property.bUnsatisfied = true;
@@ -28,7 +28,7 @@ void FWorldState::Add(const FWorldProperty& Prop)
 bool FWorldState::Apply(const FWorldProperty& Prop) 
 {
 
-	uint8 Key = (uint8)Prop.key;
+	uint8 Key = (uint8)Prop.Key;
 	State[Key].Apply(Prop);
 	State[Key].bUnsatisfied = false;
 	return true;
@@ -89,7 +89,7 @@ void FWorldState::LogWS(const FWorldState* Other) const
 	{
 		for (auto& Property : State)
 		{
-			bool bWasValid = EqualsTest(Other, Property.key);
+			bool bWasValid = EqualsTest(Other, Property.Key);
 			UE_LOG(LogTemp, Warning, TEXT("%s | test result: %d"), *Property.ToString(), bWasValid);
 		}
 	}

@@ -146,7 +146,7 @@ void UAStarComponent::AddAction(UGOAPAction* Action)
 {
 	for (const auto& Effect : Action->GetEffects())
 	{
-		ActionTable.AddUnique(Effect.key, Action);
+		ActionTable.AddUnique(Effect.Key, Action);
 	}
 }
 
@@ -155,7 +155,7 @@ void UAStarComponent::RemoveAction(UGOAPAction* Action)
 	//Nothing for now
 	for (const auto& Effect : Action->GetEffects())
 	{
-		ActionTable.RemoveSingle(Effect.key, Action);
+		ActionTable.RemoveSingle(Effect.Key, Action);
 	}
 }
 
@@ -165,12 +165,12 @@ void UAStarComponent::ClearLookupTable()
 }
 void UAStarComponent::CreateLookupTable(TArray<UGOAPAction*>& Actions)
 {
-	//map effects symbols as keys to action objects for a regressive search
+	//map effects symbols as Keys to action objects for a regressive search
 	for (auto* Action : Actions) 
 	{
 		for (const auto& Effect : Action->GetEffects()) 
 		{
-			ActionTable.AddUnique(Effect.key, Action);
+			ActionTable.AddUnique(Effect.Key, Action);
 		}
 	}
 }

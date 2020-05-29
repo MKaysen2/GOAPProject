@@ -9,16 +9,14 @@ bool FWorldProperty::Equals(const FWorldProperty& rhs)
 	switch (DataType)
 	{
 	case Type::kBool:
-		return rhs.Data.bValue == this->Data.bValue;
-	case Type::kObj:
-		return rhs.Data.objValue == this->Data.objValue;
+		return rhs.nValue == this->nValue;
 	case Type::kVariable:
 		return true;
 	default:
 		return false;
 	}
-
 }
+
 bool FWorldProperty::Equals(const FWorldProperty& rhs) const
 {
 	if (rhs.DataType != this->DataType)
@@ -28,9 +26,7 @@ bool FWorldProperty::Equals(const FWorldProperty& rhs) const
 	switch (DataType)
 	{
 	case Type::kBool:
-		return rhs.Data.bValue == this->Data.bValue;
-	case Type::kObj:
-		return rhs.Data.objValue == this->Data.objValue;
+		return rhs.nValue == this->nValue;
 	case Type::kVariable:
 		return true;
 	default:
@@ -45,19 +41,16 @@ void FWorldProperty::Apply(const FWorldProperty& Other)
 	switch (Other.DataType) 
 	{
 	case Type::kBool:
-		Data.bValue = Other.Data.bValue;
-		break;
-	case Type::kObj:
-		Data.objValue = Other.Data.objValue;
+		nValue = Other.nValue;
 		break;
 	case Type::kVariable: //I think this only happens when initializing actions/goals
-		Data.kValue = Other.Data.kValue;
+		nValue = Other.nValue;
 		break;
 
 	default:
 		//reset
 		DataType = Type::kBool;
-		Data.bValue = false;
+		nValue = false;
 		break;
 	}
 	
@@ -65,22 +58,18 @@ void FWorldProperty::Apply(const FWorldProperty& Other)
 
 FString FWorldProperty::ToString() const
 {
-	FString KeyString = GETENUMSTRING("EWorldKey", key);
+	FString KeyString = GETENUMSTRING("EWorldKey", Key);
 	FString TypeString;
 	FString DataString;
 	switch (DataType)
 	{
 	case Type::kBool:
 		TypeString = TEXT("bool");
-		DataString = (Data.bValue) ? TEXT("True") : TEXT("False");
+		DataString = (nValue) ? TEXT("True") : TEXT("False");
 		break;
 	case Type::kVariable:
 		TypeString = TEXT("Var");
-		DataString = GETENUMSTRING("EWorldKey", Data.kValue);
-		break;
-	case Type::kObj:
-		TypeString = TEXT("Obj");
-		DataString = (IsValid(Data.objValue)) ? Data.objValue->GetName() : TEXT("<Nil>");
+		DataString = GETENUMSTRING("EWorldKey", (EWorldKey)nValue);
 		break;
 	default:
 		TypeString = TEXT("ERR");
@@ -88,5 +77,5 @@ FString FWorldProperty::ToString() const
 		break;
 	}
 
-	return FString::Printf(TEXT("< %d | %.5s | %.5s > : %d"), (uint8)key, *TypeString, *DataString, bUnsatisfied);
+	return FString::Printf(TEXT("< %d | %.5s | %.5s > : %d"), (uint8)Key, *TypeString, *DataString, bUnsatisfied);
 }

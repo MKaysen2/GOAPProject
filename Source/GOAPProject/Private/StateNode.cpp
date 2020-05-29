@@ -32,7 +32,7 @@ FStateNode::FStateNode(const TArray<FWorldProperty>& GoalSet, TSharedPtr<FWorldS
 	for (auto Property : GoalSet)
 	{
 		CurrentState->Add(Property);
-		CurrentState->ValidateProperty(GoalState.Get(), Property.key);
+		CurrentState->ValidateProperty(GoalState.Get(), Property.Key);
 	}
 	CurrentState->CacheArrayTypeHash();
 	NumUnsatisfied = CountUnsatisfied();
@@ -176,15 +176,15 @@ void FStateNode::UnapplyProperty(const FWorldProperty& Property)
 	if (Property.DataType == FWorldProperty::Type::kVariable)
 	{
 		//I'm not sure if this should be different in the inverse application
-		//this isn't even correct lol it the key should be the property value
-		CurrentState->ApplyFromOther(GoalState.Get(), Property.key);
+		//this isn't even correct lol it the Key should be the property value
+		CurrentState->ApplyFromOther(GoalState.Get(), Property.Key);
 	}
 	else
 	{
 		//This is correct
-		CurrentState->ApplyFromOther(GoalState.Get(), Property.key);
+		CurrentState->ApplyFromOther(GoalState.Get(), Property.Key);
 	}
-	CurrentState->ValidateProperty(GoalState.Get(), Property.key);
+	CurrentState->ValidateProperty(GoalState.Get(), Property.Key);
 
 }
 
@@ -197,8 +197,8 @@ void FStateNode::AddPrecondition(const FWorldProperty& Property)
 	{
 		if (TSharedPtr<FStateNode> ParentShared = ParentNode.Pin())
 		{
-			FWorldProperty PropCopy(ParentShared->CurrentState->GetProperty(Property.Data.kValue));
-			PropCopy.key = Property.key;
+			FWorldProperty PropCopy(ParentShared->CurrentState->GetProperty((EWorldKey)Property.nValue));
+			PropCopy.Key = Property.Key;
 			CurrentState->Apply(PropCopy);
 		}
 	}
@@ -206,7 +206,7 @@ void FStateNode::AddPrecondition(const FWorldProperty& Property)
 	{
 		CurrentState->Apply(Property);
 	}
-	CurrentState->ValidateProperty(GoalState.Get(), Property.key);
+	CurrentState->ValidateProperty(GoalState.Get(), Property.Key);
 }
 
 int FStateNode::CountUnsatisfied()
@@ -218,7 +218,7 @@ int FStateNode::CountUnsatisfied()
 
 		if (Property.bUnsatisfied)
 		{
-			PropFlags[(uint8)Property.key] = true;
+			PropFlags[(uint8)Property.Key] = true;
 			++iNumUnsatisfied;
 		}
 	}

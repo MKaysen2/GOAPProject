@@ -1,11 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WorldProperty.h"
 #include "Containers/Array.h"
-#include "WorldState.h"
 #include "UObject/NoExportTypes.h"
-
+#include "WorldProperty.h"
+#include "WorldState.h"
 #include "UObject/ConstructorHelpers.h"
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
@@ -18,6 +17,7 @@ class AAIController;
 struct FStateNode;
 struct FAIRequestID;
 struct FPathFollowingResult;
+struct FWorldState;
 DECLARE_DELEGATE( FActionEndedDelegate );
 
 UENUM(BlueprintType)
