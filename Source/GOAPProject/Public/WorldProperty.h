@@ -36,10 +36,8 @@ public:
 
 
 	FWorldProperty() = default;
-	FWorldProperty(EWorldKey _Key, bool _bValue) : Key(_Key)
-	{
-		Value = _bValue;
-	}
+	FWorldProperty(EWorldKey _Key, bool bValue) : Key(_Key), Value(bValue) {}
+	FWorldProperty(const EWorldKey& Key, const uint8& nValue) : Key(Key), Value(nValue) {}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{
@@ -57,11 +55,25 @@ public:
 
 };
 
-//Copyright Epic Games, Inc.All Rights Reserved.
-static uint32 GetTypeHash(const TArray<FWorldProperty>& Array)
+USTRUCT(BlueprintType)
+struct GOAPPROJECT_API FAISymEffect
 {
-	uint32 Seed = 0;
-	for (const auto& Elem : Array)
-		Seed ^= Elem.GetValueTypeHash() + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
-	return Seed;
-}
+	GENERATED_BODY()
+public:
+	EWorldKey Key;
+	uint8 Value;
+
+	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
+	FAISymEffect(const EWorldKey& Key, const uint8& Value) : Key(Key), Value(Value) {}
+
+	uint8 Forward(uint8 Pre)
+	{
+		return Value;
+	}
+
+	//Need to pass in both values for basic setting operation
+	uint8 Backward(uint8 Post, uint8 Pre)
+	{
+		return Pre;
+	}
+};

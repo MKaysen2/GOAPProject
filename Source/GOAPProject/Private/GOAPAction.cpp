@@ -14,13 +14,22 @@ UGOAPAction::UGOAPAction() : Super()
 	
 }
 
-UGOAPAction::UGOAPAction(TArray<FWorldProperty>&& Pre, TArray<FWorldProperty>&& Post, int _Cost) :
+UGOAPAction::UGOAPAction(const int& Cost) :
 	Super(),
-	Preconditions{ Pre },
-	Effects{ Post },
-	EdgeCost(_Cost)
+	Preconditions(),
+	Effects(),
+	EdgeCost(Cost)
 {
+}
 
+void UGOAPAction::AddEffect(const EWorldKey& Key, const FAISymEffect& Effect)
+{
+	Effects.Add(Effect);
+}
+
+void UGOAPAction::AddPrecondition(const EWorldKey& Key, const uint8& Value)
+{
+	Preconditions.Add({ Key, Value });
 }
 
 void UGOAPAction::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState>)
@@ -28,6 +37,14 @@ void UGOAPAction::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState
 }
 
 void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
+{
+}
+
+void UGOAPAction::InitPreconditions()
+{
+}
+
+void UGOAPAction::InitEffects()
 {
 }
 
@@ -65,6 +82,8 @@ void UGOAPAction::AbortAction()
 void UGOAPAction::InitAction(AAIController* Controller)
 {
 	AIOwner = Controller;
+	InitPreconditions();
+	InitEffects();
 }
 
 bool UGOAPAction::IsActionRunning()

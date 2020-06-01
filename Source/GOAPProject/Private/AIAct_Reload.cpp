@@ -5,11 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 UAIAct_Reload::UAIAct_Reload() :
-	Super(
-		{ FWorldProperty(EWorldKey::kHasWeapon, true) },
-		{ FWorldProperty(EWorldKey::kWeaponLoaded, true) },
-		1
-	)
+	Super(1)
 {
 }
 

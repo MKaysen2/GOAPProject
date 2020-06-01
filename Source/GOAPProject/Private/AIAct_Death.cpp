@@ -1,9 +1,6 @@
 #include "..\Public\AIAct_Death.h"
 
-UAIAct_Death::UAIAct_Death() : Super(
-	{ },
-	{ FWorldProperty(EWorldKey::kDead, true) },
-	5)
+UAIAct_Death::UAIAct_Death() : Super(5)
 {
 	
 }

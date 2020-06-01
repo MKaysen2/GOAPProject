@@ -7,11 +7,7 @@
 #include "..\Public\MontageMapComponent.h"
 
 UAIAct_Attack::UAIAct_Attack() :
-	Super(
-		{ /*FWorldProperty(EWorldKey::kWeaponLoaded, true)*/ },
-		{ FWorldProperty(EWorldKey::kTargetDead, true) },
-		5
-	)
+	Super(5)
 {
 }
 

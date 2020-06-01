@@ -7,11 +7,7 @@
 #include "AIController.h"
 
 UAIAct_DodgeShuffle::UAIAct_DodgeShuffle() :
-	Super(
-		{},
-		{ FWorldProperty(EWorldKey::kInDanger, false)},
-		5
-	)
+	Super(5)
 {
 	GoalLocation = FAISystem::InvalidLocation;
 }

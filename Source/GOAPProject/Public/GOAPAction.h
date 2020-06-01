@@ -40,9 +40,7 @@ class GOAPPROJECT_API UGOAPAction : public UObject
 public:
 	UGOAPAction();
 protected:
-	//callable by child actions only (i.e., in the constructor)
-	//use this to construct child actions in the initializer list directly
-	explicit UGOAPAction(TArray<FWorldProperty>&& Pre, TArray<FWorldProperty>&& Post, int _Cost);
+	explicit UGOAPAction(const int& Cost);
 
 	UPROPERTY()
 		AAIController* AIOwner;
@@ -51,7 +49,7 @@ protected:
 		TArray<FWorldProperty> Preconditions;
 
 	UPROPERTY(EditAnywhere)
-		TArray<FWorldProperty> Effects;
+		TArray<FAISymEffect> Effects;
 
 	//If the union member prevents us from correctly using FWorldProperty
 	//in Blueprints, we should subclass it and add a map of EWorldKey to TUnion
@@ -65,10 +63,13 @@ protected:
 
 	//Should add effects and preconditions in InitAction or something
 	//which will make it easier to create BP subclasses
+		void AddEffect(const EWorldKey& Key, const FAISymEffect& Effect);
+
+		void AddPrecondition(const EWorldKey& Key, const uint8& Value);
 public:
 
 	UFUNCTION()
-		const TArray<FWorldProperty>& GetEffects() const 
+		const TArray<FAISymEffect>& GetEffects() const 
 	{
 		return Effects;
 	}
@@ -108,11 +109,17 @@ public:
 
 	FActionEndedDelegate OnActionEnded;
 
+	UFUNCTION()
+		virtual void InitPreconditions();
+
+	UFUNCTION()
+		virtual void InitEffects();
 	//Should be called when actions are created
-	//I wanted to put it in a static method but
-	//Templates don't work with TSubclassOf AFAIK
+	//Does not activate the action, just adds it to the controller
+	//Make sure you call this if you want the actions to be in the planner!
 	UFUNCTION()
 		virtual void InitAction(AAIController* Controller);
+
 	UFUNCTION()
 	virtual bool IsActionRunning();
 	UFUNCTION()

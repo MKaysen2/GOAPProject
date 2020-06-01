@@ -5,11 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 UAIAct_ThrowGrenade::UAIAct_ThrowGrenade() :
-	Super(
-		{  },
-		{ FWorldProperty(EWorldKey::kTargetDead, true) },
-		2
-	)
+	Super(2)
 {
 }
 
