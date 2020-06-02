@@ -22,33 +22,49 @@ struct GOAPPROJECT_API FStateNode : public TSharedFromThis<FStateNode>
 private:
 	typedef TMultiMap < EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
 	//Can make sharedref or uniqueptr to show ownership
-		TSharedRef<FWorldState> CurrentState;
-		
-		//The true current state, that we are regressing to
-		//Can probably be a sharedref too since it's not supposed to be null, ever
-		TSharedRef<FWorldState> GoalState;
+	TSharedRef<FWorldState> CurrentState;
 
-		TWeakPtr<const FStateNode> ParentNode;
+	//The true current state, that we are regressing to
+	//Can probably be a sharedref too since it's not supposed to be null, ever
+	TSharedRef<FWorldState> GoalState;
 
-		TWeakObjectPtr<UGOAPAction> ParentEdge;
+	TWeakPtr<const FStateNode> ParentNode;
 
-		TSet<EWorldKey> UnsatisfiedKeys;
-	/**Properties flags (just Unsatisfied for now). Indexed by EWorldKey
+	TWeakObjectPtr<UGOAPAction> ParentEdge;
+
+	TSet<EWorldKey> UnsatisfiedKeys;
+	/**Properties flags (just Relevant for now). Indexed by EWorldKey
 	  * might make this into uint8 and add some flags if I need to */
 
-		TArray<bool> PropFlags;
+
+	TArray<bool> PropFlags;
 
 	int ForwardCost;
 	int Heuristic;
 	int TotalCost;
 	bool Closed;
 	int Depth = 0;
+	uint32 CachedHash;
+
 	void CacheTotalCost();
-	bool IsSatisfied(EWorldKey Key) const;
 
 	//Whether a value of the world state must hold to satisfy some precondition
 	void AddPrecondition(const EWorldKey& Key, const uint8& Value);
 
+	bool GetKeyRelevance(const EWorldKey& Key)
+	{
+		return PropFlags[(uint8)Key];
+	}
+
+	void SetKeyRelevance(const EWorldKey& Key, bool bRelevance)
+	{
+		PropFlags[(uint8)Key] = bRelevance;
+	}
+
+	void CacheTypeHash(uint32 Hash)
+	{
+		CachedHash = Hash;
+	}
 public:
 	
 	FStateNode() = delete;
@@ -59,13 +75,21 @@ public:
 		return lhs.GetCost() < rhs.GetCost();
 	}
 
+	friend FORCEINLINE uint32 GetTypeHash(const FStateNode& Node)
+	{
+		return Node.CachedHash;
+	}
+
+	static constexpr bool Index(const EWorldKey& Key)
+	{
+		return (uint8)Key;
+	}
 	int GetCost() const;
 	int GetForwardCost() const;
 	int GetDepth() const;
 	void MarkClosed();
 	void MarkOpened();
 	bool IsClosed() const;
-	void SetUnsatisfied(EWorldKey Key);
 
 	/** Reparent the node to use another Node's parent node and Edge
 	  * Also update the forward cost to match
@@ -76,22 +100,14 @@ public:
 	//Applies the inverse of the effect to the WS value for Key
 	//The inverse of the "set" effect is to revert the value to whatever it was in the goal state
 	//returns false if the heuristic increased in value
-	bool InvertEffect(const EWorldKey& Key);
+	bool InvertEffect(const EWorldKey& Key, const FAISymEffect& Effect);
 
 	bool IsGoal();
 	void GetNeighboringEdges(const LookupTable& action_map, TArray<TWeakObjectPtr<UGOAPAction>>& out_actions);
 
-	void LogNode() const;
-
-	void LogGoal() const 
+	uint32 GetWSTypeHash() const
 	{
-		UE_LOG(LogWS, Warning, TEXT("(Goal)"));
-		GoalState->LogWS();
-	}
-
-	uint32 GetWSTypeHash()
-	{
-		return CurrentState->GetArrayTypeHash();
+		return GetTypeHash(CurrentState.Get());
 	}
 
 	TWeakObjectPtr<UGOAPAction> edge() 
@@ -118,13 +134,21 @@ public:
 		template<typename ComparableKey>
 		static FORCEINLINE bool Matches(KeyInitType A, ComparableKey B)
 		{
-			return (A.IsValid() && B.IsValid()) && (A->GetWSTypeHash() == B->GetWSTypeHash());
+			return (A.IsValid() && B.IsValid()) && (GetTypeHash(*A) == GetTypeHash(*B));
 		}
 
 		/** Calculates a hash index for a key. */
 		static FORCEINLINE uint32 GetKeyHash(KeyInitType Key)
 		{
-			return Key.IsValid() ? Key->GetWSTypeHash() : GetTypeHash(NULL);
+			return Key.IsValid() ? GetTypeHash(*Key) : GetTypeHash(NULL);
 		}
 	};
+
+	void LogNode() const;
+
+	void LogGoal() const
+	{
+		UE_LOG(LogWS, Warning, TEXT("(Goal)"));
+		GoalState->LogWS();
+	}
 };

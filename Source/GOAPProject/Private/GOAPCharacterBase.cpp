@@ -33,8 +33,6 @@ TArray<TSubclassOf<UGOAPAction>> AGOAPCharacterBase::GetActionSet()
 {
 	return
 	{
-		UAIAct_Attack::StaticClass(), 
-		UAIAct_Reload::StaticClass(), 
 	};
 }
 

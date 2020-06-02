@@ -11,6 +11,12 @@ UAIAct_Attack::UAIAct_Attack() :
 {
 }
 
+void UAIAct_Attack::InitEffects()
+{
+	Effects.Reserve(1);
+	AddEffect(EWorldKey::kTargetDead, FAISymEffect(EWorldKey::kTargetDead, true));
+}
+
 bool UAIAct_Attack::VerifyContext()
 {
 

@@ -19,6 +19,7 @@ UAStarComponent::UAStarComponent() :
 	UE_LOG(LogTemp, Warning, TEXT("Is FVector Trivial?: %d"), TIsTrivial<FVector>::Value);
 	UE_LOG(LogTemp, Warning, TEXT("Is TSharedRef<FWorldProperty> Trivial: %d"), TIsTrivial<TSharedRef<FWorldProperty>>::Value);
 	UE_LOG(LogTemp, Warning, TEXT("Is FWorldState Trivial: %d"), TIsTrivial<FWorldState>::Value);
+
 }
 
 void UAStarComponent::OnRegister()
@@ -41,6 +42,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, const FWorldStat
 	{
 		return nullptr;
 	}
+
 	FPriorityQueue Fringe;
 
 	//To save time, ALL nodes are added to a single set, and keep track of whether they're closed
@@ -114,7 +116,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, const FWorldStat
 				continue;
 			}
 			//check if node exists already
-			const auto* FindNode = NodePool.Find(ChildNode);
+			const NodePtr* FindNode = NodePool.Find(ChildNode);
 			if(FindNode != nullptr && FindNode->IsValid())
 			{
 				NodePtr ExistingNode = *FindNode;

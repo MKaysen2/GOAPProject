@@ -9,6 +9,12 @@ UAIAct_ThrowGrenade::UAIAct_ThrowGrenade() :
 {
 }
 
+void UAIAct_ThrowGrenade::InitEffects()
+{
+	Effects.Reserve(1);
+	AddEffect(EWorldKey::kTargetDead, FAISymEffect(EWorldKey::kTargetDead, true));
+}
+
 bool UAIAct_ThrowGrenade::VerifyContext()
 {
 

@@ -19,7 +19,7 @@ protected:
 	UPROPERTY()
 		UAITask_AnimMontage* MontageTaskHandle;
 
-
+	virtual void InitEffects() override;
 public:
 	UAIAct_Attack();
 	bool VerifyContext() override;

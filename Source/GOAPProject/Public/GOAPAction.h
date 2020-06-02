@@ -66,6 +66,18 @@ protected:
 		void AddEffect(const EWorldKey& Key, const FAISymEffect& Effect);
 
 		void AddPrecondition(const EWorldKey& Key, const uint8& Value);
+
+		/**
+		 * Override to add action preconditions
+		 */
+		UFUNCTION()
+			virtual void InitPreconditions();
+
+		/**
+		 * Override to add action effects
+		 */
+		UFUNCTION()
+			virtual void InitEffects();
 public:
 
 	UFUNCTION()
@@ -109,11 +121,6 @@ public:
 
 	FActionEndedDelegate OnActionEnded;
 
-	UFUNCTION()
-		virtual void InitPreconditions();
-
-	UFUNCTION()
-		virtual void InitEffects();
 	//Should be called when actions are created
 	//Does not activate the action, just adds it to the controller
 	//Make sure you call this if you want the actions to be in the planner!

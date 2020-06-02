@@ -1,16 +1,10 @@
 #include "..\Public\WorldState.h"
-#include "Hash/CityHash.h"
 #if WITH_GAMEPLAY_DEBUGGER
 #include "GameplayDebuggerTypes.h"
 #include "GameplayDebuggerCategory.h"
 #endif
 
 DEFINE_LOG_CATEGORY(LogWS);
-
-FWorldState::FWorldState()
-{
-	State.Init(0, (int32)EWorldKey::SYMBOL_MAX);
-}
 
 void FWorldState::SetProp(EWorldKey Key, uint8 nValue) 
 {
@@ -24,19 +18,17 @@ const uint8& FWorldState::GetProp(EWorldKey Key) const
 	return State[Idx];
 }
 
-uint8 FWorldState::HeuristicDist(EWorldKey Key, uint8 Value, bool bHamming) const
+int32 FWorldState::HeuristicDist(EWorldKey Key, uint8 Value, bool bHamming) const
 {
-	const uint8& StateVal = State[(uint8)Key];
-	return (bHamming) ? 
-		(StateVal != Value) :
-		((StateVal >= Value) ?
-			(StateVal - Value) : (Value - StateVal));
-}
-
-void FWorldState::CacheArrayTypeHash()
-{
-	//Should cache this result
-	CachedTypeHash = CityHash32((const char*)State.GetData(), State.Num());
+	int32 StateVal = State[(uint8)Key];
+	if (bHamming)
+	{
+		return StateVal != Value;
+	}
+	else
+	{
+		return abs(StateVal - Value);
+	}
 }
 
 void FWorldState::LogWS() const
@@ -44,7 +36,7 @@ void FWorldState::LogWS() const
 	uint8 Key = 0;
 	for (const auto& Value : State)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("< k%d | v%d >"), Key, (uint8)Value);
+		UE_LOG(LogTemp, Warning, TEXT("< k%d | v%d >"), Key, Value);
 		++Key;
 	}
 }
@@ -58,7 +50,7 @@ void FWorldState::DescribeSelfToGameplayDebugger(FGameplayDebuggerCategory* Debu
 	uint8 Key = 0;
 	for (const auto& Value : State)
 	{
-		FString PropText = FString::Printf(TEXT("< k%d | v%d >"), Key, (uint8)Value);
+		FString PropText = FString::Printf(TEXT("< k%d | v%d >"), Key, Value);
 		DebuggerCategory->AddTextLine(PropText);
 		++Key;
 	}

@@ -55,6 +55,8 @@ public:
 
 };
 
+/** 
+*/
 USTRUCT(BlueprintType)
 struct GOAPPROJECT_API FAISymEffect
 {
@@ -66,13 +68,15 @@ public:
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
 	FAISymEffect(const EWorldKey& Key, const uint8& Value) : Key(Key), Value(Value) {}
 
-	uint8 Forward(uint8 Pre)
+	uint8 Forward(uint8 Pre) const
 	{
 		return Value;
 	}
 
-	//Need to pass in both values for basic setting operation
-	uint8 Backward(uint8 Post, uint8 Pre)
+	//the set operation's inverse changes the value back to the "Ground truth", i.e. the value in 
+	//the goal state, so that the hash of the world state will remain consistent
+	//However, the actual value of the property could technically have been anything
+	uint8 Backward(uint8 Post, uint8 Pre) const
 	{
 		return Pre;
 	}

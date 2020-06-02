@@ -21,6 +21,7 @@ protected:
 	UPROPERTY()
 		UAITask_AnimMontage* MontageTaskHandle;
 
+	virtual void InitEffects() override;
 
 public:
 	UAIAct_ThrowGrenade();
