@@ -8,4 +8,7 @@ class UAISymbolService : public UObject
 {
 	GENERATED_BODY()
 
+public:
+
+
 };
