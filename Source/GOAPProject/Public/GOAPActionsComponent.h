@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "BrainComponent.h"
 #include "GOAPActionsComponent.generated.h"
 
 class FGameplayDebuggerCategory;
@@ -38,6 +39,8 @@ protected:
 
 	int32 ActionIdx;
 
+	FAIMessageObserverHandle ActionFinishedHandle;
+
 public:
 	void OnRegister() override;
 
@@ -51,6 +54,9 @@ public:
 	UFUNCTION()
 		void OnActionEnded();
 
+	void AddActionFinishedListener(UBrainComponent* Brain);
+	void RemoveListeners();
+	void HandleAIMessage(UBrainComponent* BrainComp, const FAIMessage& Message);
 	UFUNCTION()
 		void OnActionSuccess();
 

@@ -67,6 +67,9 @@ protected:
 	int EdgeCost;
 
 		//This should be instanced
+	//I guess this doesn't technically need to be a PawnAction. It could still be an AITask.
+	//Might be best to reference operator by enum since there's a fixed set of operators, anyway.
+	//which probably also means the operator params have a fixed signature
 		UPROPERTY(EditAnywhere, Instanced)
 			UPawnAction* Operator;
 	
@@ -103,11 +106,8 @@ public:
 	UFUNCTION()
 	virtual bool VerifyContext()
 	{
-		//prevent accidental base class instances from being valid
-		return false;
+		return true;
 	}
-
-	FActionEndedDelegate OnActionEnded;
 
 	//Should be called when actions are created
 	//Does not activate the action, just adds it to the controller
@@ -123,9 +123,6 @@ public:
 	EActionStatus StartAction();
 
 	void FinishAction(EPlannerTaskFinishedResult::Type Result);
-
-	UFUNCTION()
-	void StopAction(); 
 	
 	/*Deactivates action, stops all child tasks, and unbind delegates*/
 	//TODO: add an abort type to control blending

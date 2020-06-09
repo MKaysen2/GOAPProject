@@ -15,6 +15,8 @@ void UGOAPActionsComponent::OnRegister()
 	Super::OnRegister();
 	ActionIdx = 0;
 	AIOwner = Cast<AAIController>(GetOwner());
+	AddActionFinishedListener(AIOwner->GetBrainComponent());
+
 }
 
 void UGOAPActionsComponent::RegisterAction(TSubclassOf<UGOAPAction> ActionClass)
@@ -44,6 +46,31 @@ void UGOAPActionsComponent::OnActionEnded()
 	RunNextAction();
 }
 
+void UGOAPActionsComponent::AddActionFinishedListener(UBrainComponent* Brain)
+{
+	ActionFinishedHandle = FAIMessageObserver::Create(Brain, UGOAPAction::ActionFinished, FOnAIMessage::CreateUObject(this, &UGOAPActionsComponent::HandleAIMessage));
+
+}
+
+void UGOAPActionsComponent::RemoveListeners()
+{
+	ActionFinishedHandle.Reset();
+}
+
+void UGOAPActionsComponent::HandleAIMessage(UBrainComponent* BrainComp, const FAIMessage& Message)
+{
+	bool bSuccess = (Message.Status == FAIMessage::Success);
+
+	if (bSuccess)
+	{
+		OnActionSuccess();
+	}
+	else
+	{
+		OnActionFailed();
+	}
+}
+
 void UGOAPActionsComponent::OnActionSuccess()
 {
 	++ActionIdx;
@@ -53,7 +80,8 @@ void UGOAPActionsComponent::OnActionSuccess()
 
 void UGOAPActionsComponent::OnActionFailed()
 {
-
+	ClearCurrentPlan();
+	OnPlanCompleted.ExecuteIfBound();
 }
 
 void UGOAPActionsComponent::RunNextAction()
@@ -74,7 +102,6 @@ void UGOAPActionsComponent::RunNextAction()
 			OnActionFailed();
 			return;
 		}
-		//Eventually I want animations that aren't forced to interrupt clean themselves up
 		EActionStatus eStatus = CurrentAction->StartAction();
 		if (eStatus == EActionStatus::kFailed)
 		{

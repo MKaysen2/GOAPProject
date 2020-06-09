@@ -85,21 +85,8 @@ void UGOAPAction::OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type 
 {
 }
 
-void UGOAPAction::StopAction() 
-{
-	//If we weren't running just don't call anything 
-	if (!bIsRunning)
-	{
-		return;
-	}
-	bIsRunning = false;
-	OnActionEnded.ExecuteIfBound();
-}
-
 void UGOAPAction::AbortAction()
 {
-	bIsRunning = false;
-	OnActionEnded.Unbind();
 }
 
 bool UGOAPAction::IsActionRunning()
