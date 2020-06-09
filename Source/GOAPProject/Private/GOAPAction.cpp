@@ -9,6 +9,9 @@
 
 DEFINE_LOG_CATEGORY(LogAction);
 
+const FName MontageCompleted = TEXT("MontageCompleted");
+const FName MontageBlendingOut = TEXT("MontageBlendingOut");
+
 UGOAPAction::UGOAPAction() : Super()
 {
 	
@@ -30,10 +33,6 @@ void UGOAPAction::AddEffect(const EWorldKey& Key, const FAISymEffect& Effect)
 void UGOAPAction::AddPrecondition(const EWorldKey& Key, const uint8& Value)
 {
 	Preconditions.Add({ Key, Value });
-}
-
-void UGOAPAction::SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState>)
-{
 }
 
 void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const

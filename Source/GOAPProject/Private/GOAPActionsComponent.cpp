@@ -64,7 +64,6 @@ void UGOAPActionsComponent::RunNextAction()
 			//TODO fire delegate here I think
 			return;
 		}
-		CurrentAction->SetBBTargets(AIOwner, StateQueue[ActionIdx + 1]);
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
 		EActionStatus eStatus = CurrentAction->StartAction();
 		if (eStatus == EActionStatus::kFailed)

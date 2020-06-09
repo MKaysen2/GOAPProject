@@ -94,6 +94,8 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, const FWorldStat
 				UE_LOG(LogAction, Error, TEXT("You probably dumped the ActionSet somewhere, again"));
 				continue;
 			}
+
+			//Can move this stuff into GenerateNeighbors
 			UGOAPAction* Action = ActionHandle.Get();
 			//verify context preconditions
 			//skip action if it has already been visited for this node

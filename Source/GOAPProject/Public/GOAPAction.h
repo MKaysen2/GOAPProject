@@ -8,12 +8,14 @@
 #include "UObject/ConstructorHelpers.h"
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
+#include "BrainComponent.h"
 
 #include "GOAPAction.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAction, Warning, All);
 
 class AAIController;
+class BrainComponent;
 struct FStateNode;
 struct FAIRequestID;
 struct FPathFollowingResult;
@@ -32,13 +34,20 @@ enum class EActionStatus : uint8
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
 //TODO: just add the controlled pawn as a property already, seriously
-//TODO: Make this not reference stateNode at all, just WorldState
+
+//This is slowly becoming PawnAction. Should use PawnAction as operator
+//and make this a decorator type for the planner
 UCLASS(ABSTRACT, BlueprintType, Blueprintable)
 class GOAPPROJECT_API UGOAPAction : public UObject 
 {
 	GENERATED_BODY()
 public:
 	UGOAPAction();
+
+	//Message names, might move to BrainComponent
+	static const FName MontageCompleted;
+	static const FName MontageBlendingOut;
+
 protected:
 	explicit UGOAPAction(const int& Cost);
 
@@ -78,6 +87,10 @@ protected:
 		 */
 		UFUNCTION()
 			virtual void InitEffects();
+
+		UPROPERTY()
+			UPawnAction* Operator;
+
 public:
 
 	UFUNCTION()
@@ -97,10 +110,8 @@ public:
 	{
 		return EdgeCost;
 	}
-	
-	virtual void SetBBTargets(AAIController* Controller, TSharedPtr<FWorldState> Context);
-	//Try to access cached values here rather than perform direct computation
 
+	//TODO: don't need to get rid of this, but shouldn't do it in the planner
 	/**VerifyContext
 	  * Used to verify context preconditions and cache data dependencies
 	  * By default, returns false so must be overridden
