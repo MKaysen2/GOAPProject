@@ -31,25 +31,6 @@ private:
 
 	/////////////////////////////////////////////////////
 	// GOAP related components and members
-	
-		//TODO: Should be managed by component
-		TSharedPtr<FWorldState> CurrentState;
-
-		//Should add to separate BrainComponent
-	UPROPERTY()
-		UAStarComponent* AStarComponent;
-		
-	UPROPERTY()
-		UGoalSelectionComponent* GoalComponent;
-
-	//This should (probably) not be getting changed after possession
-
-	UPROPERTY()
-		TArray<UGOAPAction*> ActionSet;
-
-	//Should this go in the Pawn, or the Controller?
-	UPROPERTY()
-		UGOAPActionsComponent* GOAPActionsComponent;
 
 	///////////////////////////////////////
 	//Sense configs
@@ -63,8 +44,6 @@ public:
 	AGOAPController();
 	static const FName DamageMsg;
 
-	FAIMessageObserverHandle TestObserverHandle;
-	FOnAIMessage AIMessageDelegate;
 	UFUNCTION()
 		void Tick(float DeltaSeconds) override;
 
@@ -95,12 +74,12 @@ public:
 
 	//TODO: move to interface
 	UFUNCTION()
-		UGOAPActionsComponent* GetGOAPActionsComponent() { return GOAPActionsComponent; }
+		UGOAPActionsComponent* GetGOAPActionsComponent() { return nullptr; }
 
 	//TODO: move to interface
 	UFUNCTION()
-		UGoalSelectionComponent* GetGoalSelectionComponent() { return GoalComponent; }
+		UGoalSelectionComponent* GetGoalSelectionComponent() { return nullptr; }
 
 	//TODO: move to component
-	TSharedPtr<FWorldState> GetWorldState() { return CurrentState; }
+	TSharedPtr<FWorldState> GetWorldState() { return nullptr; }
 };

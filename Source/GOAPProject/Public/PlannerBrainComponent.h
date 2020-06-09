@@ -8,5 +8,7 @@ UCLASS()
 class UPlannerBrainComponent : public UBrainComponent
 {
 	GENERATED_BODY()
+public:
+
 
 };

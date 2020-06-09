@@ -24,7 +24,6 @@ const FName AGOAPController::DamageMsg = TEXT("DamageMsg");
 
 AGOAPController::AGOAPController()
 {
-	AStarComponent = CreateDefaultSubobject<UAStarComponent>(TEXT("AStarComponent"));
 	
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
 	sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
@@ -49,12 +48,6 @@ AGOAPController::AGOAPController()
 
 	//TODO: make sure controllers aren't using the same world state.
 	//This should probably be a unique ptr
-	CurrentState = MakeShared<FWorldState>();
-
-	GoalComponent = CreateDefaultSubobject<UGoalSelectionComponent>(TEXT("GoalComp"));
-
-	GOAPActionsComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("GOAPActionsComp"));
-
 
 }
 
@@ -77,26 +70,11 @@ void AGOAPController::OnPossess(APawn * InPawn)
 
 	PerceptionComponent->ConfigureSense(*sightConfig);
 
-	GoalComponent->OnGoalChanged.BindUObject(this, &AGOAPController::OnGoalChanged);
-	GOAPActionsComponent->OnPlanCompleted.BindUObject(this, &AGOAPController::OnPlanCompleted);
-
-	TestObserverHandle = FAIMessageObserver::Create(BrainComponent, AGOAPController::DamageMsg, FAIRequestID(3), AIMessageDelegate);
-	AGOAPCharacterBase* GOAPPawn = Cast<AGOAPCharacterBase>(InPawn);
-	if (!GOAPPawn)
-		return;
-	GoalComponent->RegisterGoalSet(GOAPPawn->GetGoalSet());
-	GOAPActionsComponent->RegisterActionSet(GOAPPawn->GetActionSet());
-	AStarComponent->CreateLookupTable(GOAPActionsComponent->GetActionSet());
-	//GoalComponent->ReEvaluateGoals();
-
 }
 
 void AGOAPController::OnUnPossess()
 {
 	Super::OnUnPossess();
-	AStarComponent->ClearLookupTable();
-	GoalComponent->Reset();
-	GOAPActionsComponent->Reset();
 	PerceptionComponent->OnTargetPerceptionUpdated.RemoveAll(this);
 }
 
@@ -113,12 +91,6 @@ void AGOAPController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulu
 void AGOAPController::RePlan() 
 {
 	//TODO: limit number of RePlans per tick to 
-	UGOAPGoal* CurrentGoal = GoalComponent->GetCurrentGoal();
-	GOAPActionsComponent->AbortPlan();
-	if (CurrentGoal == nullptr)
-	{
-		return;
-	}
 	//No goal -> No plan needed. By default, it'll play the idle animation
 	//TODO: if the plan fails, replan for the next highest goal
 	//TSharedPtr<FStateNode> Node = AStarComponent->Search(CurrentGoal, CurrentState);
@@ -142,17 +114,6 @@ void AGOAPController::ApplyWorldProp(const EWorldKey kWorldKey, const bool bValu
 
 bool AGOAPController::IsPlayingMontage()
 {
-	ACharacter* GOAPCharacter = Cast<ACharacter>(GetPawn());
-	if (!GOAPCharacter)
-	{
-		return false;
-	}
-
-	UAnimInstance* Anim = GOAPCharacter->GetMesh()->GetAnimInstance();
-	if (Anim) 
-	{
-		return Anim->IsAnyMontagePlaying();
-	}
 	return false;
 }
 
@@ -170,5 +131,4 @@ void AGOAPController::OnDamageReceived(UBrainComponent* BrainComp, const FAIMess
 void AGOAPController::OnPlanCompleted()
 {
 	//ScreenLog(FString::Printf(TEXT("Plan Completed")));
-	GoalComponent->OnGoalCompleted();
 }

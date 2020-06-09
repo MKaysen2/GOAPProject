@@ -129,6 +129,8 @@ public:
 
 	UFUNCTION()
 	virtual bool IsActionRunning();
+
+	//these should be protected since they should only be called internally or by the ActionsComponent
 	UFUNCTION()
 	virtual EActionStatus StartAction();
 	UFUNCTION()
