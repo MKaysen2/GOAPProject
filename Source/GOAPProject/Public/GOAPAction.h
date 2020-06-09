@@ -38,7 +38,7 @@ enum class EActionStatus : uint8
 
 //This is slowly becoming PawnAction. Should use PawnAction as operator
 //and make this a decorator type for the planner
-UCLASS(ABSTRACT, BlueprintType, Blueprintable)
+UCLASS(Config=AI, abstract, EditInlineNew, config=Game)
 class GOAPPROJECT_API UGOAPAction : public UObject 
 {
 	GENERATED_BODY()
@@ -56,21 +56,24 @@ protected:
 	UPROPERTY()
 		AAIController* AIOwner;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 		TArray<FWorldProperty> Preconditions;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 		TArray<FAISymEffect> Effects;
 
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<UPawnAction> OperatorClass;
+
 	//This should be instanced
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	int EdgeCost;
 
 		//This should be instanced
 	//I guess this doesn't technically need to be a PawnAction. It could still be an AITask.
 	//Might be best to reference operator by enum since there's a fixed set of operators, anyway.
 	//which probably also means the operator params have a fixed signature
-		UPROPERTY(EditAnywhere, Instanced)
+		UPROPERTY()
 			UPawnAction* Operator;
 	
 
@@ -115,7 +118,6 @@ public:
 	UFUNCTION()
 		virtual void InitAction(AAIController* Controller);
 
-
 	UFUNCTION()
 	bool IsActionRunning();
 
@@ -152,4 +154,14 @@ protected:
 		virtual void InitEffects();
 };
 
+UCLASS(meta = (DisplayName = "Task primitive Animate"))
+class GOAPPROJECT_API UAIAct_Animate : public UGOAPAction
+{
+	GENERATED_BODY()
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		FName MontageName;
+
+};
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

@@ -19,7 +19,7 @@ enum class EWorldKey : uint8
 	kDead,
 	kInDanger,
 	//kPathBlocked
-	SYMBOL_MAX
+	SYMBOL_MAX	UMETA(Hidden)
 };
 
 UENUM()
@@ -70,7 +70,10 @@ struct GOAPPROJECT_API FAISymEffect
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditDefaultsOnly)
 	EWorldKey Key;
+
+	UPROPERTY(EditDefaultsOnly)
 	uint8 Value;
 
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}

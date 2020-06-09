@@ -20,6 +20,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UGOAPAction> ActionClass;
 
+	UPROPERTY(EditDefaultsOnly, Instanced)
+		TArray<UGOAPAction*> TestActionArray;
 	UPROPERTY(transient)
 		UGOAPAction* Action;
 
