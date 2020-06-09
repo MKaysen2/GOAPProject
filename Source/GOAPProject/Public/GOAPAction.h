@@ -14,6 +14,7 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAction, Warning, All);
 
+class UPawnAction;
 class AAIController;
 class BrainComponent;
 struct FStateNode;
@@ -60,36 +61,17 @@ protected:
 	UPROPERTY(EditAnywhere)
 		TArray<FAISymEffect> Effects;
 
-	//If the union member prevents us from correctly using FWorldProperty
-	//in Blueprints, we should subclass it and add a map of EWorldKey to TUnion
-	//and use that to construct BP subclasses
-
+	//This should be instanced
 	UPROPERTY()
 	int EdgeCost;
 
-	UPROPERTY()
-	bool bIsRunning = false;
-
-	//Should add effects and preconditions in InitAction or something
-	//which will make it easier to create BP subclasses
-		void AddEffect(const EWorldKey& Key, const FAISymEffect& Effect);
-
-		void AddPrecondition(const EWorldKey& Key, const uint8& Value);
-
-		/**
-		 * Override to add action preconditions
-		 */
-		UFUNCTION()
-			virtual void InitPreconditions();
-
-		/**
-		 * Override to add action effects
-		 */
-		UFUNCTION()
-			virtual void InitEffects();
+		//This should be instanced
+		UPROPERTY(Instanced)
+			UPawnAction* Operator;
+	
 
 		UPROPERTY()
-			UPawnAction* Operator;
+			bool bIsRunning = false;
 
 public:
 
@@ -124,12 +106,6 @@ public:
 		return false;
 	}
 
-	//forward application of action
-	//I don't think this actually needs to be called, might remove it
-	//as the actions context effects should probably be picked up by the sensors
-	UFUNCTION()
-	void ApplySymbolicEffects(FWorldState& State) const;
-
 	FActionEndedDelegate OnActionEnded;
 
 	//Should be called when actions are created
@@ -139,19 +115,37 @@ public:
 		virtual void InitAction(AAIController* Controller);
 
 	UFUNCTION()
-	virtual bool IsActionRunning();
+	bool IsActionRunning();
 
-	//these should be protected since they should only be called internally or by the ActionsComponent
 	UFUNCTION()
-	virtual EActionStatus StartAction();
+	EActionStatus StartAction();
 	UFUNCTION()
-	virtual void StopAction(); 
+	void StopAction(); 
 	
 	/*Deactivates action, stops all child tasks, and unbind delegates*/
 	//TODO: add an abort type to control blending
 	//e.g. damage reactions require very fast blend out times
 	UFUNCTION()
-		virtual void AbortAction();
+	void AbortAction();
+
+protected:
+	//Should add effects and preconditions in InitAction or something
+	//which will make it easier to create BP subclasses
+	void AddEffect(const EWorldKey& Key, const FAISymEffect& Effect);
+
+	void AddPrecondition(const EWorldKey& Key, const uint8& Value);
+
+	/**
+	 * Override to add action preconditions
+	 */
+	UFUNCTION()
+		virtual void InitPreconditions();
+
+	/**
+	 * Override to add action effects
+	 */
+	UFUNCTION()
+		virtual void InitEffects();
 };
 
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

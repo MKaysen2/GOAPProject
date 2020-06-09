@@ -27,9 +27,5 @@ protected:
 public:
 	UAIAct_DodgeShuffle();
 	bool VerifyContext() override;
-	EActionStatus StartAction() override;
-	UFUNCTION()
-		void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
-	void StopAction() override;
-	void AbortAction() override;
+	
 };

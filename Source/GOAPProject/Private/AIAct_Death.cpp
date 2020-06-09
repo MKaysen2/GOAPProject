@@ -9,8 +9,3 @@ bool UAIAct_Death::VerifyContext()
 {
 	return false;
 }
-
-EActionStatus UAIAct_Death::StartAction()
-{
-	return EActionStatus::kFailed;
-}

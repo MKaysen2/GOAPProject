@@ -13,5 +13,4 @@ class GOAPPROJECT_API UAIAct_Death : public UGOAPAction
 public:
 	UAIAct_Death();
 	bool VerifyContext() override;
-	EActionStatus StartAction() override;
 };

@@ -8,24 +8,3 @@ UAIAct_Reload::UAIAct_Reload() :
 	Super(1)
 {
 }
-
-bool UAIAct_Reload::VerifyContext()
-{
-	if (!AIOwner)
-	{
-		return false;
-	}
-	APawn* Pawn = AIOwner->GetPawn();
-
-	if (!Pawn)
-	{
-		return false;
-	}
-	return true;
-}
-
-EActionStatus UAIAct_Reload::StartAction()
-{
-	Super::StartAction();
-	return EActionStatus::kFailed;
-}

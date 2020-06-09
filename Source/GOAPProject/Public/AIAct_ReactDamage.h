@@ -14,17 +14,6 @@ class GOAPPROJECT_API UAIAct_ReactDamage : public UGOAPAction
 	GENERATED_BODY()
 protected:
 
-	UPROPERTY()
-		UAnimMontage* CachedMontage;
-
-	UPROPERTY()
-		UAITask_AnimMontage* MontageTaskHandle;
-
-
 public:
 	UAIAct_ReactDamage();
-	bool VerifyContext() override;
-	EActionStatus StartAction() override;
-	void StopAction() override;
-	void AbortAction() override;
 };

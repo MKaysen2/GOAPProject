@@ -21,7 +21,8 @@ UGOAPAction::UGOAPAction(const int& Cost) :
 	Super(),
 	Preconditions(),
 	Effects(),
-	EdgeCost(Cost)
+	EdgeCost(Cost),
+	Operator(nullptr)
 {
 }
 
@@ -35,10 +36,6 @@ void UGOAPAction::AddPrecondition(const EWorldKey& Key, const uint8& Value)
 	Preconditions.Add({ Key, Value });
 }
 
-void UGOAPAction::ApplySymbolicEffects(FWorldState& State) const
-{
-}
-
 void UGOAPAction::InitPreconditions()
 {
 }
@@ -47,16 +44,24 @@ void UGOAPAction::InitEffects()
 {
 }
 
+void UGOAPAction::InitAction(AAIController* Controller)
+{
+	AIOwner = Controller;
+	InitPreconditions();
+	InitEffects();
+}
+
 EActionStatus UGOAPAction::StartAction() 
 {
 	bIsRunning = true;
 	//FString action_name = GetName();
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
 
-	if (!AIOwner)
+	if (!AIOwner || !Operator)
 	{
 		return EActionStatus::kFailed;
 	}
+	AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
 
 	return EActionStatus::kSuccess;
 }
@@ -76,13 +81,6 @@ void UGOAPAction::AbortAction()
 {
 	bIsRunning = false;
 	OnActionEnded.Unbind();
-}
-
-void UGOAPAction::InitAction(AAIController* Controller)
-{
-	AIOwner = Controller;
-	InitPreconditions();
-	InitEffects();
 }
 
 bool UGOAPAction::IsActionRunning()
