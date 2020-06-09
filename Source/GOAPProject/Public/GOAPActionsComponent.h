@@ -21,25 +21,23 @@ protected:
 	UPROPERTY(Transient)
 		AAIController* AIOwner;
 	
-	//This should be changed to WeakPtr to avoid increasing ref count
 	UPROPERTY(Transient)
 		UGOAPAction* CurrentAction;
 
+	//it's fine if we don't store the solved plan context since it doesn't
+	//really matter as long as the action preconditions are still valid for
+	//the given plan step.
+
+	//we can also revalidate the plan by iterating through the
+	//remaining steps and applying the effects to a WS copy
 	UPROPERTY(Transient)
 		TArray<UGOAPAction*> ActionQueue;
-
-	//variable values are solved through the planner
-	//so a record of the solved world state is necessary to retrieve the correct context information
-	//That, or certain context info needs to be stored in the actions in a way that won't be
-	//affected during replanning
-	TArray<TSharedPtr<FWorldState>> StateQueue;
 
 	UPROPERTY()
 		TArray<UGOAPAction*> ActionSet;
 
 	int32 ActionIdx;
 
-	bool bPlanComplete;
 public:
 	void OnRegister() override;
 
@@ -52,13 +50,20 @@ public:
 	
 	UFUNCTION()
 		void OnActionEnded();
+
+	UFUNCTION()
+		void OnActionSuccess();
+
+	UFUNCTION()
+		void OnActionFailed();
+
 	UFUNCTION()
 	void RunNextAction();
 
 	UFUNCTION()
 		bool IsActionRunning();
 
-	void StartPlan(TSharedPtr<FStateNode> NewPlan);
+	void StartPlan();
 
 	UFUNCTION()
 	void AbortPlan();
@@ -73,8 +78,6 @@ public:
 
 	FPlanCompletedSignature OnPlanCompleted;
 
-	UFUNCTION()
-		bool IsPlanComplete();
 	UFUNCTION()
 		TArray<UGOAPAction*>& GetActionSet();
 

@@ -2,15 +2,17 @@
 
 #include "..\Public\GOAPAction.h"
 
-#include "..\Public\StateNode.h"
+#include "..\Public\PlannerBrainComponent.h"
 
+#include "Actions/PawnAction.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
 
 DEFINE_LOG_CATEGORY(LogAction);
 
-const FName MontageCompleted = TEXT("MontageCompleted");
-const FName MontageBlendingOut = TEXT("MontageBlendingOut");
+const FName UGOAPAction::MontageCompleted = TEXT("MontageCompleted");
+const FName UGOAPAction::MontageBlendingOut = TEXT("MontageBlendingOut");
+const FName UGOAPAction::ActionFinished = TEXT("ActionFinished");
 
 UGOAPAction::UGOAPAction() : Super()
 {
@@ -54,16 +56,33 @@ void UGOAPAction::InitAction(AAIController* Controller)
 EActionStatus UGOAPAction::StartAction() 
 {
 	bIsRunning = true;
-	//FString action_name = GetName();
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Starting action %s"), *action_name));
+	
+	UPawnAction* OperatorCopy = Operator ? DuplicateObject<UPawnAction>(Operator, GetOuter()) : nullptr;
 
 	if (!AIOwner || !Operator)
 	{
 		return EActionStatus::kFailed;
 	}
-	AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
 
-	return EActionStatus::kSuccess;
+	Operator->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
+	const bool bResult = AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
+	if (bResult)
+	{
+		return EActionStatus::kRunning;
+	}
+	return EActionStatus::kFailed;
+}
+
+void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
+{
+	const bool bSuccess = (Result == EPlannerTaskFinishedResult::Success);
+	UBrainComponent* BrainComp = AIOwner->BrainComponent;
+	FAIMessage::Send(BrainComp, FAIMessage(UGOAPAction::ActionFinished, this, bSuccess));
+}
+
+
+void UGOAPAction::OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event)
+{
 }
 
 void UGOAPAction::StopAction() 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Containers/Union.h"
 #include "WorldProperty.generated.h"
 
 #define GETENUMSTRING(etype, evalue) ( (FindObject<UEnum>(nullptr, TEXT(etype), true) != nullptr) ? FindObject<UEnum>(nullptr, TEXT(etype), true)->GetNameStringByIndex((int32)evalue) : FString("Invalid - are you sure enum uses UENUM() macro?") )
@@ -23,6 +22,15 @@ enum class EWorldKey : uint8
 	SYMBOL_MAX
 };
 
+UENUM()
+namespace EPlannerTaskFinishedResult
+{
+	enum Type
+	{
+		Success,
+		Failure
+	};
+}
 
 USTRUCT(BlueprintType)
 struct GOAPPROJECT_API FWorldProperty 
@@ -57,7 +65,7 @@ public:
 
 /** 
 */
-USTRUCT(BlueprintType)
+USTRUCT(Atomic, BlueprintType)
 struct GOAPPROJECT_API FAISymEffect
 {
 	GENERATED_BODY()

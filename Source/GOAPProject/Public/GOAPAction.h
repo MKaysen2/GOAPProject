@@ -16,8 +16,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LogAction, Warning, All);
 
 class UPawnAction;
 class AAIController;
-class BrainComponent;
-struct FStateNode;
+class UBrainComponent;
+class UPlannerBrainComponent;
 struct FAIRequestID;
 struct FPathFollowingResult;
 struct FWorldState;
@@ -48,6 +48,7 @@ public:
 	//Message names, might move to BrainComponent
 	static const FName MontageCompleted;
 	static const FName MontageBlendingOut;
+	static const FName ActionFinished;
 
 protected:
 	explicit UGOAPAction(const int& Cost);
@@ -66,7 +67,7 @@ protected:
 	int EdgeCost;
 
 		//This should be instanced
-		UPROPERTY(Instanced)
+		UPROPERTY(EditAnywhere, Instanced)
 			UPawnAction* Operator;
 	
 
@@ -114,11 +115,15 @@ public:
 	UFUNCTION()
 		virtual void InitAction(AAIController* Controller);
 
+
 	UFUNCTION()
 	bool IsActionRunning();
 
 	UFUNCTION()
 	EActionStatus StartAction();
+
+	void FinishAction(EPlannerTaskFinishedResult::Type Result);
+
 	UFUNCTION()
 	void StopAction(); 
 	
@@ -127,6 +132,8 @@ public:
 	//e.g. damage reactions require very fast blend out times
 	UFUNCTION()
 	void AbortAction();
+
+	void OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event);
 
 protected:
 	//Should add effects and preconditions in InitAction or something

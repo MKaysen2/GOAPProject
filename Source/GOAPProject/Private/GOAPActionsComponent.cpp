@@ -1,6 +1,5 @@
 #include "../Public/GOAPActionsComponent.h"
 #include "../Public/GOAPAction.h"
-#include "../Public/StateNode.h"
 #include "../Public/WorldState.h"
 #include "GameFramework/Character.h"
 #include "AIController.h"
@@ -15,7 +14,6 @@ void UGOAPActionsComponent::OnRegister()
 {
 	Super::OnRegister();
 	ActionIdx = 0;
-	bPlanComplete = true;
 	AIOwner = Cast<AAIController>(GetOwner());
 }
 
@@ -46,6 +44,18 @@ void UGOAPActionsComponent::OnActionEnded()
 	RunNextAction();
 }
 
+void UGOAPActionsComponent::OnActionSuccess()
+{
+	++ActionIdx;
+
+	RunNextAction();
+}
+
+void UGOAPActionsComponent::OnActionFailed()
+{
+
+}
+
 void UGOAPActionsComponent::RunNextAction()
 {
 	if (ActionIdx >= ActionQueue.Num())
@@ -61,49 +71,21 @@ void UGOAPActionsComponent::RunNextAction()
 		if (!CurrentAction->VerifyContext())
 		{
 			CurrentAction = nullptr;
-			//TODO fire delegate here I think
+			OnActionFailed();
 			return;
 		}
 		//Eventually I want animations that aren't forced to interrupt clean themselves up
 		EActionStatus eStatus = CurrentAction->StartAction();
 		if (eStatus == EActionStatus::kFailed)
 		{
-			UE_LOG(LogAction, Warning, TEXT("Action failed to activate"));
-			OnPlanCompleted.ExecuteIfBound();
-		}
-		else if (eStatus == EActionStatus::kSuccess)
-		{
-			//might want to time slice here
-			OnActionEnded();
-		}
-		else
-		{
-			CurrentAction->OnActionEnded.BindUObject(this, &UGOAPActionsComponent::OnActionEnded);
+			OnActionFailed();
 		}
 	}
 }
 
 
-void UGOAPActionsComponent::StartPlan(TSharedPtr<FStateNode> CurrentNode)
+void UGOAPActionsComponent::StartPlan()
 {
-	if (!CurrentNode.IsValid())
-	{
-		return;
-	}
-	/*
-	//The starting node should have a nullptr for the parent node+edge
-	while (CurrentNode.IsValid() )
-	{
-		UGOAPAction* Action = CurrentNode->edge();
-		if (IsValid(Action))
-		{
-			FString action_name = Action->GetName();
-			QueueAction(Action);
-		}
-		StateQueue.Emplace(CurrentNode->GetState());
-		CurrentNode = CurrentNode->previous();
-	}
-	*/
 	RunNextAction();
 }
 
@@ -115,42 +97,24 @@ void UGOAPActionsComponent::AbortPlan()
 	}
 	
 	ClearCurrentPlan();
-
-	//all of this should probably be managed on a per-action basis
-	/*if (AIOwner->IsPlayingMontage())
-	{
-		ACharacter* Avatar = Cast<ACharacter>(AIOwner->GetPawn());
-		if (Avatar)
-		{
-			UE_LOG(LogAction, Warning, TEXT("Stopped Active Montage"));
-			Avatar->StopAnimMontage();
-		}
-	}*/
-	if (AIOwner->IsFollowingAPath())
-	{
-		AIOwner->StopMovement();
-	}
 }
 
 void UGOAPActionsComponent::ClearCurrentPlan()
 {
-	bPlanComplete = true;
 	ActionIdx = 0;
 	CurrentAction = nullptr;
 	ActionQueue.Reset();
-	StateQueue.Reset();
 }
 
 void UGOAPActionsComponent::Reset()
 {
 	ClearCurrentPlan();
-	ActionSet.Reset(); //DURRRRR WHY ARE MY POINTERS DYING IF THE ACTIONSET ISN'T BEING MODIFIED
+	ActionSet.Reset(); //WHY ARE MY POINTERS DYING IF THE ACTIONSET ISN'T BEING MODIFIED
 	//oh yeah I wonder why
 }
 
 void UGOAPActionsComponent::QueueAction(UGOAPAction* Action)
 {
-	bPlanComplete = false;
 	ActionQueue.Emplace(Action);
 }
 
@@ -159,12 +123,6 @@ bool UGOAPActionsComponent::IsActionRunning()
 	if (!CurrentAction)
 		return false;
 	return CurrentAction->IsActionRunning();
-}
-
-
-bool UGOAPActionsComponent::IsPlanComplete()
-{
-	return bPlanComplete;
 }
 
 TArray<UGOAPAction*>& UGOAPActionsComponent::GetActionSet()
@@ -193,9 +151,6 @@ void UGOAPActionsComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCate
 	}
 
 	DebuggerCategory->AddTextLine(PlanInfo);
-
-	FString StateInfo = FString::Printf(TEXT("Statequeue: %d states (should be %d)"), StateQueue.Num(), StateSize);
-	DebuggerCategory->AddTextLine(StateInfo);
 }
 
 #endif //WITH_GAMEPLAY_DEBUGGER
