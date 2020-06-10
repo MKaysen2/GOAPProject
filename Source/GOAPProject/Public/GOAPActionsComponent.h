@@ -69,7 +69,7 @@ public:
 	UFUNCTION()
 		bool IsActionRunning();
 
-	void StartPlan();
+	void StartPlan(TArray<UGOAPAction*>& Plan);
 
 	UFUNCTION()
 	void AbortPlan();

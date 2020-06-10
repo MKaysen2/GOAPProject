@@ -102,17 +102,20 @@ void UGOAPActionsComponent::RunNextAction()
 			OnActionFailed();
 			return;
 		}
-		EActionStatus eStatus = CurrentAction->StartAction();
-		if (eStatus == EActionStatus::kFailed)
+		EActionResult eStatus = CurrentAction->StartAction();
+		if (eStatus == EActionResult::Failed)
 		{
 			OnActionFailed();
 		}
 	}
 }
 
-
-void UGOAPActionsComponent::StartPlan()
+void UGOAPActionsComponent::StartPlan(TArray<UGOAPAction*>& Plan)
 {
+	for (auto* Action : Plan)
+	{
+		QueueAction(Action);
+	}
 	RunNextAction();
 }
 

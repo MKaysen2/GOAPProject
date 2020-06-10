@@ -24,11 +24,19 @@ struct FWorldState;
 DECLARE_DELEGATE( FActionEndedDelegate );
 
 UENUM(BlueprintType)
+enum class EActionResult : uint8
+{
+	Failed,
+	Aborted,
+	Running,
+	Success
+};
+
+UENUM()
 enum class EActionStatus : uint8
 {
-	kFailed,
-	kRunning,
-	kSuccess
+	Active,
+	Aborting
 };
 
 //Analogous to FSM States
@@ -57,6 +65,7 @@ protected:
 		AAIController* AIOwner;
 
 	//I don't know why I can't modify this in the editor
+	//cause you didn't tag the properties, ya dingus
 	UPROPERTY(config, EditAnywhere)
 		TArray<FWorldProperty> Preconditions;
 
@@ -66,8 +75,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	int EdgeCost;
 
+	UPROPERTY()
+		EActionStatus TaskStatus;
 		//PawnAction has EditInlineNew defined so should be able to set this
 		//in editor
+	//this sort of works, but no ChildAction functionality as of right now
+	//Since ChildAction isn't an instanced property of PawnAction
 		UPROPERTY(EditDefaultsOnly, Instanced)
 			UPawnAction* Operator;
 	
@@ -117,15 +130,14 @@ public:
 	bool IsActionRunning();
 
 	UFUNCTION()
-	EActionStatus StartAction();
+	EActionResult StartAction();
 
 	void FinishAction(EPlannerTaskFinishedResult::Type Result);
 	
 	/*Deactivates action, stops all child tasks, and unbind delegates*/
 	//TODO: add an abort type to control blending
 	//e.g. damage reactions require very fast blend out times
-	UFUNCTION()
-	void AbortAction();
+	EActionResult AbortAction();
 
 	void OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event);
 
@@ -157,6 +169,9 @@ class GOAPPROJECT_API UAIAct_Animate : public UGOAPAction
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		FName MontageName;
+
+	UPROPERTY(EditDefaultsOnly)
+		float fDuration;
 
 };
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

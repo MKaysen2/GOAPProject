@@ -3,7 +3,7 @@
 #include "..\Public\GOAPAction.h"
 
 #include "..\Public\PlannerBrainComponent.h"
-
+#include "Actions/PawnActionsComponent.h"
 #include "Actions/PawnAction.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
@@ -53,24 +53,23 @@ void UGOAPAction::InitAction(AAIController* Controller)
 	InitEffects();
 }
 
-EActionStatus UGOAPAction::StartAction() 
+EActionResult UGOAPAction::StartAction() 
 {
 	bIsRunning = true;
 	
 	UPawnAction* OperatorCopy = Operator ? DuplicateObject<UPawnAction>(Operator, GetOuter()) : nullptr;
+	EActionResult Result = EActionResult::Failed;
 
-	if (!AIOwner || !Operator)
+	if (AIOwner && Operator)
 	{
-		return EActionStatus::kFailed;
+		Operator->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
+		const bool bResult = AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
+		if (bResult)
+		{
+			Result = EActionResult::Running;
+		}
 	}
-
-	Operator->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
-	const bool bResult = AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
-	if (bResult)
-	{
-		return EActionStatus::kRunning;
-	}
-	return EActionStatus::kFailed;
+	return Result;
 }
 
 void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
@@ -83,10 +82,37 @@ void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
 
 void UGOAPAction::OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event)
 {
+
+	
+	if (TaskStatus == EActionStatus::Active)
+	{
+		if (Event == EPawnActionEventType::FinishedExecution || Event == EPawnActionEventType::FailedToStart)
+		{
+			const bool bSucceeded = (Action.GetResult() == EPawnActionResult::Success);
+			FinishAction((bSucceeded ? EPlannerTaskFinishedResult::Success : EPlannerTaskFinishedResult::Failure));
+		}
+		else if (Event == EPawnActionEventType::FinishedAborting)
+		{
+			FinishAction(EPlannerTaskFinishedResult::Failure);
+
+		}
+	}
+	else if (TaskStatus == EActionStatus::Aborting)
+	{
+		if (Event == EPawnActionEventType::FinishedAborting ||
+			Event == EPawnActionEventType::FinishedExecution || Event == EPawnActionEventType::FailedToStart)
+		{
+			FinishAction(EPlannerTaskFinishedResult::Failure);
+		}
+	}
 }
 
-void UGOAPAction::AbortAction()
+EActionResult UGOAPAction::AbortAction()
 {
+	return (AIOwner != nullptr
+		&& AIOwner->GetActionsComp() != nullptr
+		&& AIOwner->GetActionsComp()->AbortActionsInstigatedBy(this, EAIRequestPriority::Logic) > 0)
+		? EActionResult::Running : EActionResult::Aborted;
 }
 
 bool UGOAPAction::IsActionRunning()

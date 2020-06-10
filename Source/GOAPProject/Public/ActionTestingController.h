@@ -7,6 +7,7 @@
 #include "ActionTestingController.generated.h"
 
 class UGOAPAction;
+class UGOAPActionsComponent;
 /**
  * Meant to run an Action by keypress
  */
@@ -17,14 +18,12 @@ class GOAPPROJECT_API AActionTestingController : public AAIController
 	
 protected:
 	//Want to allow this to be easy to edit without recompiling
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<UGOAPAction> ActionClass;
 
 	UPROPERTY(EditDefaultsOnly, Instanced)
 		TArray<UGOAPAction*> TestActionArray;
-	UPROPERTY(transient)
-		UGOAPAction* Action;
 
+	UPROPERTY()
+		UGOAPActionsComponent* PlanComponent;
 public:
 	virtual void BeginPlay() override;
 

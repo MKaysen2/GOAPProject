@@ -38,8 +38,10 @@ struct GOAPPROJECT_API FWorldProperty
 	GENERATED_BODY()
 public:
 
+	UPROPERTY(EditAnywhere)
 	EWorldKey Key = EWorldKey::kIdle;
 
+	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
 
@@ -70,10 +72,10 @@ struct GOAPPROJECT_API FAISymEffect
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
 	EWorldKey Key;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
