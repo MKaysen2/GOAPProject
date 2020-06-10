@@ -56,24 +56,19 @@ protected:
 	UPROPERTY()
 		AAIController* AIOwner;
 
-	UPROPERTY(EditDefaultsOnly)
+	//I don't know why I can't modify this in the editor
+	UPROPERTY(config, EditAnywhere)
 		TArray<FWorldProperty> Preconditions;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(config, EditAnywhere)
 		TArray<FAISymEffect> Effects;
 
 	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<UPawnAction> OperatorClass;
-
-	//This should be instanced
-	UPROPERTY(EditDefaultsOnly)
 	int EdgeCost;
 
-		//This should be instanced
-	//I guess this doesn't technically need to be a PawnAction. It could still be an AITask.
-	//Might be best to reference operator by enum since there's a fixed set of operators, anyway.
-	//which probably also means the operator params have a fixed signature
-		UPROPERTY()
+		//PawnAction has EditInlineNew defined so should be able to set this
+		//in editor
+		UPROPERTY(EditDefaultsOnly, Instanced)
 			UPawnAction* Operator;
 	
 

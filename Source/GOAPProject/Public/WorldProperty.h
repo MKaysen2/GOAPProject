@@ -70,10 +70,10 @@ struct GOAPPROJECT_API FAISymEffect
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EWorldKey Key;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 Value;
 
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
