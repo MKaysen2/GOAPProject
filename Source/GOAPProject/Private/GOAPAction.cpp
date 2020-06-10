@@ -50,8 +50,6 @@ void UGOAPAction::InitEffects()
 void UGOAPAction::InitAction(AAIController* Controller)
 {
 	AIOwner = Controller;
-	InitPreconditions();
-	InitEffects();
 }
 
 EActionResult UGOAPAction::StartAction() 
@@ -66,12 +64,14 @@ EActionResult UGOAPAction::StartAction()
 		UPawnAction_Wait* WaitCopy = Cast<UPawnAction_Wait>(OperatorCopy);
 		if (WaitCopy)
 		{
+			UE_LOG(LogAction, Warning, TEXT("Was PawnAction_Wait, duration request %d"), TimeToWait);
 			WaitCopy->TimeToWait = TimeToWait;
 		}
 		OperatorCopy->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
 		const bool bResult = AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
 		if (bResult)
 		{
+			UE_LOG(LogAction, Warning, TEXT("Operator started successfully"));
 			Result = EActionResult::Running;
 		}
 	}
@@ -88,6 +88,7 @@ void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
 
 void UGOAPAction::OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event)
 {
+	UE_LOG(LogAction, Warning, TEXT("On PawnAction Event"));
 
 	
 	if (TaskStatus == EActionStatus::Active)

@@ -24,14 +24,14 @@ void FGameplayDebuggerCategory_GOAP::CollectData(APlayerController* OwnerPC, AAc
 	if (MyPawn)
 	{
 		AGOAPController* GOAPAI = Cast<AGOAPController>(MyPawn->GetController());
+		UGOAPActionsComponent* ActionsComp = Cast<UGOAPActionsComponent>(MyPawn->GetController()->GetComponentByClass(UGOAPActionsComponent::StaticClass()));
+		if (ActionsComp)
+		{
+			ActionsComp->DescribeSelfToGameplayDebugger(this);
+		}
 		if (GOAPAI)
 		{
-			UGOAPActionsComponent* ActionsComp = GOAPAI->GetGOAPActionsComponent();
-
-			if (ActionsComp)
-			{
-				ActionsComp->DescribeSelfToGameplayDebugger(this);
-			}
+			
 
 			UGoalSelectionComponent* GoalsComp = GOAPAI->GetGoalSelectionComponent();
 

@@ -17,8 +17,8 @@ class GOAPPROJECT_API AActionTestingController : public AAIController
 	GENERATED_BODY()
 	
 protected:
+	AActionTestingController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	//Want to allow this to be easy to edit without recompiling
-
 	UPROPERTY(EditDefaultsOnly, Instanced)
 		TArray<UGOAPAction*> TestActionArray;
 

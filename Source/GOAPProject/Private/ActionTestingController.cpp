@@ -6,12 +6,19 @@
 #include "Engine/World.h"
 #include "..\Public\GOAPActionsComponent.h"
 
+AActionTestingController::AActionTestingController(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	PlanComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("PlanComp"));
+	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComp"));
+}
 void AActionTestingController::BeginPlay()
 {
 	Super::BeginPlay();
-	PlanComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("PlanComp"));
-	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComp"));
-
+	for (auto* Action : TestActionArray)
+	{
+		Action->InitAction(this);
+	}
 }
 
 void AActionTestingController::PlayAction()
