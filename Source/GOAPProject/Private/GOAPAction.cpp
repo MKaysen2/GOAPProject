@@ -5,6 +5,7 @@
 #include "..\Public\PlannerBrainComponent.h"
 #include "Actions/PawnActionsComponent.h"
 #include "Actions/PawnAction.h"
+#include "Actions/PawnAction_Wait.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
 
@@ -62,7 +63,12 @@ EActionResult UGOAPAction::StartAction()
 
 	if (AIOwner && Operator)
 	{
-		Operator->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
+		UPawnAction_Wait* WaitCopy = Cast<UPawnAction_Wait>(OperatorCopy);
+		if (WaitCopy)
+		{
+			WaitCopy->TimeToWait = TimeToWait;
+		}
+		OperatorCopy->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
 		const bool bResult = AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
 		if (bResult)
 		{

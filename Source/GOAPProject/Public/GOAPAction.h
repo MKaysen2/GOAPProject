@@ -85,6 +85,10 @@ protected:
 			UPawnAction* Operator;
 	
 
+		UPROPERTY(EditDefaultsOnly)
+			float TimeToWait;
+
+
 		UPROPERTY()
 			bool bIsRunning = false;
 
@@ -169,9 +173,5 @@ class GOAPPROJECT_API UAIAct_Animate : public UGOAPAction
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		FName MontageName;
-
-	UPROPERTY(EditDefaultsOnly)
-		float fDuration;
-
 };
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
