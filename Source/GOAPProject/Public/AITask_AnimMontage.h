@@ -39,9 +39,6 @@ protected:
 
 	FTimerHandle MontageSectionTimerHandle;
 
-	
-
-
 public:
 
 	static UAITask_AnimMontage* AIAnimMontage(AAIController* Controller, UAnimMontage* MontageToPlay, float InPlayRate = 1.0f, int32 LoopMax = 0);

@@ -60,7 +60,7 @@ void UGOAPActionsComponent::RemoveListeners()
 void UGOAPActionsComponent::HandleAIMessage(UBrainComponent* BrainComp, const FAIMessage& Message)
 {
 	bool bSuccess = (Message.Status == FAIMessage::Success);
-
+	UE_LOG(LogTemp, Warning, TEXT("Got AI Message"));
 	if (bSuccess)
 	{
 		OnActionSuccess();

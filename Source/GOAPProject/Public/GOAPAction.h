@@ -79,10 +79,6 @@ protected:
 		//in editor
 	//this sort of works, but no ChildAction functionality as of right now
 	//Since ChildAction isn't an instanced property of PawnAction
-
-	UPROPERTY()
-		TSubclassOf<UAITask> OpType;
-
 	UPROPERTY(transient)
 		UAITask* Operator;
 
@@ -124,13 +120,14 @@ public:
 	UFUNCTION()
 		virtual void InitAction(AAIController* Controller);
 
-	virtual bool SetOperatorParams();
+	virtual UAITask* GetOperator();
 
 	UFUNCTION()
 	EActionResult StartAction();
 
 	void FinishAction(EPlannerTaskFinishedResult::Type Result);
 	
+	void OnOperatorEnded();
 	/*Deactivates action, stops all child tasks, and unbind delegates*/
 	//TODO: add an abort type to control blending
 	//e.g. damage reactions require very fast blend out times
@@ -164,5 +161,7 @@ class GOAPPROJECT_API UAIAct_Animate : public UGOAPAction
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UAnimMontage* Montage;
+
+	virtual UAITask* GetOperator() override;
 };
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
