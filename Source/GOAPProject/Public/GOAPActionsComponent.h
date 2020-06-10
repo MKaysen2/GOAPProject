@@ -66,9 +66,6 @@ public:
 	UFUNCTION()
 	void RunNextAction();
 
-	UFUNCTION()
-		bool IsActionRunning();
-
 	void StartPlan(TArray<UGOAPAction*>& Plan);
 
 	UFUNCTION()

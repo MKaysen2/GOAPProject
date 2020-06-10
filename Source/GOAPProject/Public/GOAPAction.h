@@ -14,7 +14,8 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAction, Warning, All);
 
-class UPawnAction;
+class UAITask;
+class UAnimMontage;
 class AAIController;
 class UBrainComponent;
 class UPlannerBrainComponent;
@@ -39,13 +40,10 @@ enum class EActionStatus : uint8
 	Aborting
 };
 
+
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
-//TODO: just add the controlled pawn as a property already, seriously
-
-//This is slowly becoming PawnAction. Should use PawnAction as operator
-//and make this a decorator type for the planner
 UCLASS(Config=AI, abstract, EditInlineNew, config=Game)
 class GOAPPROJECT_API UGOAPAction : public UObject 
 {
@@ -81,16 +79,12 @@ protected:
 		//in editor
 	//this sort of works, but no ChildAction functionality as of right now
 	//Since ChildAction isn't an instanced property of PawnAction
-		UPROPERTY(EditDefaultsOnly, Instanced)
-			UPawnAction* Operator;
-	
 
-		UPROPERTY(EditDefaultsOnly)
-			float TimeToWait;
+	UPROPERTY()
+		TSubclassOf<UAITask> OpType;
 
-
-		UPROPERTY()
-			bool bIsRunning = false;
+	UPROPERTY(transient)
+		UAITask* Operator;
 
 public:
 
@@ -130,8 +124,7 @@ public:
 	UFUNCTION()
 		virtual void InitAction(AAIController* Controller);
 
-	UFUNCTION()
-	bool IsActionRunning();
+	virtual bool SetOperatorParams();
 
 	UFUNCTION()
 	EActionResult StartAction();
@@ -142,8 +135,6 @@ public:
 	//TODO: add an abort type to control blending
 	//e.g. damage reactions require very fast blend out times
 	EActionResult AbortAction();
-
-	void OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event);
 
 protected:
 	//Should add effects and preconditions in InitAction or something
@@ -172,6 +163,6 @@ class GOAPPROJECT_API UAIAct_Animate : public UGOAPAction
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-		FName MontageName;
+		UAnimMontage* Montage;
 };
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

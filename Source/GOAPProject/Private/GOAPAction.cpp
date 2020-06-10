@@ -52,29 +52,14 @@ void UGOAPAction::InitAction(AAIController* Controller)
 	AIOwner = Controller;
 }
 
+bool UGOAPAction::SetOperatorParams()
+{
+	return false;
+}
+
 EActionResult UGOAPAction::StartAction() 
 {
-	bIsRunning = true;
-	
-	UPawnAction* OperatorCopy = Operator ? DuplicateObject<UPawnAction>(Operator, GetOuter()) : nullptr;
 	EActionResult Result = EActionResult::Failed;
-
-	if (AIOwner && Operator)
-	{
-		UPawnAction_Wait* WaitCopy = Cast<UPawnAction_Wait>(OperatorCopy);
-		if (WaitCopy)
-		{
-			UE_LOG(LogAction, Warning, TEXT("Was PawnAction_Wait, duration request %d"), TimeToWait);
-			WaitCopy->TimeToWait = TimeToWait;
-		}
-		OperatorCopy->SetActionObserver(FPawnActionEventDelegate::CreateUObject(this, &UGOAPAction::OnActionEvent));
-		const bool bResult = AIOwner->PerformAction(*Operator, EAIRequestPriority::Logic, this);
-		if (bResult)
-		{
-			UE_LOG(LogAction, Warning, TEXT("Operator started successfully"));
-			Result = EActionResult::Running;
-		}
-	}
 	return Result;
 }
 
@@ -85,44 +70,7 @@ void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
 	FAIMessage::Send(BrainComp, FAIMessage(UGOAPAction::ActionFinished, this, bSuccess));
 }
 
-
-void UGOAPAction::OnActionEvent(UPawnAction& Action, EPawnActionEventType::Type Event)
-{
-	UE_LOG(LogAction, Warning, TEXT("On PawnAction Event"));
-
-	
-	if (TaskStatus == EActionStatus::Active)
-	{
-		if (Event == EPawnActionEventType::FinishedExecution || Event == EPawnActionEventType::FailedToStart)
-		{
-			const bool bSucceeded = (Action.GetResult() == EPawnActionResult::Success);
-			FinishAction((bSucceeded ? EPlannerTaskFinishedResult::Success : EPlannerTaskFinishedResult::Failure));
-		}
-		else if (Event == EPawnActionEventType::FinishedAborting)
-		{
-			FinishAction(EPlannerTaskFinishedResult::Failure);
-
-		}
-	}
-	else if (TaskStatus == EActionStatus::Aborting)
-	{
-		if (Event == EPawnActionEventType::FinishedAborting ||
-			Event == EPawnActionEventType::FinishedExecution || Event == EPawnActionEventType::FailedToStart)
-		{
-			FinishAction(EPlannerTaskFinishedResult::Failure);
-		}
-	}
-}
-
 EActionResult UGOAPAction::AbortAction()
 {
-	return (AIOwner != nullptr
-		&& AIOwner->GetActionsComp() != nullptr
-		&& AIOwner->GetActionsComp()->AbortActionsInstigatedBy(this, EAIRequestPriority::Logic) > 0)
-		? EActionResult::Running : EActionResult::Aborted;
-}
-
-bool UGOAPAction::IsActionRunning()
-{
-	return bIsRunning;
+	return EActionResult::Aborted;
 }

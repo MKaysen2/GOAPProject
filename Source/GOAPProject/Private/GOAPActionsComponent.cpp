@@ -121,7 +121,7 @@ void UGOAPActionsComponent::StartPlan(TArray<UGOAPAction*>& Plan)
 
 void UGOAPActionsComponent::AbortPlan()
 {
-	if (CurrentAction && CurrentAction->IsActionRunning())
+	if (CurrentAction)
 	{
 		CurrentAction->AbortAction();
 	}
@@ -146,13 +146,6 @@ void UGOAPActionsComponent::Reset()
 void UGOAPActionsComponent::QueueAction(UGOAPAction* Action)
 {
 	ActionQueue.Emplace(Action);
-}
-
-bool UGOAPActionsComponent::IsActionRunning()
-{
-	if (!CurrentAction)
-		return false;
-	return CurrentAction->IsActionRunning();
 }
 
 TArray<UGOAPAction*>& UGOAPActionsComponent::GetActionSet()
