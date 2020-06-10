@@ -4,7 +4,6 @@
 
 
 #include "GameFramework/Pawn.h"
-#include "../Public/GOAPController.h"
 #include "../Public/GOAPActionsComponent.h"
 #include "../Public/GoalSelectionComponent.h"
 
@@ -23,28 +22,17 @@ void FGameplayDebuggerCategory_GOAP::CollectData(APlayerController* OwnerPC, AAc
 	APawn* MyPawn = Cast<APawn>(DebugActor);
 	if (MyPawn)
 	{
-		AGOAPController* GOAPAI = Cast<AGOAPController>(MyPawn->GetController());
 		UGOAPActionsComponent* ActionsComp = Cast<UGOAPActionsComponent>(MyPawn->GetController()->GetComponentByClass(UGOAPActionsComponent::StaticClass()));
 		if (ActionsComp)
 		{
 			ActionsComp->DescribeSelfToGameplayDebugger(this);
 		}
-		if (GOAPAI)
+
+		UGoalSelectionComponent* GoalsComp = Cast<UGoalSelectionComponent>(MyPawn->GetController()->GetComponentByClass(UGoalSelectionComponent::StaticClass()));
+
+		if (GoalsComp)
 		{
-			
-
-			UGoalSelectionComponent* GoalsComp = GOAPAI->GetGoalSelectionComponent();
-
-			if (GoalsComp)
-			{
-				GoalsComp->DescribeSelfToGameplayDebugger(this);
-			}
-
-			TSharedPtr<FWorldState> WS = GOAPAI->GetWorldState();
-			if (WS.IsValid())
-			{
-				WS->DescribeSelfToGameplayDebugger(this);
-			}
+			GoalsComp->DescribeSelfToGameplayDebugger(this);
 		}
 	}
 }
