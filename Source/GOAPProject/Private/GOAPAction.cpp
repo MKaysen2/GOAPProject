@@ -2,9 +2,8 @@
 
 #include "..\Public\GOAPAction.h"
 
-#include "..\Public\PlannerBrainComponent.h"
 #include "..\Public\AITask_AnimMontage.h"
-
+#include "BrainComponent.h"
 #include "AIController.h"
 #include "Tasks/AITask.h"
 #include "GameFramework/Character.h"

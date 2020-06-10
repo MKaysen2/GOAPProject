@@ -8,6 +8,7 @@
 
 class UGOAPAction;
 class UGOAPActionsComponent;
+class UPlannerAsset;
 /**
  * Meant to run an Action by keypress
  */
@@ -32,4 +33,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void InterruptAction();
+
+	UFUNCTION(BlueprintCallable)
+		bool RunPlanner(UPlannerAsset* PlannerAsset);
 };

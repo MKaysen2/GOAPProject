@@ -4,11 +4,11 @@
 #include "BrainComponent.h"
 #include "WorldState.h"
 #include "WorldProperty.h"
-#include "PlannerBrainComponent.generated.h"
+#include "PlannerComponent.generated.h"
 
 class UGOAPAction;
 UCLASS()
-class GOAPPROJECT_API UPlannerBrainComponent : public UBrainComponent
+class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 {
 	GENERATED_BODY()
 public:

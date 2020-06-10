@@ -5,10 +5,6 @@
 #include "UObject/NoExportTypes.h"
 #include "WorldProperty.h"
 #include "WorldState.h"
-#include "UObject/ConstructorHelpers.h"
-#include <EngineGlobals.h>
-#include <Runtime/Engine/Classes/Engine/Engine.h>
-#include "BrainComponent.h"
 
 #include "GOAPAction.generated.h"
 
@@ -18,7 +14,7 @@ class UAITask;
 class UAnimMontage;
 class AAIController;
 class UBrainComponent;
-class UPlannerBrainComponent;
+class UPlannerComponent;
 struct FAIRequestID;
 struct FPathFollowingResult;
 struct FWorldState;
