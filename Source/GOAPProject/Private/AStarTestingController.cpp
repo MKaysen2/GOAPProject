@@ -3,9 +3,9 @@
 
 #include "..\Public\AStarTestingController.h"
 #include "..\Public\GOAPGoal.h"
+#include "..\Public\GOAPAction.h"
 #include "..\Public\AStarComponent.h"
 #include "..\Public\WorldProperty.h"
-#include "..\Public\AIAct_Attack.h"
 
 AAStarTestingController::AAStarTestingController()
 	: Super()
