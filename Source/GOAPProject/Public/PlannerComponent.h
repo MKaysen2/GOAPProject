@@ -7,6 +7,7 @@
 #include "PlannerComponent.generated.h"
 
 class UGOAPAction;
+class UPlannerAsset;
 UCLASS()
 class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 {
@@ -14,7 +15,7 @@ class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 public:
 	//unused for now. using messages first
 	void OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result);
-
+	void StartPlanner(const UPlannerAsset& PlannerAsset);
 	//TODO: move GOAPActionsComp behavior here
 protected:
 

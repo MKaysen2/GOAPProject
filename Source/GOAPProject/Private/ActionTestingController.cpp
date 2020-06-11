@@ -4,6 +4,7 @@
 #include "..\Public\ActionTestingController.h"
 #include "..\Public\GOAPAction.h"
 #include "..\Public\PlannerAsset.h"
+#include "..\Public\PlannerComponent.h"
 #include "..\Public\GOAPActionsComponent.h"
 
 AActionTestingController::AActionTestingController(const FObjectInitializer& ObjectInitializer)
@@ -12,6 +13,7 @@ AActionTestingController::AActionTestingController(const FObjectInitializer& Obj
 	PlanComponent = CreateDefaultSubobject<UGOAPActionsComponent>(TEXT("PlanComp"));
 	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComp"));
 }
+
 void AActionTestingController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -33,5 +35,18 @@ void AActionTestingController::InterruptAction()
 
 bool AActionTestingController::RunPlanner(UPlannerAsset* PlannerAsset)
 {
-	return false;
+	if (PlannerAsset == nullptr)
+	{
+		return false;
+	}
+
+	UPlannerComponent* PlannerComp = Cast<UPlannerComponent>(GetBrainComponent());
+	if (PlannerComp == nullptr)
+	{
+		PlannerComp = NewObject<UPlannerComponent>(this, TEXT("PlannerComp"));
+		PlannerComp->RegisterComponent();
+		BrainComponent = PlannerComp;
+	}
+	PlannerComp->StartPlanner(*PlannerAsset);
+	return true;
 }

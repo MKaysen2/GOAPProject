@@ -4,3 +4,7 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 {
 
 }
+
+void UPlannerComponent::StartPlanner(const UPlannerAsset& PlannerAsset)
+{
+}

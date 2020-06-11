@@ -5,7 +5,7 @@
 #include "PlannerAsset.generated.h"
 
 class UGOAPAction;
-class UPlannerBrainComponent;
+class UPlannerComponent;
 
 UCLASS(BlueprintType, Blueprintable)
 class GOAPPROJECT_API UPlannerAsset : public UObject
@@ -17,5 +17,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 		TArray<UGOAPAction*> Actions;
 
-	friend class UPlannerBrainComponent;
+	friend class UPlannerComponent;
 };
