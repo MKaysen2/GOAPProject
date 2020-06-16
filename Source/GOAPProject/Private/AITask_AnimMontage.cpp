@@ -24,9 +24,16 @@ UAITask_AnimMontage* UAITask_AnimMontage::AIAnimMontage(AAIController* Controlle
 	return Task;
 }
 
+void UAITask_AnimMontage::SetUp()
+{
+	
+}
+
 void UAITask_AnimMontage::Activate()
 {
 	Super::Activate();
+	ACharacter* Character = Cast<ACharacter>(GetAIController()->GetPawn());
+	AnimInstance = Character->GetMesh()->GetAnimInstance();
 	float MontageDuration = AnimInstance->Montage_Play(MontageHandle);
 	if (bLooping)
 	{

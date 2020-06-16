@@ -3,6 +3,7 @@
 #include "..\Public\GOAPAction.h"
 
 #include "..\Public\AITask_AnimMontage.h"
+#include "..\Public\AITask_Operator.h"
 #include "BrainComponent.h"
 #include "..\Public\PlannerComponent.h"
 #include "AIController.h"
@@ -27,6 +28,40 @@ UGOAPAction::UGOAPAction(const int& Cost) :
 	EdgeCost(Cost),
 	Operator(nullptr)
 {
+}
+
+UGameplayTasksComponent* UGOAPAction::GetGameplayTasksComponent(const UGameplayTask& Task) const
+{
+	const UAITask* AITask = Cast<const UAITask>(&Task);
+	return (AITask && AITask->GetAIController()) ? AITask->GetAIController()->GetGameplayTasksComponent() : Task.GetGameplayTasksComponent();
+}
+
+AActor* UGOAPAction::GetGameplayTaskOwner(const UGameplayTask* Task) const
+{
+	const UAITask* AITask = Cast<UAITask>(Task);
+	if (AITask)
+	{
+		return AITask->GetAIController() ? AITask->GetAIController() : nullptr;
+	}
+	return nullptr;
+}
+
+AActor* UGOAPAction::GetGameplayTaskAvatar(const UGameplayTask* Task) const
+{
+	const UAITask* AITask = Cast<UAITask>(Task);
+	if (AITask)
+	{
+		return AITask->GetAIController() ? AITask->GetAIController()->GetPawn() : nullptr;
+	}
+	return nullptr;
+}
+
+void UGOAPAction::OnGameplayTaskDeactivated(UGameplayTask& Task)
+{
+	if (Task.GetState() == EGameplayTaskState::Finished)
+	{
+		FinishAction(EPlannerTaskFinishedResult::Success);
+	}
 }
 
 void UGOAPAction::AddEffect(const EWorldKey& Key, const FAISymEffect& Effect)
@@ -58,10 +93,12 @@ UAITask* UGOAPAction::GetOperator()
 EActionResult UGOAPAction::StartAction() 
 {
 	EActionResult Result = EActionResult::Failed;
-	Operator = GetOperator();
-	if (AIOwner && Operator)
+	UAITask_Operator* OpCopy = DuplicateObject<UAITask_Operator>(Operator, this);
+	if (AIOwner && OpCopy)
 	{
-		Operator->ReadyForActivation();
+		OpCopy->InitAITask(*AIOwner, *this);
+		OpCopy->ReadyForActivation();
+		Result = (OpCopy->GetState() != EGameplayTaskState::Finished ? EActionResult::Running : EActionResult::Failed);
 	}
 	return Result;
 }
@@ -83,24 +120,15 @@ void UGOAPAction::OnOperatorEnded()
 EActionResult UGOAPAction::AbortAction()
 {
 	//Clear observers
-	if (Operator )
-	{
-		Operator->ExternalCancel();
-	}
 	return EActionResult::Aborted;
 }
 
 UAITask* UAIAct_Animate::GetOperator()
 {
-	if (!Montage)
+	if (!Montage || !AIOwner)
 	{
 		return nullptr;
 	}
-	UAITask_AnimMontage* MontageTask = UAITask_AnimMontage::AIAnimMontage(AIOwner, Montage);
-	if (!MontageTask)
-	{
-		return nullptr;
-	}
-	MontageTask->OnMontageTaskEnded.AddUObject(this, &UGOAPAction::OnOperatorEnded);
+	UAITask_AnimMontage* MontageTask = NewOperatorTask<UAITask_AnimMontage>(*AIOwner);
 	return MontageTask;
 }

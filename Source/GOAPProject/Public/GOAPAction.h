@@ -5,12 +5,15 @@
 #include "UObject/NoExportTypes.h"
 #include "WorldProperty.h"
 #include "WorldState.h"
+#include "Tasks/AITask.h"
+#include "GameplayTaskOwnerInterface.h"
 
 #include "GOAPAction.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAction, Warning, All);
 
 class UAITask;
+class UAITask_Operator;
 class UAnimMontage;
 class AAIController;
 class UBrainComponent;
@@ -41,7 +44,7 @@ enum class EActionStatus : uint8
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
 UCLASS(Config=AI, abstract, EditInlineNew, config=Game)
-class GOAPPROJECT_API UGOAPAction : public UObject 
+class GOAPPROJECT_API UGOAPAction : public UObject, public IGameplayTaskOwnerInterface
 {
 	GENERATED_BODY()
 public:
@@ -80,10 +83,15 @@ protected:
 		//in editor
 	//this sort of works, but no ChildAction functionality as of right now
 	//Since ChildAction isn't an instanced property of PawnAction
-	UPROPERTY(transient)
-		UAITask* Operator;
+	UPROPERTY(EditDefaultsOnly, Instanced)
+		UAITask_Operator* Operator;
 
 public:
+
+	virtual UGameplayTasksComponent* GetGameplayTasksComponent(const UGameplayTask& Task) const override;
+	virtual AActor* GetGameplayTaskOwner(const UGameplayTask* Task) const override;
+	virtual AActor* GetGameplayTaskAvatar(const UGameplayTask* Task) const override;
+	virtual void OnGameplayTaskDeactivated(UGameplayTask& Task) override;
 
 	UFUNCTION()
 		const TArray<FAISymEffect>& GetEffects() const 
@@ -137,6 +145,11 @@ public:
 	//e.g. damage reactions require very fast blend out times
 	EActionResult AbortAction();
 
+	template<typename T>
+	T* NewOperatorTask(AAIController& Controller)
+	{
+		return UAITask::NewAITask<T>(Controller, *this);
+	}
 protected:
 	//Should add effects and preconditions in InitAction or something
 	//which will make it easier to create BP subclasses
