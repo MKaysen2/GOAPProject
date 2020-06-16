@@ -43,7 +43,7 @@ enum class EActionStatus : uint8
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
-UCLASS(Config=AI, EditInlineNew)
+UCLASS(Config=AI, EditInlineNew, meta=(DisplayName="Planner Primitive"))
 class GOAPPROJECT_API UGOAPAction : public UObject, public IGameplayTaskOwnerInterface
 {
 	GENERATED_BODY()
@@ -159,14 +159,4 @@ protected:
 
 };
 
-UCLASS(meta = (DisplayName = "Task primitive Animate"))
-class GOAPPROJECT_API UAIAct_Animate : public UGOAPAction
-{
-	GENERATED_BODY()
-
-protected:
-	UPROPERTY(EditDefaultsOnly)
-		UAnimMontage* Montage;
-
-};
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

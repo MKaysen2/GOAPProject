@@ -8,22 +8,6 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 
-UAITask_AnimMontage* UAITask_AnimMontage::AIAnimMontage(AAIController* Controller, UAnimMontage* MontageToPlay, float InPlayRate, int32 LoopMax)
-{
-	ACharacter* ControlledPawn = Controller ? Cast<ACharacter>(Controller->GetPawn()) : nullptr;
-	UAITask_AnimMontage* Task = (ControlledPawn ? UAITask::NewAITask<UAITask_AnimMontage>(*Controller, EAITaskPriority::High) : nullptr);
-
-	if (Task)
-	{
-		Task->LoopCount = 0;
-		Task->LoopMax = LoopMax;
-		Task->MontageHandle = MontageToPlay;
-		Task->bLooping = (LoopMax > 0);
-		Task->AnimInstance = ControlledPawn->GetMesh()->GetAnimInstance();
-	}
-	return Task;
-}
-
 void UAITask_AnimMontage::SetUp()
 {
 	
@@ -35,8 +19,10 @@ void UAITask_AnimMontage::Activate()
 	ACharacter* Character = Cast<ACharacter>(GetAIController()->GetPawn());
 	AnimInstance = Character->GetMesh()->GetAnimInstance();
 	float MontageDuration = AnimInstance->Montage_Play(MontageHandle);
+	/*
 	if (bLooping)
 	{
+		
 		float SectionDuration = MontageHandle->GetSectionLength(0);
 		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::MontageLoop, SectionDuration, false);
 	}
@@ -44,44 +30,57 @@ void UAITask_AnimMontage::Activate()
 	{
 		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::OnMontageEnded, MontageDuration, false);
 	}
+	*/
+	MontageEndedDelegate.BindUObject(this, &UAITask_AnimMontage::MontageEndedCallback);
+	AnimInstance->Montage_SetBlendingOutDelegate(MontageEndedDelegate, MontageHandle);
 }
 
 void UAITask_AnimMontage::ExternalCancel()
 {
-	EndTask();
-	OwnerController->GetWorldTimerManager().ClearTimer(MontageSectionTimerHandle);
-	if (AnimInstance)
-	{
-		AnimInstance->Montage_Stop(0.2f, MontageHandle);
-	}
+
 	AnimInstance = nullptr;
 	MontageHandle = nullptr;
+	EndTask();
+
+}
+
+void UAITask_AnimMontage::OnDestroy(bool bOwnerEnded)
+{
+	if (!bOwnerEnded)
+	{
+		StopMontage();
+	}
+	Super::OnDestroy(bOwnerEnded);
+}
+
+void UAITask_AnimMontage::StopMontage()
+{
+	if (AnimInstance == nullptr || MontageHandle == nullptr)
+	{
+		return;
+	}
+	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(MontageHandle);
+	if (MontageInstance)
+	{
+		MontageInstance->OnMontageBlendingOutStarted.Unbind();
+		MontageInstance->OnMontageEnded.Unbind();
+		AnimInstance->Montage_Stop(.2f, MontageHandle);
+	}
+}
+
+void UAITask_AnimMontage::MontageEndedCallback(UAnimMontage* Montage, bool bInterrupted)
+{
+	EndTask();
 }
 
 void UAITask_AnimMontage::MontageLoop()
 {
-	FName CurrentSection = AnimInstance->Montage_GetCurrentSection(MontageHandle);
-	int32 CurrentSectionID = MontageHandle->GetSectionIndex(CurrentSection);
-	++LoopCount;
-	if (LoopCount > LoopMax)
-	{
-		AnimInstance->Montage_SetNextSection(CurrentSection, FName("end"), MontageHandle);
-		int32 EndSectionID = AnimInstance->Montage_GetNextSectionID(MontageHandle, CurrentSectionID);
-		float Duration = MontageHandle->GetSectionLength(EndSectionID);
-		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::OnMontageEnded, Duration, false);
-	}
-	else
-	{
-		float Duration = MontageHandle->GetSectionLength(CurrentSectionID);
-		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::MontageLoop, Duration, false);
-	}
 }
 
 void UAITask_AnimMontage::FinishMontageTask()
 {
 	EndTask();
 	//Fire delegate
-	OnMontageTaskEnded.Broadcast();
 }
 
 void UAITask_AnimMontage::OnMontageEnded()

@@ -6,7 +6,7 @@
 #include "Tasks/AITask.h"
 #include "Engine/EngineTypes.h"
 #include "AITask_Operator.h"
-
+#include "Animation/AnimInstance.h"
 #include "AITask_AnimMontage.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FAnimTaskEndedSignature);
@@ -38,20 +38,21 @@ protected:
 	UPROPERTY()
 		bool bLooping = false;
 
-	FTimerHandle MontageSectionTimerHandle;
+	FOnMontageEnded MontageEndedDelegate;
 
 public:
-
-	static UAITask_AnimMontage* AIAnimMontage(AAIController* Controller, UAnimMontage* MontageToPlay, float InPlayRate = 1.0f, int32 LoopMax = 0);
 
 	void SetUp();
 
 	virtual void Activate() override;
 
 	virtual void ExternalCancel() override;
-	FAnimTaskEndedSignature OnMontageTaskEnded;
 	
+	virtual void OnDestroy(bool bOwnerEnded) override;
 protected:
+
+	void StopMontage();
+	void MontageEndedCallback(UAnimMontage* Montage, bool bInterrupted);
 
 	void MontageLoop();
 
