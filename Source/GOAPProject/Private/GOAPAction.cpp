@@ -87,7 +87,7 @@ void UGOAPAction::SetOwner(AAIController* Controller, UPlannerComponent* OwnerCo
 
 UAITask* UGOAPAction::GetOperator()
 {
-	return nullptr;
+	return Operator;
 }
 
 EActionResult UGOAPAction::StartAction() 
@@ -121,14 +121,4 @@ EActionResult UGOAPAction::AbortAction()
 {
 	//Clear observers
 	return EActionResult::Aborted;
-}
-
-UAITask* UAIAct_Animate::GetOperator()
-{
-	if (!Montage || !AIOwner)
-	{
-		return nullptr;
-	}
-	UAITask_AnimMontage* MontageTask = NewOperatorTask<UAITask_AnimMontage>(*AIOwner);
-	return MontageTask;
 }

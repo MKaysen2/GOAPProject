@@ -17,10 +17,14 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 
 void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 {
-	ActionSet = PlannerAsset.Actions;
-	for (auto* Action : ActionSet)
+	ActionSet.Reserve(PlannerAsset.Actions.Num());
+	for (auto* Action : PlannerAsset.Actions)
 	{
-		Action->SetOwner(AIOwner, this);
+		UGOAPAction* Copy = DuplicateObject<UGOAPAction>(Action, this);
+		Copy->SetOwner(AIOwner, this);
+
+		ActionSet.Emplace(Copy);
+		
 	}
 	Asset = &PlannerAsset;
 	BufferSize = PlannerAsset.MaxPlanSize + 1;
@@ -47,7 +51,9 @@ FString UPlannerComponent::GetDebugInfoString() const
 	for (auto* Action : ActionSet)
 	{
 		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
+		FString OpName = Action && Action->GetOperator() ? Action->GetOperator()->GetName() : FString(TEXT("None"));
 		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
+		DebugInfo += FString::Printf(TEXT("    Op: %s\n"), *OpName);
 	}
 	for (uint32 Idx = PlanHead; Idx != PlanTail; Idx = (Idx + 1) % BufferSize)
 	{

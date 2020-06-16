@@ -43,7 +43,7 @@ enum class EActionStatus : uint8
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
-UCLASS(Config=AI, abstract, EditInlineNew, config=Game)
+UCLASS(Config=AI, EditInlineNew)
 class GOAPPROJECT_API UGOAPAction : public UObject, public IGameplayTaskOwnerInterface
 {
 	GENERATED_BODY()
@@ -83,7 +83,7 @@ protected:
 		//in editor
 	//this sort of works, but no ChildAction functionality as of right now
 	//Since ChildAction isn't an instanced property of PawnAction
-	UPROPERTY(EditDefaultsOnly, Instanced)
+	UPROPERTY(EditAnywhere, Instanced)
 		UAITask_Operator* Operator;
 
 public:
@@ -168,6 +168,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		UAnimMontage* Montage;
 
-	virtual UAITask* GetOperator() override;
 };
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
