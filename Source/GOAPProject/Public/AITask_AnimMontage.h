@@ -42,8 +42,6 @@ protected:
 
 public:
 
-	void SetUp();
-
 	virtual void Activate() override;
 
 	virtual void ExternalCancel() override;
@@ -53,10 +51,4 @@ protected:
 
 	void StopMontage();
 	void MontageEndedCallback(UAnimMontage* Montage, bool bInterrupted);
-
-	void MontageLoop();
-
-	void FinishMontageTask();
-
-	void OnMontageEnded();
 };

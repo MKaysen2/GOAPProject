@@ -8,40 +8,19 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 
-void UAITask_AnimMontage::SetUp()
-{
-	
-}
-
 void UAITask_AnimMontage::Activate()
 {
 	Super::Activate();
 	ACharacter* Character = Cast<ACharacter>(GetAIController()->GetPawn());
 	AnimInstance = Character->GetMesh()->GetAnimInstance();
 	float MontageDuration = AnimInstance->Montage_Play(MontageHandle);
-	/*
-	if (bLooping)
-	{
-		
-		float SectionDuration = MontageHandle->GetSectionLength(0);
-		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::MontageLoop, SectionDuration, false);
-	}
-	else
-	{
-		OwnerController->GetWorldTimerManager().SetTimer(MontageSectionTimerHandle, this, &UAITask_AnimMontage::OnMontageEnded, MontageDuration, false);
-	}
-	*/
 	MontageEndedDelegate.BindUObject(this, &UAITask_AnimMontage::MontageEndedCallback);
 	AnimInstance->Montage_SetBlendingOutDelegate(MontageEndedDelegate, MontageHandle);
 }
 
 void UAITask_AnimMontage::ExternalCancel()
 {
-
-	AnimInstance = nullptr;
-	MontageHandle = nullptr;
 	EndTask();
-
 }
 
 void UAITask_AnimMontage::OnDestroy(bool bOwnerEnded)
@@ -70,22 +49,8 @@ void UAITask_AnimMontage::StopMontage()
 
 void UAITask_AnimMontage::MontageEndedCallback(UAnimMontage* Montage, bool bInterrupted)
 {
-	EndTask();
-}
-
-void UAITask_AnimMontage::MontageLoop()
-{
-}
-
-void UAITask_AnimMontage::FinishMontageTask()
-{
-	EndTask();
-	//Fire delegate
-}
-
-void UAITask_AnimMontage::OnMontageEnded()
-{
-	FinishMontageTask();
 	MontageHandle = nullptr;
 	AnimInstance = nullptr;
+	EndTask();
 }
+
