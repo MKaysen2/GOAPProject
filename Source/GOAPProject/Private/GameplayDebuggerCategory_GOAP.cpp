@@ -34,6 +34,7 @@ void FGameplayDebuggerCategory_GOAP::CollectData(APlayerController* OwnerPC, AAc
 		{
 			GoalsComp->DescribeSelfToGameplayDebugger(this);
 		}
+
 	}
 }
 

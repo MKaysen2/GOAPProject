@@ -15,14 +15,19 @@ class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 public:
 	//unused for now. using messages first
 	void OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result);
-	void StartPlanner(const UPlannerAsset& PlannerAsset);
+	void StartPlanner(UPlannerAsset& PlannerAsset);
+	void RunAllActions();
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual FString GetDebugInfoString() const;
 protected:
 
 	bool bPlanUpdateNeeded = false;
 	UPROPERTY(transient)
 		TArray<UGOAPAction*> ActionSet;
+
+	UPROPERTY(transient)
+		UPlannerAsset* Asset;
 	//this might need to get wrapped in an object so property-specific delegates can be added
 	FWorldState WorldState;
 	//Also add planner instance

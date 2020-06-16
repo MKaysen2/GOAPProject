@@ -58,11 +58,13 @@ protected:
 	UPROPERTY()
 		AAIController* AIOwner;
 
+	UPROPERTY(EditAnywhere)
+		FString ActionName;
 	//I don't know why I can't modify this in the editor
 	//cause you didn't tag the properties, ya dingus
 	UPROPERTY(config, EditAnywhere)
 		TArray<FWorldProperty> Preconditions;
-
+	
 	UPROPERTY(config, EditAnywhere)
 		TArray<FAISymEffect> Effects;
 
@@ -118,6 +120,7 @@ public:
 
 	virtual UAITask* GetOperator();
 
+	FString GetActionName() const { return ActionName; };
 	UFUNCTION()
 	EActionResult StartAction();
 

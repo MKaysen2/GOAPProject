@@ -7,15 +7,42 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 
 }
 
-void UPlannerComponent::StartPlanner(const UPlannerAsset& PlannerAsset)
+void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 {
 	ActionSet = PlannerAsset.Actions;
 	for (auto* Action : ActionSet)
 	{
 		Action->InitAction(AIOwner);
 	}
-	BufferSize = PlannerAsset.MaxPlanSize;
-	PlanBuffer.Init(nullptr, BufferSize + 1);
+	Asset = &PlannerAsset;
+	BufferSize = PlannerAsset.MaxPlanSize + 1;
+	PlanBuffer.Init(nullptr, BufferSize);
+}
+
+void UPlannerComponent::RunAllActions()
+{
+	StartNewPlan(ActionSet);
+	RequestExecutionUpdate();
+
+}
+
+FString UPlannerComponent::GetDebugInfoString() const
+{
+	FString DebugInfo;
+	DebugInfo += FString::Printf(TEXT("PlannerAsset: %s %d hmm\n"), *GetNameSafe(Asset), ActionSet.Num());
+
+	for (auto* Action : ActionSet)
+	{
+		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
+		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
+	}
+	for (uint32 Idx = PlanHead; Idx != PlanTail; Idx = (Idx + 1) % BufferSize)
+	{
+		UGOAPAction* Action = PlanBuffer[Idx];
+		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
+		DebugInfo += FString::Printf(TEXT("Plan Step: %s\n"), *ActionName);
+	}
+	return DebugInfo;
 }
 
 void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -26,6 +53,7 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	{
 		UpdatePlanExecution();
 	}
+
 }
 
 void UPlannerComponent::RequestExecutionUpdate()
@@ -52,6 +80,8 @@ bool UPlannerComponent::PlanAdvance()
 {
 	PlanBuffer[PlanHead] = nullptr; //clear previous action
 	//increment pointer
+	PlanFull = false;
+
 	PlanHead = (PlanHead + 1) % BufferSize;
 
 	//return whether we've reached the end of the buffer
@@ -69,6 +99,10 @@ void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*>& Plan)
 
 void UPlannerComponent::AddAction(UGOAPAction* Action)
 {
+	if (PlanFull)
+	{
+		return;
+	}
 	PlanBuffer[PlanTail] = Action;
 	PlanTail = (PlanTail + 1) % BufferSize;
 	if (PlanTail == PlanHead)
