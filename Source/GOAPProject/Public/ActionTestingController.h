@@ -20,11 +20,7 @@ class GOAPPROJECT_API AActionTestingController : public AAIController
 protected:
 	AActionTestingController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	//Want to allow this to be easy to edit without recompiling
-	UPROPERTY(EditDefaultsOnly, Instanced)
-		TArray<UGOAPAction*> TestActionArray;
 
-	UPROPERTY()
-		UGOAPActionsComponent* PlanComponent;
 public:
 	virtual void BeginPlay() override;
 

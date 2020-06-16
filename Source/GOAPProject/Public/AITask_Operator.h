@@ -10,7 +10,7 @@ class AIController;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOpTaskEndedSignature, bool);
 
-UCLASS(abstract)
+UCLASS(abstract, EditInlineNew)
 class GOAPPROJECT_API UAITask_Operator : public UAITask
 {
 	GENERATED_BODY()

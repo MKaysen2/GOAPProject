@@ -17,5 +17,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 		TArray<UGOAPAction*> Actions;
 
+	//Ring buffer for running tasks only needs to be max plan size + 1 (for cancelling actions)
+	UPROPERTY(EditDefaultsOnly)
+		uint32 MaxPlanSize = 5;
 	friend class UPlannerComponent;
 };

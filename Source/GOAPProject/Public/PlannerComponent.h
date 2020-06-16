@@ -16,11 +16,29 @@ public:
 	//unused for now. using messages first
 	void OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result);
 	void StartPlanner(const UPlannerAsset& PlannerAsset);
-	//TODO: move GOAPActionsComp behavior here
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 protected:
 
+	bool bPlanUpdateNeeded = false;
+	UPROPERTY(transient)
+		TArray<UGOAPAction*> ActionSet;
 	//this might need to get wrapped in an object so property-specific delegates can be added
 	FWorldState WorldState;
 	//Also add planner instance
 
+	void RequestExecutionUpdate();
+	void UpdatePlanExecution();
+
+	UPROPERTY(transient)
+	TArray<UGOAPAction*> PlanBuffer;
+	uint32 BufferSize = 1;
+	uint32 PlanHead;
+	uint32 PlanTail;
+	bool PlanFull = false;
+
+	bool PlanAdvance();
+	void StartNewPlan(TArray<UGOAPAction*>& Plan);
+	void AddAction(UGOAPAction* Action);
+	void ClearCurrentPlan();
 };
