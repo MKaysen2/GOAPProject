@@ -20,6 +20,11 @@ void AActionTestingController::BeginPlay()
 
 void AActionTestingController::PlayAction()
 {
+	UPlannerComponent* PlannerComp = Cast<UPlannerComponent>(BrainComponent);
+	if (PlannerComp && !PlannerComp->IsRunningPlan())
+	{
+		PlannerComp->RunAllActions();
+	}
 }
 
 void AActionTestingController::InterruptAction()

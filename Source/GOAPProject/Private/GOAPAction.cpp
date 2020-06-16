@@ -4,6 +4,7 @@
 
 #include "..\Public\AITask_AnimMontage.h"
 #include "BrainComponent.h"
+#include "..\Public\PlannerComponent.h"
 #include "AIController.h"
 #include "Tasks/AITask.h"
 #include "GameFramework/Character.h"
@@ -38,17 +39,15 @@ void UGOAPAction::AddPrecondition(const EWorldKey& Key, const uint8& Value)
 	Preconditions.Add({ Key, Value });
 }
 
-void UGOAPAction::InitPreconditions()
-{
-}
-
-void UGOAPAction::InitEffects()
-{
-}
-
 void UGOAPAction::InitAction(AAIController* Controller)
 {
 	AIOwner = Controller;
+}
+
+void UGOAPAction::SetOwner(AAIController* Controller, UPlannerComponent* OwnerComponent)
+{
+	AIOwner = Controller;
+	OwnerComp = OwnerComponent;
 }
 
 UAITask* UGOAPAction::GetOperator()
@@ -70,8 +69,10 @@ EActionResult UGOAPAction::StartAction()
 void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
 {
 	const bool bSuccess = (Result == EPlannerTaskFinishedResult::Success);
-	UBrainComponent* BrainComp = AIOwner->BrainComponent;
-	FAIMessage::Send(BrainComp, FAIMessage(UGOAPAction::ActionFinished, this, bSuccess));
+	if (OwnerComp)
+	{
+		OwnerComp->OnTaskFinished(this, Result);
+	}
 }
 
 void UGOAPAction::OnOperatorEnded()
@@ -82,6 +83,10 @@ void UGOAPAction::OnOperatorEnded()
 EActionResult UGOAPAction::AbortAction()
 {
 	//Clear observers
+	if (Operator )
+	{
+		Operator->ExternalCancel();
+	}
 	return EActionResult::Aborted;
 }
 

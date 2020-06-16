@@ -17,11 +17,12 @@ public:
 	void OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result);
 	void StartPlanner(UPlannerAsset& PlannerAsset);
 	void RunAllActions();
+	bool IsRunningPlan() const;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual FString GetDebugInfoString() const;
 protected:
-
+	bool bPlanInProgress = false;
 	bool bPlanUpdateNeeded = false;
 	UPROPERTY(transient)
 		TArray<UGOAPAction*> ActionSet;
@@ -42,6 +43,7 @@ protected:
 	uint32 PlanTail;
 	bool PlanFull = false;
 
+	bool PlanReachedEnd();
 	bool PlanAdvance();
 	void StartNewPlan(TArray<UGOAPAction*>& Plan);
 	void AddAction(UGOAPAction* Action);

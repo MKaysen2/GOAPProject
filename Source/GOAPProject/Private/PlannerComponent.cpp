@@ -4,7 +4,15 @@
 
 void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result)
 {
-
+	if (Result == EPlannerTaskFinishedResult::Success)
+	{
+		PlanAdvance();
+		RequestExecutionUpdate();
+	}
+	else
+	{
+		ClearCurrentPlan();
+	}
 }
 
 void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
@@ -12,7 +20,7 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	ActionSet = PlannerAsset.Actions;
 	for (auto* Action : ActionSet)
 	{
-		Action->InitAction(AIOwner);
+		Action->SetOwner(AIOwner, this);
 	}
 	Asset = &PlannerAsset;
 	BufferSize = PlannerAsset.MaxPlanSize + 1;
@@ -24,6 +32,11 @@ void UPlannerComponent::RunAllActions()
 	StartNewPlan(ActionSet);
 	RequestExecutionUpdate();
 
+}
+
+bool UPlannerComponent::IsRunningPlan() const
+{
+	return bPlanInProgress;
 }
 
 FString UPlannerComponent::GetDebugInfoString() const
@@ -65,8 +78,7 @@ void UPlannerComponent::UpdatePlanExecution()
 {
 	bPlanUpdateNeeded = false;
 
-	bool bReachedEnd = PlanAdvance();
-	if (!bReachedEnd)
+	if (!PlanReachedEnd())
 	{
 		UGOAPAction* NextAction = PlanBuffer[PlanHead];
 		if (NextAction != nullptr)
@@ -74,6 +86,15 @@ void UPlannerComponent::UpdatePlanExecution()
 			NextAction->StartAction();
 		}
 	}
+	else
+	{
+		bPlanInProgress = false;
+	}
+}
+
+bool UPlannerComponent::PlanReachedEnd()
+{
+	return PlanHead == PlanTail;
 }
 
 bool UPlannerComponent::PlanAdvance()
@@ -95,6 +116,7 @@ void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*>& Plan)
 	{
 		AddAction(Action);
 	}
+	bPlanInProgress = true;
 }
 
 void UPlannerComponent::AddAction(UGOAPAction* Action)
@@ -114,9 +136,10 @@ void UPlannerComponent::AddAction(UGOAPAction* Action)
 void UPlannerComponent::ClearCurrentPlan()
 {
 	PlanFull = false;
-	for (uint32 idx = 0; idx < BufferSize; ++idx)
+	while (PlanHead != PlanTail)
 	{
-		PlanBuffer[idx] = nullptr;
+		PlanBuffer[PlanHead] = nullptr;
+		PlanHead = (PlanHead + 1) % BufferSize;
 	}
-	PlanTail = PlanHead;
+	bPlanInProgress = false;
 }

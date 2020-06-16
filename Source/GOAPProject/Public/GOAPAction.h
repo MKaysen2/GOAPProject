@@ -58,6 +58,9 @@ protected:
 	UPROPERTY()
 		AAIController* AIOwner;
 
+	UPROPERTY()
+		UPlannerComponent* OwnerComp;
+
 	UPROPERTY(EditAnywhere)
 		FString ActionName;
 	//I don't know why I can't modify this in the editor
@@ -118,6 +121,8 @@ public:
 	UFUNCTION()
 		virtual void InitAction(AAIController* Controller);
 
+	UFUNCTION()
+		void SetOwner(AAIController* Controller, UPlannerComponent* OwnerComponent);
 	virtual UAITask* GetOperator();
 
 	FString GetActionName() const { return ActionName; };
@@ -139,17 +144,6 @@ protected:
 
 	void AddPrecondition(const EWorldKey& Key, const uint8& Value);
 
-	/**
-	 * Override to add action preconditions
-	 */
-	UFUNCTION()
-		virtual void InitPreconditions();
-
-	/**
-	 * Override to add action effects
-	 */
-	UFUNCTION()
-		virtual void InitEffects();
 };
 
 UCLASS(meta = (DisplayName = "Task primitive Animate"))
