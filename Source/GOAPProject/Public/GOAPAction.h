@@ -86,6 +86,8 @@ protected:
 	UPROPERTY(EditAnywhere, Instanced)
 		UAITask_Operator* Operator;
 
+	UPROPERTY(transient)
+		UAITask_Operator* OpInstance = nullptr;
 public:
 
 	virtual UGameplayTasksComponent* GetGameplayTasksComponent(const UGameplayTask& Task) const override;

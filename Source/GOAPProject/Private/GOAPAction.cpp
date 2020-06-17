@@ -98,6 +98,7 @@ EActionResult UGOAPAction::StartAction()
 	{
 		OpCopy->InitAITask(*AIOwner, *this);
 		OpCopy->ReadyForActivation();
+		OpInstance = OpCopy;
 		Result = (OpCopy->GetState() != EGameplayTaskState::Finished ? EActionResult::Running : EActionResult::Failed);
 	}
 	return Result;
@@ -106,6 +107,8 @@ EActionResult UGOAPAction::StartAction()
 void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
 {
 	const bool bSuccess = (Result == EPlannerTaskFinishedResult::Success);
+	OpInstance = nullptr;
+
 	if (OwnerComp)
 	{
 		OwnerComp->OnTaskFinished(this, Result);
@@ -120,5 +123,10 @@ void UGOAPAction::OnOperatorEnded()
 EActionResult UGOAPAction::AbortAction()
 {
 	//Clear observers
+	if (OpInstance)
+	{
+		OpInstance->ExternalCancel();
+		OpInstance = nullptr;
+	}
 	return EActionResult::Aborted;
 }
