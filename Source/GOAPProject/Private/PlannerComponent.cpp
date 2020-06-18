@@ -1,6 +1,7 @@
 #include "../Public/PlannerComponent.h"
 #include "../Public/PlannerAsset.h"
 #include "../Public/GOAPAction.h"
+#include "../Public/PlannerService.h"
 
 void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result)
 {
@@ -26,6 +27,10 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 		ActionSet.Emplace(Copy);
 		
 	}
+	for (auto& ServiceClass : PlannerAsset.Services)
+	{
+		Services.Add(NewObject<UPlannerService>(this, ServiceClass));
+	}
 	Asset = &PlannerAsset;
 	BufferSize = PlannerAsset.MaxPlanSize + 1;
 	PlanBuffer.Init(nullptr, BufferSize);
@@ -48,6 +53,17 @@ FString UPlannerComponent::GetDebugInfoString() const
 	FString DebugInfo;
 	DebugInfo += FString::Printf(TEXT("PlannerAsset: %s %d hmm\n"), *GetNameSafe(Asset), ActionSet.Num());
 
+	DebugInfo += FString(TEXT("World State:\n"));
+	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EWorldKey"), true);
+	if (Enum != nullptr)
+	{
+		for (uint32 idx = 0; idx < WorldState.Num(); ++idx)
+		{
+
+			FString KeyName = Enum->GetNameStringByValue(idx);
+			DebugInfo += FString::Printf(TEXT("    %s: %d\n"), *KeyName, WorldState.GetProp((EWorldKey)idx));
+		}
+	}
 	for (auto* Action : ActionSet)
 	{
 		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
@@ -68,11 +84,20 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	for (int32 Index = 0; Index != Services.Num(); ++Index)
+	{
+		Services[Index]->TickService(*this, DeltaTime);
+	}
 	if (bPlanUpdateNeeded)
 	{
 		UpdatePlanExecution();
 	}
 
+}
+
+void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
+{
+	WorldState.SetProp(Key, Value);
 }
 
 void UPlannerComponent::RequestExecutionUpdate()

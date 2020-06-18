@@ -8,6 +8,8 @@
 
 class UGOAPAction;
 class UPlannerAsset;
+class UPlannerService;
+
 UCLASS()
 class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 {
@@ -21,6 +23,8 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual FString GetDebugInfoString() const;
+	void SetWSProp(const EWorldKey& Key, const uint8& Value);
+
 protected:
 	bool bPlanInProgress = false;
 	bool bPlanUpdateNeeded = false;
@@ -28,9 +32,13 @@ protected:
 		TArray<UGOAPAction*> ActionSet;
 
 	UPROPERTY(transient)
+		TArray<UPlannerService*> Services;
+
+	UPROPERTY(transient)
 		UPlannerAsset* Asset;
 	//this might need to get wrapped in an object so property-specific delegates can be added
 	FWorldState WorldState;
+
 	//Also add planner instance
 
 	void RequestExecutionUpdate();

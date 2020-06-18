@@ -14,3 +14,11 @@ public:
 	virtual void TickService(UPlannerComponent& PlannerComp, float DeltaTime);
 
 };
+
+UCLASS()
+class UPlanService_TargetProps : public UPlannerService
+{
+	GENERATED_BODY()
+public:
+	virtual void TickService(UPlannerComponent& PlannerComp, float DeltaTime) override;
+};
