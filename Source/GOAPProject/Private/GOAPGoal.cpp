@@ -24,6 +24,12 @@ const TArray<FWorldProperty>& UGOAPGoal::GetSymbolSet()
 	return Symbols;
 }
 
+void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent)
+{
+	AIOwner = &Controller;
+	OwnerComp = &OwnerComponent;
+}
+
 void UGOAPGoal::InitGoal(AAIController* Controller)
 {
 	AIOwner = Controller;
@@ -57,62 +63,4 @@ void UGOAPGoal::Deactivate()
 float UGOAPGoal::Priority() const
 {
 	return LastPriority;
-}
-
-UAIGoal_KillEnemy::UAIGoal_KillEnemy() : Super()
-{
-	LastPriority = 0.0f; 
-	Symbols.Add(FWorldProperty(EWorldKey::kTargetDead, true));
-}
-
-bool UAIGoal_KillEnemy::IsGoalValid()
-{
-	if (!AIOwner)
-	{
-		return false;
-	}
-	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
-	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(FName("CombatTarget")));
-	return (TargetActor != nullptr);
-}
-
-void UAIGoal_KillEnemy::Activate()
-{
-	Super::Activate();
-
-	/*
-	*/
-}
-
-void UAIGoal_KillEnemy::ReCalcPriority()
-{
-	LastPriority = 10.0f;
-
-}
-
-UAIGoal_Death::UAIGoal_Death()
-	: Super()
-{
-	Symbols.Add(FWorldProperty(EWorldKey::kDead, true));
-}
-
-bool UAIGoal_Death::IsGoalValid()
-{
-	return false;
-}
-
-void UAIGoal_Death::Activate()
-{
-	Super::Activate();
-}
-
-UAIGoal_AlwaysValid::UAIGoal_AlwaysValid() : Super()
-{
-	Symbols.Add(FWorldProperty(EWorldKey::kTargetDead, true));
-	LastPriority = 1.0f;
-}
-
-bool UAIGoal_AlwaysValid::IsGoalValid()
-{
-	return IsValid(AIOwner);
 }

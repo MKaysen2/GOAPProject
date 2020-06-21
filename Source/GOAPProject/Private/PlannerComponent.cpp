@@ -1,6 +1,7 @@
 #include "../Public/PlannerComponent.h"
 #include "../Public/PlannerAsset.h"
 #include "../Public/GOAPAction.h"
+#include "../Public/GOAPGoal.h"
 #include "../Public/PlannerService.h"
 
 void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result)
@@ -18,6 +19,10 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 
 void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 {
+	if (AIOwner == nullptr)
+	{
+		return;
+	}
 	ActionSet.Reserve(PlannerAsset.Actions.Num());
 	for (auto* Action : PlannerAsset.Actions)
 	{
@@ -26,6 +31,12 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 
 		ActionSet.Emplace(Copy);
 		
+	}
+	for (auto* Goal : PlannerAsset.Goals)
+	{
+		UGOAPGoal* Copy = DuplicateObject<UGOAPGoal>(Goal, this);
+		Copy->SetOwner(*AIOwner, *this);
+		Goals.Emplace(Copy);
 	}
 	for (auto& ServiceClass : PlannerAsset.Services)
 	{

@@ -7,6 +7,7 @@
 #include "PlannerComponent.generated.h"
 
 class UGOAPAction;
+class UGOAPGoal;
 class UPlannerAsset;
 class UPlannerService;
 
@@ -33,6 +34,9 @@ protected:
 
 	UPROPERTY(transient)
 		TArray<UPlannerService*> Services;
+
+	UPROPERTY(transient)
+		TArray<UGOAPGoal*> Goals;
 
 	UPROPERTY(transient)
 		UPlannerAsset* Asset;

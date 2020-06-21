@@ -3,22 +3,31 @@
 #include "WorldProperty.h"
 #include "GOAPGoal.generated.h"
 
-class AGOAPCharacterBase;
 class AAIController;
+class UPlannerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGoal, Warning, All);
 
-UCLASS(ABSTRACT, BlueprintType)
+UCLASS(Config=AI, EditInlineNew, BlueprintType)
 class UGOAPGoal : public UObject 
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere)
+		FString GoalName;
+
+	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> Symbols;
 
-	UPROPERTY()
+	UPROPERTY(transient)
 		AAIController* AIOwner;
 
+	UPROPERTY(transient)
+		UPlannerComponent* OwnerComp;
+	//constant for now
+	//TODO: use response curve
+	UPROPERTY(EditAnywhere)
+		float Insistence;
 	UPROPERTY()
 	float LastPriority;
 
@@ -35,7 +44,7 @@ public:
 	const TArray<FWorldProperty>& GetSymbolSet();
 
 	bool GetLastValidity() { return bCachedValidity; }
-
+	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
 	void InitGoal(AAIController* Controller);
 	bool IsActive() { return bIsActive; }
 	virtual bool IsGoalValid();
@@ -45,37 +54,4 @@ public:
 	virtual void ReCalcPriority();
 
 	float Priority() const;
-};
-
-UCLASS()
-class UAIGoal_KillEnemy : public UGOAPGoal
-{
-	GENERATED_BODY()
-
-		UPROPERTY()
-		AActor* CachedTarget;
-public:
-	UAIGoal_KillEnemy();
-	bool IsGoalValid() override;
-	void Activate() override;
-	void ReCalcPriority() override;
-};
-
-UCLASS()
-class UAIGoal_Death : public UGOAPGoal
-{
-	GENERATED_BODY()
-public:
-	UAIGoal_Death();
-	bool IsGoalValid() override;
-	void Activate() override;
-};
-
-UCLASS()
-class UAIGoal_AlwaysValid : public UGOAPGoal
-{
-	GENERATED_BODY()
-public:
-	UAIGoal_AlwaysValid();
-	bool IsGoalValid() override;
 };

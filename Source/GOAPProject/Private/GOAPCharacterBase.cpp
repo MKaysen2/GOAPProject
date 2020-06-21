@@ -22,8 +22,6 @@ void AGOAPCharacterBase::PostInitProperties()
 TArray<TSubclassOf<UGOAPGoal>> AGOAPCharacterBase::GetGoalSet()
 {
 	return {
-		UAIGoal_KillEnemy::StaticClass(), 
-		//UAIGoal_InteractTest::StaticClass()
 	};
 }
 
