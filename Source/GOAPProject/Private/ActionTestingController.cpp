@@ -5,7 +5,6 @@
 #include "..\Public\GOAPAction.h"
 #include "..\Public\PlannerAsset.h"
 #include "..\Public\PlannerComponent.h"
-#include "..\Public\GOAPActionsComponent.h"
 
 AActionTestingController::AActionTestingController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

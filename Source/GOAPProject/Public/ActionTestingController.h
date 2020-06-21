@@ -7,7 +7,6 @@
 #include "ActionTestingController.generated.h"
 
 class UGOAPAction;
-class UGOAPActionsComponent;
 class UPlannerAsset;
 /**
  * Meant to run an Action by keypress

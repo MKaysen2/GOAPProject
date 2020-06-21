@@ -1,12 +1,10 @@
 #include "../Public/GOAPController.h"
 #include "../Public/GOAPCharacterBase.h"
-#include "../Public/GOAPActionsComponent.h"
 #include "../Public/AStarComponent.h"
 #include "../Public/GOAPAction.h"
 #include "../Public/GOAPGoal.h"
 #include "../Public/WorldState.h"
 #include "../Public/StateNode.h"
-#include "../Public/GoalSelectionComponent.h"
 #include "Perception\AISenseConfig_Sight.h"
 #include "Perception\AISenseConfig_Hearing.h"
 #include "../Public/InteractableObjectInterface.h"
@@ -31,8 +29,6 @@ AGOAPController::AGOAPController()
 	PerceptionComponent->ConfigureSense(*sightConfig);
 	
 	PerceptionComponent->SetDominantSense(sightConfig->GetSenseImplementation());
-
-	PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AGOAPController::TargetPerceptionUpdated);
 
 	Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	UBlackboardData* BBAsset = NewObject<UBlackboardData>(Blackboard);
@@ -75,7 +71,6 @@ void AGOAPController::OnPossess(APawn * InPawn)
 void AGOAPController::OnUnPossess()
 {
 	Super::OnUnPossess();
-	PerceptionComponent->OnTargetPerceptionUpdated.RemoveAll(this);
 }
 
 void AGOAPController::Tick(float DeltaSeconds)

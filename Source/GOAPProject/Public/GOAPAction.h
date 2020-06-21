@@ -79,10 +79,7 @@ protected:
 
 	UPROPERTY()
 		EActionStatus TaskStatus;
-		//PawnAction has EditInlineNew defined so should be able to set this
-		//in editor
-	//this sort of works, but no ChildAction functionality as of right now
-	//Since ChildAction isn't an instanced property of PawnAction
+		
 	UPROPERTY(EditAnywhere, Instanced)
 		UAITask_Operator* Operator;
 

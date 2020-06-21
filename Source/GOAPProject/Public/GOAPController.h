@@ -11,10 +11,8 @@
 
 
 class UAStarComponent;
-class UGoalSelectionComponent;
 class UGOAPGoal;
 class UGOAPAction;
-class UGOAPActionsComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Hearing;
 
@@ -71,15 +69,4 @@ public:
 
 	UFUNCTION()
 		void OnPlanCompleted();
-
-	//TODO: move to interface
-	UFUNCTION()
-		UGOAPActionsComponent* GetGOAPActionsComponent() { return nullptr; }
-
-	//TODO: move to interface
-	UFUNCTION()
-		UGoalSelectionComponent* GetGoalSelectionComponent() { return nullptr; }
-
-	//TODO: move to component
-	TSharedPtr<FWorldState> GetWorldState() { return nullptr; }
 };
