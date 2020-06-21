@@ -1,6 +1,8 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "WorldProperty.h"
+#include "BehaviorTree/BehaviorTreeTypes.h"
+
 #include "GOAPGoal.generated.h"
 
 class AAIController;
@@ -16,8 +18,17 @@ protected:
 	UPROPERTY(EditAnywhere)
 		FString TaskName;
 
+	//could also add an "ALL"/"ANY" satisfaction specifier
+	//Since "ANY" would just mean making a start node
+	//for each condition when you do a search
 	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> GoalCondition;
+
+	UPROPERTY(EditAnywhere)
+		FName KeyName;
+
+	UPROPERTY()
+		FBlackboardKeySelector BlackboardKey;
 
 	UPROPERTY(transient)
 		AAIController* AIOwner;

@@ -15,7 +15,9 @@ class GOAPPROJECT_API UPlannerAsset : public UObject
 	GENERATED_BODY()
 
 protected:
-	
+	UPROPERTY(EditDefaultsOnly)
+		UBlackboardData* BlackboardData;
+
 	UPROPERTY(EditDefaultsOnly, Instanced)
 		TArray<UGOAPAction*> Actions;
 

@@ -1,6 +1,6 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\GOAPCharacterBase.h"
-
+#include "BehaviorTree/BlackboardData.h"
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -21,6 +21,13 @@ void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComp
 {
 	AIOwner = &Controller;
 	OwnerComp = &OwnerComponent;
+	BlackboardKey.SelectedKeyName = KeyName;
+	UBlackboardData* BBAsset = AIOwner->GetBlackboardComponent()->GetBlackboardAsset();
+	if (BBAsset)
+	{
+		BlackboardKey.ResolveSelectedKey(*BBAsset);
+	}
+
 }
 
 float UGOAPGoal::GetInsistence() const
