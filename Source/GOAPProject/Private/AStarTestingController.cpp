@@ -18,10 +18,6 @@ AAStarTestingController::AAStarTestingController()
 
 void AAStarTestingController::Plan()
 {
-	if (GetPawn() && IsValid(DummyGoal))
-	{
-		AStarComponent->Search(DummyGoal, *CurrentState);
-	}
 }
 
 void AAStarTestingController::BeginPlay()
@@ -32,19 +28,8 @@ void AAStarTestingController::BeginPlay()
 void AAStarTestingController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	DummyGoal = NewObject<UGOAPGoal>(this, GoalClass);
-	DummyGoal->InitGoal(this);
-	for (auto& ActionClass : ActionClasses)
-	{
-		UGOAPAction* NewAction = NewObject<UGOAPAction>(this, ActionClass);
-		NewAction->InitAction(this);
-		Actions.Add(NewAction);
-	}
-	AStarComponent->CreateLookupTable(Actions);
 }
 
 void AAStarTestingController::OnUnPossess()
 {
-	DummyGoal = nullptr;
-	Actions.Reset();
 }

@@ -80,7 +80,7 @@ FString UPlannerComponent::GetDebugInfoString() const
 		if (!Goal)
 			continue;
 		FString GoalName = Goal ? Goal->GetTaskName() : FString(TEXT("None"));
-		FString Valid = Goal->GetLastValidity() ? FString(TEXT("Is")) : FString(TEXT("Is not"));
+		FString Valid = Goal->IsValid() ? FString(TEXT("Is")) : FString(TEXT("Is not"));
 		DebugInfo += FString::Printf(TEXT("Goal: %s | %s valid\n"), *GoalName, *Valid);
 	}
 	for (auto* Action : ActionSet)

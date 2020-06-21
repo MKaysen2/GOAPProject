@@ -10,18 +10,11 @@ DEFINE_LOG_CATEGORY(LogGoal);
 
 UGOAPGoal::UGOAPGoal() :
 	Super(),
-	Symbols(),
+	GoalCondition(),
 	AIOwner(nullptr),
-	LastPriority(0.0f),
-	bIsActive(false),
+	Insistence(0.0f),
 	bCachedValidity(false)
 {
-	Symbols.Empty();
-}
-
-const TArray<FWorldProperty>& UGOAPGoal::GetSymbolSet() 
-{
-	return Symbols;
 }
 
 void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent)
@@ -30,37 +23,7 @@ void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComp
 	OwnerComp = &OwnerComponent;
 }
 
-void UGOAPGoal::InitGoal(AAIController* Controller)
+float UGOAPGoal::GetInsistence() const
 {
-	AIOwner = Controller;
-}
-
-bool UGOAPGoal::IsGoalValid()
-{
-	return false;
-}
-
-bool UGOAPGoal::IsGoalStillValid()
-{
-	return false;
-}
-
-void UGOAPGoal::ReCalcPriority()
-{
-}
-
-void UGOAPGoal::Activate()
-{
-	bIsActive = true;
-}
-
-void UGOAPGoal::Deactivate()
-{
-
-	bIsActive = false;
-}
-
-float UGOAPGoal::Priority() const
-{
-	return LastPriority;
+	return Insistence;
 }

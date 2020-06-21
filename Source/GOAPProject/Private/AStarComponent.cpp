@@ -49,7 +49,7 @@ TSharedPtr<FStateNode> UAStarComponent::Search(UGOAPGoal* Goal, const FWorldStat
 	//This does mean that we're using additional space, but it's easier and faster, I think
 	TSet<NodePtr, FStateNode::SetKeyFuncs> NodePool;
 
-	NodePtr CurrentNode = MakeShared<FStateNode>(InitialState, Goal->GetSymbolSet());
+	NodePtr CurrentNode = MakeShared<FStateNode>(InitialState, Goal->GetGoalCondition());
 
 	Fringe.Push(CurrentNode);
 	NodePool.Add(CurrentNode);

@@ -17,7 +17,7 @@ protected:
 		FString TaskName;
 
 	UPROPERTY(config, EditAnywhere)
-	TArray<FWorldProperty> Symbols;
+	TArray<FWorldProperty> GoalCondition;
 
 	UPROPERTY(transient)
 		AAIController* AIOwner;
@@ -28,11 +28,6 @@ protected:
 	//TODO: use response curve
 	UPROPERTY(EditAnywhere)
 		float Insistence;
-	UPROPERTY()
-	float LastPriority;
-
-	UPROPERTY()
-		bool bIsActive;
 
 	UPROPERTY()
 		bool bCachedValidity;
@@ -41,18 +36,11 @@ protected:
 		void CacheValidity(bool Validity) { bCachedValidity = Validity; }
 public:
 	UGOAPGoal();
-	const TArray<FWorldProperty>& GetSymbolSet();
+	const TArray<FWorldProperty>& GetGoalCondition() const { return GoalCondition;  }
 
 	FString GetTaskName() { return TaskName;  }
-	bool GetLastValidity() { return bCachedValidity; }
+	bool IsValid() const { return bCachedValidity; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
-	void InitGoal(AAIController* Controller);
-	bool IsActive() { return bIsActive; }
-	virtual bool IsGoalValid();
-	virtual bool IsGoalStillValid();
-	virtual void Activate();
-	virtual void Deactivate();
-	virtual void ReCalcPriority();
 
-	float Priority() const;
+	float GetInsistence() const;
 };
