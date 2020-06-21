@@ -34,7 +34,8 @@ UGOAPGoal* UGoalSelectionComponent::GetCurrentGoal()
 //TODO: use a Heapified TArray as a PQueue
 void UGoalSelectionComponent::ReEvaluateGoals()
 {
-	NextGoal = nullptr;
+	
+	/*NextGoal = nullptr;
 	for (auto* Goal : GoalSet)
 	{
 		if (Goal && Goal->IsGoalValid())
@@ -67,12 +68,13 @@ void UGoalSelectionComponent::ReEvaluateGoals()
 			CurrentGoal->Activate();
 		}
 		OnGoalChanged.ExecuteIfBound(CurrentGoal);
-	}
+	}*/
 }
 
 void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 {
 	//Null if not a valid subclass
+	/*
 	if (!GoalClass.GetDefaultObject())
 	{
 		return;
@@ -80,15 +82,18 @@ void UGoalSelectionComponent::RegisterGoal(TSubclassOf<UGOAPGoal> GoalClass)
 	UGOAPGoal* NewGoal = NewObject<UGOAPGoal>(this, GoalClass);
 	NewGoal->InitGoal(AIOwner);
 	GoalSet.Add(NewGoal);
+	*/
 }
 
 void UGoalSelectionComponent::OnGoalCompleted()
 {
+	/*
 	if (CurrentGoal)
 	{
 		CurrentGoal->Deactivate();
 	}
 	CurrentGoal = nullptr;
+	*/
 }
 
 void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal>>& NewGoalSet)
@@ -101,6 +106,7 @@ void UGoalSelectionComponent::RegisterGoalSet(const TArray<TSubclassOf<UGOAPGoal
 
 void UGoalSelectionComponent::Reset()
 {
+	/**/
 	CurrentGoal = nullptr;
 	NextGoal = nullptr;
 	GoalSet.Empty();
@@ -114,7 +120,7 @@ void UGoalSelectionComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCa
 	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Current goal: %s"), *CurrentGoalName));
 	DebuggerCategory->AddTextLine(FString::Printf(TEXT("Number of goals: %d"), GoalSet.Num()));
 	DebuggerCategory->AddTextLine(*FString(TEXT("Goal validity: ")));
-
+	/*
 	for (auto Goal : GoalSet)
 	{
 		if (Goal)
@@ -123,6 +129,7 @@ void UGoalSelectionComponent::DescribeSelfToGameplayDebugger(FGameplayDebuggerCa
 			DebuggerCategory->AddTextLine(FString::Printf(TEXT("\t%s%.10s"), *Color, *Goal->GetName()));
 		}
 	}
+	*/
 }
 
 #endif //WITH_GAMEPLAY_DEBUGGER
