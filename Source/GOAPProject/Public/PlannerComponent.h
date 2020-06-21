@@ -27,8 +27,10 @@ public:
 	void SetWSProp(const EWorldKey& Key, const uint8& Value);
 
 protected:
+	bool bReplanNeeded = false;
 	bool bPlanInProgress = false;
 	bool bPlanUpdateNeeded = false;
+
 	UPROPERTY(transient)
 		TArray<UGOAPAction*> ActionSet;
 
@@ -47,6 +49,9 @@ protected:
 
 	void RequestExecutionUpdate();
 	void UpdatePlanExecution();
+
+	void ScheduleReplan();
+	void ProcessReplanRequest();
 
 	UPROPERTY(transient)
 	TArray<UGOAPAction*> PlanBuffer;

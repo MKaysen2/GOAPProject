@@ -108,11 +108,17 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	{
 		Services[Index]->TickService(*this, DeltaTime);
 	}
+	//Let the operators finish up if they need to first
 	if (bPlanUpdateNeeded)
 	{
 		UpdatePlanExecution();
 	}
 
+	//Do any replans last
+	if (bReplanNeeded)
+	{
+		ProcessReplanRequest();
+	}
 }
 
 void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
@@ -143,6 +149,18 @@ void UPlannerComponent::UpdatePlanExecution()
 	}
 }
 
+void UPlannerComponent::ScheduleReplan()
+{
+	bReplanNeeded = true;
+}
+
+void UPlannerComponent::ProcessReplanRequest()
+{
+	bReplanNeeded = false;
+}
+
+
+//Ring buffer stuff
 bool UPlannerComponent::PlanReachedEnd()
 {
 	return PlanHead == PlanTail;
