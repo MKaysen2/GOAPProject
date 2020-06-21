@@ -14,7 +14,7 @@ class UGOAPGoal : public UObject
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere)
-		FString GoalName;
+		FString TaskName;
 
 	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> Symbols;
@@ -43,6 +43,7 @@ public:
 	UGOAPGoal();
 	const TArray<FWorldProperty>& GetSymbolSet();
 
+	FString GetTaskName() { return TaskName;  }
 	bool GetLastValidity() { return bCachedValidity; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
 	void InitGoal(AAIController* Controller);

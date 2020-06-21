@@ -75,11 +75,20 @@ FString UPlannerComponent::GetDebugInfoString() const
 			DebugInfo += FString::Printf(TEXT("    %s: %d\n"), *KeyName, WorldState.GetProp((EWorldKey)idx));
 		}
 	}
+	for (auto* Goal : Goals)
+	{
+		if (!Goal)
+			continue;
+		FString GoalName = Goal ? Goal->GetTaskName() : FString(TEXT("None"));
+		FString Valid = Goal->GetLastValidity() ? FString(TEXT("Is")) : FString(TEXT("Is not"));
+		DebugInfo += FString::Printf(TEXT("Goal: %s | %s valid\n"), *GoalName, *Valid);
+	}
 	for (auto* Action : ActionSet)
 	{
 		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
 		FString OpName = Action && Action->GetOperator() ? Action->GetOperator()->GetName() : FString(TEXT("None"));
 		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
+		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
 		DebugInfo += FString::Printf(TEXT("    Op: %s\n"), *OpName);
 	}
 	for (uint32 Idx = PlanHead; Idx != PlanTail; Idx = (Idx + 1) % BufferSize)

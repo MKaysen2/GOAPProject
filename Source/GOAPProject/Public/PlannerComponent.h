@@ -51,8 +51,8 @@ protected:
 	UPROPERTY(transient)
 	TArray<UGOAPAction*> PlanBuffer;
 	uint32 BufferSize = 1;
-	uint32 PlanHead;
-	uint32 PlanTail;
+	uint32 PlanHead =0 ;
+	uint32 PlanTail = 0;
 	bool PlanFull = false;
 
 	bool PlanReachedEnd();
