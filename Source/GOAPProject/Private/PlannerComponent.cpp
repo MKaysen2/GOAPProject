@@ -4,18 +4,7 @@
 #include "../Public/GOAPGoal.h"
 #include "../Public/PlannerService.h"
 
-void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result)
-{
-	if (Result == EPlannerTaskFinishedResult::Success)
-	{
-		PlanAdvance();
-		RequestExecutionUpdate();
-	}
-	else
-	{
-		ClearCurrentPlan();
-	}
-}
+
 
 void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 {
@@ -59,47 +48,6 @@ bool UPlannerComponent::IsRunningPlan() const
 	return bPlanInProgress;
 }
 
-FString UPlannerComponent::GetDebugInfoString() const
-{
-	FString DebugInfo;
-	DebugInfo += FString::Printf(TEXT("PlannerAsset: %s %d hmm\n"), *GetNameSafe(Asset), ActionSet.Num());
-
-	DebugInfo += FString(TEXT("World State:\n"));
-	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EWorldKey"), true);
-	if (Enum != nullptr)
-	{
-		for (uint32 idx = 0; idx < WorldState.Num(); ++idx)
-		{
-
-			FString KeyName = Enum->GetNameStringByValue(idx);
-			DebugInfo += FString::Printf(TEXT("    %s: %d\n"), *KeyName, WorldState.GetProp((EWorldKey)idx));
-		}
-	}
-	for (auto* Goal : Goals)
-	{
-		if (!Goal)
-			continue;
-		FString GoalName = Goal ? Goal->GetTaskName() : FString(TEXT("None"));
-		FString Valid = Goal->IsValid() ? FString(TEXT("Is")) : FString(TEXT("Is not"));
-		DebugInfo += FString::Printf(TEXT("Goal: %s | %s valid\n"), *GoalName, *Valid);
-	}
-	for (auto* Action : ActionSet)
-	{
-		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
-		FString OpName = Action && Action->GetOperator() ? Action->GetOperator()->GetName() : FString(TEXT("None"));
-		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
-		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
-		DebugInfo += FString::Printf(TEXT("    Op: %s\n"), *OpName);
-	}
-	for (uint32 Idx = PlanHead; Idx != PlanTail; Idx = (Idx + 1) % BufferSize)
-	{
-		UGOAPAction* Action = PlanBuffer[Idx];
-		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
-		DebugInfo += FString::Printf(TEXT("Plan Step: %s\n"), *ActionName);
-	}
-	return DebugInfo;
-}
-
 void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -124,6 +72,10 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 {
 	WorldState.SetProp(Key, Value);
+	for (auto* Goal : Goals)
+	{
+		Goal->OnWSUpdated(WorldState);
+	}
 }
 
 void UPlannerComponent::RequestExecutionUpdate()
@@ -146,6 +98,21 @@ void UPlannerComponent::UpdatePlanExecution()
 	else
 	{
 		bPlanInProgress = false;
+		ScheduleReplan();
+	}
+}
+
+void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result)
+{
+	if (Result == EPlannerTaskFinishedResult::Success)
+	{
+		PlanAdvance();
+		RequestExecutionUpdate();
+	}
+	else
+	{
+		ClearCurrentPlan();
+		ScheduleReplan();
 	}
 }
 
@@ -211,4 +178,45 @@ void UPlannerComponent::ClearCurrentPlan()
 		PlanHead = (PlanHead + 1) % BufferSize;
 	}
 	bPlanInProgress = false;
+}
+
+FString UPlannerComponent::GetDebugInfoString() const
+{
+	FString DebugInfo;
+	DebugInfo += FString::Printf(TEXT("PlannerAsset: %s %d hmm\n"), *GetNameSafe(Asset), ActionSet.Num());
+
+	DebugInfo += FString(TEXT("World State:\n"));
+	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EWorldKey"), true);
+	if (Enum != nullptr)
+	{
+		for (uint32 idx = 0; idx < WorldState.Num(); ++idx)
+		{
+
+			FString KeyName = Enum->GetNameStringByValue(idx);
+			DebugInfo += FString::Printf(TEXT("    %s: %d\n"), *KeyName, WorldState.GetProp((EWorldKey)idx));
+		}
+	}
+	for (auto* Goal : Goals)
+	{
+		if (!Goal)
+			continue;
+		FString GoalName = Goal ? Goal->GetTaskName() : FString(TEXT("None"));
+		FString Valid = Goal->IsValid() ? FString(TEXT("Is")) : FString(TEXT("Is not"));
+		DebugInfo += FString::Printf(TEXT("Goal: %s | %s valid\n"), *GoalName, *Valid);
+	}
+	for (auto* Action : ActionSet)
+	{
+		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
+		FString OpName = Action && Action->GetOperator() ? Action->GetOperator()->GetName() : FString(TEXT("None"));
+		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
+		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
+		DebugInfo += FString::Printf(TEXT("    Op: %s\n"), *OpName);
+	}
+	for (uint32 Idx = PlanHead; Idx != PlanTail; Idx = (Idx + 1) % BufferSize)
+	{
+		UGOAPAction* Action = PlanBuffer[Idx];
+		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
+		DebugInfo += FString::Printf(TEXT("Plan Step: %s\n"), *ActionName);
+	}
+	return DebugInfo;
 }

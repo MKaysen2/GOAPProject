@@ -5,6 +5,7 @@
 
 #include "GOAPGoal.generated.h"
 
+struct FWorldState;
 class AAIController;
 class UPlannerComponent;
 
@@ -23,6 +24,9 @@ protected:
 	//for each condition when you do a search
 	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> GoalCondition;
+
+	UPROPERTY(config, EditAnywhere)
+		TArray<FWorldProperty> Preconditions;
 
 	UPROPERTY(EditAnywhere)
 		FName KeyName;
@@ -52,6 +56,6 @@ public:
 	FString GetTaskName() { return TaskName;  }
 	bool IsValid() const { return bCachedValidity; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
-
+	void OnWSUpdated(const FWorldState& WorldState);
 	float GetInsistence() const;
 };

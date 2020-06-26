@@ -1,5 +1,6 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\GOAPCharacterBase.h"
+#include "..\Public\WorldState.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -27,7 +28,26 @@ void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComp
 	{
 		BlackboardKey.ResolveSelectedKey(*BBAsset);
 	}
+	else
+	{
+		UE_LOG(LogGoal, Warning, TEXT("No BB Component"));
+	}
 
+}
+
+void UGOAPGoal::OnWSUpdated(const FWorldState& WorldState)
+{
+	bool bSuccess = true;
+	for (auto& Precondition : Preconditions)
+	{
+		bSuccess = bSuccess && (Precondition.Value != WorldState.GetProp(Precondition.Key));
+		if (!bSuccess)
+		{
+			break;
+		}
+	}
+	CacheValidity(bSuccess);
+	//Notify to notify the OwnerComponent about the goal changing 
 }
 
 float UGOAPGoal::GetInsistence() const

@@ -21,6 +21,8 @@ public:
 	void StartPlanner(UPlannerAsset& PlannerAsset);
 	void RunAllActions();
 	bool IsRunningPlan() const;
+	void ScheduleReplan();
+
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual FString GetDebugInfoString() const;
@@ -50,7 +52,6 @@ protected:
 	void RequestExecutionUpdate();
 	void UpdatePlanExecution();
 
-	void ScheduleReplan();
 	void ProcessReplanRequest();
 
 	UPROPERTY(transient)
