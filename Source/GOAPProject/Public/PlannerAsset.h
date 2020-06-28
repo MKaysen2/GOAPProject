@@ -8,6 +8,7 @@ class UGOAPAction;
 class UGOAPGoal;
 class UPlannerComponent;
 class UPlannerService;
+class UBlackboardData;
 
 UCLASS(BlueprintType, Blueprintable)
 class GOAPPROJECT_API UPlannerAsset : public UObject

@@ -122,6 +122,7 @@ public:
 		return true;
 	}
 
+	bool ValidatePlannerPreconditions(const FWorldState& WorldState);
 	//Should be called when actions are created
 	//Does not activate the action, just adds it to the controller
 	//Make sure you call this if you want the actions to be in the planner!

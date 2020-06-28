@@ -26,12 +26,14 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual FString GetDebugInfoString() const;
+
 	void SetWSProp(const EWorldKey& Key, const uint8& Value);
 
 protected:
 	bool bReplanNeeded = false;
 	bool bPlanInProgress = false;
 	bool bPlanUpdateNeeded = false;
+	bool bWorldStateUpdated = false;
 
 	UPROPERTY(transient)
 		TArray<UGOAPAction*> ActionSet;
@@ -47,12 +49,19 @@ protected:
 	//this might need to get wrapped in an object so property-specific delegates can be added
 	FWorldState WorldState;
 
+	//After taking current action, used to validate effects if WS changes
+	FWorldState PredictedWS;
 	//Also add planner instance
+
+	void ScheduleWSUpdate();
 
 	void RequestExecutionUpdate();
 	void UpdatePlanExecution();
 
 	void ProcessReplanRequest();
+	
+	//Does not broadcast WS changes
+	void SetWSPropInternal(const EWorldKey& Key, const uint8& Value);
 
 	UPROPERTY(transient)
 	TArray<UGOAPAction*> PlanBuffer;

@@ -40,14 +40,14 @@ void UGOAPGoal::OnWSUpdated(const FWorldState& WorldState)
 	bool bSuccess = true;
 	for (auto& Precondition : Preconditions)
 	{
-		bSuccess = bSuccess && (Precondition.Value != WorldState.GetProp(Precondition.Key));
+		bSuccess = bSuccess && (Precondition.Value == WorldState.GetProp(Precondition.Key));
 		if (!bSuccess)
 		{
 			break;
 		}
 	}
 	CacheValidity(bSuccess);
-	//Notify to notify the OwnerComponent about the goal changing 
+
 }
 
 float UGOAPGoal::GetInsistence() const

@@ -25,6 +25,7 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	{
 		UGOAPGoal* Copy = DuplicateObject<UGOAPGoal>(Goal, this);
 		Copy->SetOwner(*AIOwner, *this);
+		Copy->OnWSUpdated(WorldState);
 		Goals.Emplace(Copy);
 	}
 	for (auto& ServiceClass : PlannerAsset.Services)
@@ -56,14 +57,25 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	{
 		Services[Index]->TickService(*this, DeltaTime);
 	}
-	//Let the operators finish up if they need to first
+
+	if (bWorldStateUpdated)
+	{
+		bWorldStateUpdated = false;
+
+		//Should change this to a MC delegate
+		for (auto* Goal : Goals)
+		{
+			Goal->OnWSUpdated(WorldState);
+		}
+	}
+
 	if (bPlanUpdateNeeded)
 	{
 		UpdatePlanExecution();
 	}
 
 	//Do any replans last
-	if (bReplanNeeded)
+	if (bReplanNeeded || !IsRunningPlan())
 	{
 		ProcessReplanRequest();
 	}
@@ -71,11 +83,18 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 {
+	uint8 Prev = WorldState.GetProp(Key);
 	WorldState.SetProp(Key, Value);
-	for (auto* Goal : Goals)
+	if (Prev != Value)
 	{
-		Goal->OnWSUpdated(WorldState);
+		ScheduleWSUpdate();
+		ScheduleReplan();
 	}
+}
+
+void UPlannerComponent::ScheduleWSUpdate()
+{
+	bWorldStateUpdated = true;
 }
 
 void UPlannerComponent::RequestExecutionUpdate()
@@ -92,6 +111,17 @@ void UPlannerComponent::UpdatePlanExecution()
 		UGOAPAction* NextAction = PlanBuffer[PlanHead];
 		if (NextAction != nullptr)
 		{
+			PredictedWS = WorldState;
+			if (!NextAction->ValidatePlannerPreconditions(WorldState))
+			{
+				ClearCurrentPlan();
+				ScheduleReplan();
+			}
+			for (auto& Effect : NextAction->GetEffects())
+			{
+				uint8 NextVal = Effect.Forward(WorldState.GetProp(Effect.Key));
+				PredictedWS.SetProp(Effect.Key, NextVal);
+			}
 			NextAction->StartAction();
 		}
 	}
@@ -106,6 +136,11 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 {
 	if (Result == EPlannerTaskFinishedResult::Success)
 	{
+		//Apply values from the cached predicted WS
+		for (auto& Effect : Action->GetEffects())
+		{
+			WorldState.SetProp(Effect.Key, PredictedWS.GetProp(Effect.Key));
+		}
 		PlanAdvance();
 		RequestExecutionUpdate();
 	}
@@ -124,6 +159,44 @@ void UPlannerComponent::ScheduleReplan()
 void UPlannerComponent::ProcessReplanRequest()
 {
 	bReplanNeeded = false;
+	auto InsistencePred = [](const UGOAPGoal& lhs, const UGOAPGoal& rhs) { 
+		return lhs.GetInsistence() < rhs.GetInsistence(); 
+	};
+	TArray<UGOAPGoal*> ActiveGoals;
+	ActiveGoals.Heapify(InsistencePred);
+	for (auto* Goal : Goals)
+	{
+		if (Goal->IsValid() && (Goal->GetInsistence() > 0.f))
+		{
+			ActiveGoals.HeapPush(Goal, InsistencePred);
+		}
+	}
+
+	//TODO: Pop active goals till found a valid plan
+	if(ActiveGoals.Num() != 0)
+	{
+		UGOAPGoal* Top;
+		ActiveGoals.HeapPop(Top, InsistencePred);
+		//Search here
+		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
+		{
+			PlanBuffer[PlanHead]->AbortAction();
+		}
+		StartNewPlan(ActionSet); //for now
+	}
+	else
+	{
+		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
+		{
+			PlanBuffer[PlanHead]->AbortAction();
+			ClearCurrentPlan();
+		}
+	}
+}
+
+void UPlannerComponent::SetWSPropInternal(const EWorldKey& Key, const uint8& Value)
+{
+	WorldState.SetProp(Key, Value);
 }
 
 
@@ -153,6 +226,8 @@ void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*>& Plan)
 		AddAction(Action);
 	}
 	bPlanInProgress = true;
+	//pretty sure we want to do this on the same frame
+	UpdatePlanExecution();
 }
 
 void UPlannerComponent::AddAction(UGOAPAction* Action)

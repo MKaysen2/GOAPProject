@@ -74,6 +74,18 @@ void UGOAPAction::AddPrecondition(const EWorldKey& Key, const uint8& Value)
 	Preconditions.Add({ Key, Value });
 }
 
+bool UGOAPAction::ValidatePlannerPreconditions(const FWorldState& WorldState)
+{
+	for (auto& Precondition : Preconditions)
+	{
+		if (Precondition.Value != WorldState.GetProp(Precondition.Key))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void UGOAPAction::InitAction(AAIController* Controller)
 {
 	AIOwner = Controller;
