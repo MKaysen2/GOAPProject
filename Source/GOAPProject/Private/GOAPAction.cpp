@@ -78,7 +78,7 @@ bool UGOAPAction::ValidatePlannerPreconditions(const FWorldState& WorldState)
 {
 	for (auto& Precondition : Preconditions)
 	{
-		if (Precondition.Value != WorldState.GetProp(Precondition.Key))
+		if (!Precondition.Eval(WorldState.GetProp(Precondition.Key)))
 		{
 			return false;
 		}

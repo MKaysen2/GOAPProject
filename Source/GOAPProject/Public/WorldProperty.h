@@ -23,6 +23,17 @@ enum class EWorldKey : uint8
 };
 
 UENUM()
+enum class ESymbolTest : uint8
+{
+	Eq,
+	Neq,
+	Gt,
+	Geq,
+	Lt,
+	Leq
+};
+
+UENUM()
 namespace EPlannerTaskFinishedResult
 {
 	enum Type
@@ -40,6 +51,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	EWorldKey Key = EWorldKey::kIdle;
+
+	//TODO: edit condition
+	UPROPERTY(EditAnywhere)
+		ESymbolTest Comparator = ESymbolTest::Eq;
 
 	UPROPERTY(EditAnywhere)
 	uint8 Value;
@@ -63,6 +78,29 @@ public:
 		return lhs.Value == rhs.Value;
 	}
 
+	bool Eval(uint8 Pre)
+	{
+		//is there a better way to do this?
+		switch (Comparator)
+		{
+		case ESymbolTest::Eq:
+			return Pre == Value;
+			//break;
+		case ESymbolTest::Neq:
+			return Pre != Value;
+			//break
+		case ESymbolTest::Gt:
+			return Pre > Value;
+		case ESymbolTest::Geq:
+			return Pre >= Value;
+		case ESymbolTest::Lt:
+			return Pre < Value;
+		case ESymbolTest::Leq:
+			return Pre <= Value;
+		default:
+			return false;
+		}
+	}
 };
 
 /** 
