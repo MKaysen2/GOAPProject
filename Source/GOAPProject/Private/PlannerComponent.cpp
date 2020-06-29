@@ -133,6 +133,7 @@ void UPlannerComponent::UpdatePlanExecution()
 			{
 				ClearCurrentPlan();
 				ScheduleReplan();
+				return;
 			}
 			for (auto& Effect : NextAction->GetEffects())
 			{
