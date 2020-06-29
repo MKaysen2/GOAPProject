@@ -34,6 +34,13 @@ enum class ESymbolTest : uint8
 };
 
 UENUM()
+enum class ESymbolOp : uint8
+{
+	Set,
+	Inc,
+	Dec
+};
+UENUM()
 namespace EPlannerTaskFinishedResult
 {
 	enum Type
@@ -114,6 +121,9 @@ public:
 	EWorldKey Key;
 
 	UPROPERTY(EditAnywhere)
+		ESymbolOp Op = ESymbolOp::Set;
+
+	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
@@ -121,7 +131,17 @@ public:
 
 	uint8 Forward(uint8 Pre) const
 	{
-		return Value;
+		switch (Op)
+		{
+		case ESymbolOp::Set:
+			return Value;
+		case ESymbolOp::Inc:
+			return (Pre <= (255 - Value)) ? Pre + Value : 255;
+		case ESymbolOp::Dec:
+			return (Pre >= Value) ? Pre - Value : 0;
+		default:
+			return Value;
+		}
 	}
 
 	//the set operation's inverse changes the value back to the "Ground truth", i.e. the value in 
