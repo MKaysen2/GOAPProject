@@ -88,6 +88,23 @@ void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 	if (Prev != Value)
 	{
 		ScheduleWSUpdate();
+
+		//Check for expected effects from current action, if any
+		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
+		{
+			for (auto& Effect : PlanBuffer[PlanHead]->GetEffects())
+			{
+				if (Effect.Key == Key )
+				{
+					if (PredictedWS.GetProp(Effect.Key) != Value)
+					{
+						ScheduleReplan();
+					}
+					return;
+				}
+			}
+		}
+		//Unhandled WS change causes replan
 		ScheduleReplan();
 	}
 }
@@ -141,6 +158,12 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 		{
 			WorldState.SetProp(Effect.Key, PredictedWS.GetProp(Effect.Key));
 		}
+		//Still have to notify goals about new WS, but don't cause a replan
+		for (auto& Goal : Goals)
+		{
+			Goal->OnWSUpdated(WorldState);
+		}
+		//Update the pointer and flag for the next tick
 		PlanAdvance();
 		RequestExecutionUpdate();
 	}
