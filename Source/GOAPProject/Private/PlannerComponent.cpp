@@ -2,10 +2,153 @@
 #include "../Public/PlannerAsset.h"
 #include "../Public/GOAPAction.h"
 #include "../Public/GOAPGoal.h"
+#include "../Public/StateNode.h"
 #include "../Public/PlannerService.h"
 
+//FAStarPlanner 
+bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan)
+{
+	//Fringe is a priority queue in textbook A*
+	//Use TArray's heap functionality to mimic a priority queue
+
+	FPriorityQueue Fringe;
+
+	//To save time, ALL nodes are added to a single set, and keep track of whether they're closed
+	//This does mean that we're using additional space, but it's easier and faster, I think
+	TSet<NodePtr, FStateNode::SetKeyFuncs> NodePool;
+
+	NodePtr CurrentNode = MakeShared<FStateNode>(InitialState, GoalCondition);
+
+	Fringe.Push(CurrentNode);
+	NodePool.Add(CurrentNode);
+	//TODO: empty the fringe before exiting
+	while (Fringe.Num() != 0)
+	{
+
+		//pop the lowest cost node from p-queue
+		Fringe.Pop(CurrentNode);
+		if (!CurrentNode.IsValid())
+		{
+			break;
+		}
+		CurrentNode->MarkClosed();
+		//This is a regressive search
+		//a goal node g is any node s.t. all values of the node's state match that of the initial state
+		if (CurrentNode->IsGoal())
+		{
+			break;
+		}
+
+		if (CurrentNode->GetDepth() > MaxDepth)
+		{
+			//Do not want to accidentally generate partial plan
+			//if last node in fringe went over MaxDepth
+			CurrentNode = nullptr;
+			continue;
+		}
+
+		//Generate candidate edges (actions)
+		TArray<TWeakObjectPtr<UGOAPAction>> CandidateEdges;
+		CurrentNode->GetNeighboringEdges(EdgeTable, CandidateEdges);
+
+		TSet<UGOAPAction*> VisitedActions;
+		for (auto ActionHandle : CandidateEdges)
+		{
 
 
+			if (!ActionHandle.IsValid())
+			{
+				UE_LOG(LogAction, Error, TEXT("Bad Action access in planner!!"));
+				UE_LOG(LogAction, Error, TEXT("You probably dumped the ActionSet somewhere, again"));
+				continue;
+			}
+
+			//Can move this stuff into GenerateNeighbors
+			UGOAPAction* Action = ActionHandle.Get();
+			//verify context preconditions
+			//skip action if it has already been visited for this node
+			if (!Action->VerifyContext() || VisitedActions.Contains(Action))
+			{
+				continue;
+			}
+
+			//mark edge as visited for current node
+			VisitedActions.Add(Action);
+
+			//Create the Child node 
+			NodePtr ChildNode = MakeShared<FStateNode>(*CurrentNode);
+			if (!ChildNode.IsValid())
+			{
+				continue;
+			}
+			if (!ChildNode->ChainBackward(*Action))
+			{
+				continue;
+			}
+			//check if node exists already
+			const NodePtr* FindNode = NodePool.Find(ChildNode);
+			if (FindNode != nullptr && FindNode->IsValid())
+			{
+				NodePtr ExistingNode = *FindNode;
+				if (ChildNode->GetForwardCost() < ExistingNode->GetForwardCost())
+				{
+					ExistingNode->ReParent(*ChildNode);
+					if (ExistingNode->IsClosed())
+					{
+						ExistingNode->MarkOpened();
+						Fringe.Push(ExistingNode);
+					}
+					else
+					{
+						Fringe.ReSort();
+					}
+				}
+			}
+			else
+			{
+				ChildNode->MarkOpened(); //just in case we haven't
+				Fringe.Push(ChildNode);
+				NodePool.Add(ChildNode);
+			}
+		}
+	}
+
+	if (CurrentNode.IsValid())
+	{
+		const FStateNode* Node = CurrentNode.Get();
+		while (Node && Node->ParentNode.IsValid())
+		{
+			Plan.Add(Node->ParentEdge.Get());
+			Node = Node->ParentNode.Pin().Get();
+		}
+		return true;
+	}
+	return false;
+}
+
+void FAStarPlanner::AddAction(UGOAPAction* Action)
+{
+	for (const auto& Effect : Action->GetEffects())
+	{
+		EdgeTable.AddUnique(Effect.Key, Action);
+	}
+}
+
+void FAStarPlanner::RemoveAction(UGOAPAction* Action)
+{
+	//Nothing for now
+	for (const auto& Effect : Action->GetEffects())
+	{
+		EdgeTable.RemoveSingle(Effect.Key, Action);
+	}
+}
+
+void FAStarPlanner::ClearEdgeTable()
+{
+	EdgeTable.Empty();
+}
+
+//UPlannerComponent
 void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 {
 	if (AIOwner == nullptr)
@@ -19,7 +162,7 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 		Copy->SetOwner(AIOwner, this);
 
 		ActionSet.Emplace(Copy);
-		
+		AStarPlanner.AddAction(Copy);
 	}
 	for (auto* Goal : PlannerAsset.Goals)
 	{
@@ -123,35 +266,33 @@ void UPlannerComponent::UpdatePlanExecution()
 {
 	bPlanUpdateNeeded = false;
 
-	if (!PlanReachedEnd())
-	{
-		UGOAPAction* NextAction = PlanBuffer[PlanHead];
-		if (NextAction != nullptr)
-		{
-			ExpectedEffects.Reset();
+	UGOAPAction* NextAction = PlanBuffer[PlanHead];
 
-			if (!NextAction->ValidatePlannerPreconditions(WorldState))
-			{
-				ClearCurrentPlan();
-				ScheduleReplan();
-				return;
-			}
-			for (auto& Effect : NextAction->GetEffects())
-			{
-				if (Effect.bExpected)
-				{
-					uint8 NextVal = Effect.Forward(WorldState.GetProp(Effect.Key));
-					auto Idx = ExpectedEffects.Add(FAISymEffect());
-					ExpectedEffects[Idx].Key = Effect.Key;
-					ExpectedEffects[Idx].Value = NextVal;
-				}
-			}
-			NextAction->StartAction();
+	if (!PlanReachedEnd() && NextAction != nullptr)
+	{
+		ExpectedEffects.Reset();
+
+		if (!NextAction->ValidatePlannerPreconditions(WorldState))
+		{
+			ClearCurrentPlan();
+			ScheduleReplan();
+			return;
 		}
+		for (auto& Effect : NextAction->GetEffects())
+		{
+			if (Effect.bExpected)
+			{
+				uint8 NextVal = Effect.Forward(WorldState.GetProp(Effect.Key));
+				auto Idx = ExpectedEffects.Add(FAISymEffect());
+				ExpectedEffects[Idx].Key = Effect.Key;
+				ExpectedEffects[Idx].Value = NextVal;
+			}
+		}
+		NextAction->StartAction();
 	}
 	else
 	{
-		bPlanInProgress = false;
+		ClearCurrentPlan();
 		ScheduleReplan();
 	}
 }
@@ -209,24 +350,32 @@ void UPlannerComponent::ProcessReplanRequest()
 	}
 
 	//TODO: Pop active goals till found a valid plan
-	if(ActiveGoals.Num() != 0)
+	while(ActiveGoals.Num() != 0)
 	{
 		UGOAPGoal* Top;
 		ActiveGoals.HeapPop(Top, InsistencePred);
 		//Search here
+		TArray<UGOAPAction*> NewPlan;
+		bool bPlanFound = AStarPlanner.Search(Top->GetGoalCondition(), WorldState, NewPlan);
+		//could not satisfy goal so go to next highest
+		if (!bPlanFound)
+		{
+			continue;
+		}
+		//o.w
 		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
 		{
 			PlanBuffer[PlanHead]->AbortAction();
 		}
-		StartNewPlan(ActionSet); //for now
+		StartNewPlan(NewPlan); //for now
+		return;
 	}
-	else
+	UE_LOG(LogAction, Warning, TEXT("No valid goal"));
+	if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
 	{
-		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
-		{
-			PlanBuffer[PlanHead]->AbortAction();
-			ClearCurrentPlan();
-		}
+		
+		PlanBuffer[PlanHead]->AbortAction();
+		ClearCurrentPlan();
 	}
 }
 

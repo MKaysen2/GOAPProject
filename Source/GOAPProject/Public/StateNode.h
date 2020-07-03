@@ -19,7 +19,7 @@ struct GOAPPROJECT_API TSharedPtrLess
 
 struct GOAPPROJECT_API FStateNode : public TSharedFromThis<FStateNode>
 {
-private:
+public:
 	typedef TMultiMap < EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
 	//Can make sharedref or uniqueptr to show ownership
 	TSharedRef<FWorldState> CurrentState;

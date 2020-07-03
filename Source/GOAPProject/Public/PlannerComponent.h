@@ -4,12 +4,61 @@
 #include "BrainComponent.h"
 #include "WorldState.h"
 #include "WorldProperty.h"
+#include "StateNode.h"
 #include "PlannerComponent.generated.h"
 
 class UGOAPAction;
 class UGOAPGoal;
 class UPlannerAsset;
 class UPlannerService;
+struct FStateNode;
+
+struct GOAPPROJECT_API FAStarPlanner
+{
+	
+private:
+	typedef TSharedPtr<FStateNode> NodePtr;
+
+	struct FPriorityQueue
+	{
+		TArray<NodePtr> Heap;
+		TSharedPtrLess<FStateNode> LessFn;
+
+		FPriorityQueue() : Heap(), LessFn()
+		{
+			Heap.Heapify(LessFn);
+		}
+		void Push(const NodePtr& InItem)
+		{
+			Heap.HeapPush(InItem, LessFn);
+		}
+
+		void Pop(NodePtr& OutItem)
+		{
+			Heap.HeapPop(OutItem, LessFn);
+		}
+
+		void ReSort()
+		{
+			Heap.HeapSort(LessFn);
+		}
+
+		TArray<NodePtr>::SizeType Num() const
+		{
+			return Heap.Num();
+		}
+	};
+
+	TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> EdgeTable;
+
+	int32 MaxDepth;
+public:
+
+	bool Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan);
+	void AddAction(UGOAPAction* Action);
+	void RemoveAction(UGOAPAction* Action);
+	void ClearEdgeTable();
+};
 
 UCLASS()
 class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
@@ -30,6 +79,9 @@ public:
 	void SetWSProp(const EWorldKey& Key, const uint8& Value);
 
 protected:
+
+	FAStarPlanner AStarPlanner;
+
 	bool bReplanNeeded = false;
 	bool bPlanInProgress = false;
 	bool bPlanUpdateNeeded = false;
