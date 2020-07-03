@@ -126,6 +126,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
+	//Whether or not the effect is expected as a result of a sensor update
+	UPROPERTY(EditAnywhere)
+		bool bExpected = false;
+
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
 	FAISymEffect(const EWorldKey& Key, const uint8& Value) : Key(Key), Value(Value) {}
 

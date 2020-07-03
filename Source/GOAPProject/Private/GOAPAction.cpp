@@ -58,9 +58,14 @@ AActor* UGOAPAction::GetGameplayTaskAvatar(const UGameplayTask* Task) const
 
 void UGOAPAction::OnGameplayTaskDeactivated(UGameplayTask& Task)
 {
-	if (Task.GetState() == EGameplayTaskState::Finished)
+	UAITask_Operator* OpTask = Cast<UAITask_Operator>(&Task);
+	if (OpTask && OpTask->GetState() == EGameplayTaskState::Finished && OpTask->GetOpStatus() == EOpStatus::Succeeded)
 	{
 		FinishAction(EPlannerTaskFinishedResult::Success);
+	}
+	else
+	{
+		FinishAction(EPlannerTaskFinishedResult::Failure);
 	}
 }
 

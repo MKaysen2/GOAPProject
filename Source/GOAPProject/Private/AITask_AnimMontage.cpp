@@ -16,10 +16,12 @@ void UAITask_AnimMontage::Activate()
 	float MontageDuration = AnimInstance->Montage_Play(MontageHandle);
 	MontageEndedDelegate.BindUObject(this, &UAITask_AnimMontage::MontageEndedCallback);
 	AnimInstance->Montage_SetBlendingOutDelegate(MontageEndedDelegate, MontageHandle);
+	SetOpStatus(EOpStatus::InProgress);
 }
 
 void UAITask_AnimMontage::ExternalCancel()
 {
+	SetOpStatus(EOpStatus::Aborted);
 	EndTask();
 }
 
@@ -49,8 +51,19 @@ void UAITask_AnimMontage::StopMontage()
 
 void UAITask_AnimMontage::MontageEndedCallback(UAnimMontage* Montage, bool bInterrupted)
 {
+
+	//Nope
+	//UE_LOG(LogTemp, Warning, TEXT("Does this get called on ExternalCancel?"));
 	MontageHandle = nullptr;
 	AnimInstance = nullptr;
+	if (!bInterrupted)
+	{
+		SetOpStatus(EOpStatus::Succeeded);
+	}
+	else
+	{
+		SetOpStatus(EOpStatus::Failed);
+	}
 	EndTask();
 }
 

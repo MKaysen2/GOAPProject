@@ -92,7 +92,7 @@ void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 		//Check for expected effects from current action, if any
 		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
 		{
-			for (auto& Effect : PlanBuffer[PlanHead]->GetEffects())
+			for (auto& Effect : ExpectedEffects)
 			{
 				if (Effect.Key == Key )
 				{
@@ -128,7 +128,8 @@ void UPlannerComponent::UpdatePlanExecution()
 		UGOAPAction* NextAction = PlanBuffer[PlanHead];
 		if (NextAction != nullptr)
 		{
-			PredictedWS = WorldState;
+			ExpectedEffects.Reset();
+
 			if (!NextAction->ValidatePlannerPreconditions(WorldState))
 			{
 				ClearCurrentPlan();
@@ -137,8 +138,13 @@ void UPlannerComponent::UpdatePlanExecution()
 			}
 			for (auto& Effect : NextAction->GetEffects())
 			{
-				uint8 NextVal = Effect.Forward(WorldState.GetProp(Effect.Key));
-				PredictedWS.SetProp(Effect.Key, NextVal);
+				if (Effect.bExpected)
+				{
+					uint8 NextVal = Effect.Forward(WorldState.GetProp(Effect.Key));
+					auto Idx = ExpectedEffects.Add(FAISymEffect());
+					ExpectedEffects[Idx].Key = Effect.Key;
+					ExpectedEffects[Idx].Value = NextVal;
+				}
 			}
 			NextAction->StartAction();
 		}
@@ -154,10 +160,16 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 {
 	if (Result == EPlannerTaskFinishedResult::Success)
 	{
-		//Apply values from the cached predicted WS
+		//Apply values from task effects
 		for (auto& Effect : Action->GetEffects())
 		{
-			WorldState.SetProp(Effect.Key, PredictedWS.GetProp(Effect.Key));
+			//"Expected" effects from sensors shouldn't be applied
+			//we also don't need to fail here since it'll be caught
+			//by the preconditions of the next task
+			if (!Effect.bExpected)
+			{
+				WorldState.SetProp(Effect.Key, Effect.Forward(WorldState.GetProp(Effect.Key)));
+			}
 		}
 		//Still have to notify goals about new WS, but don't cause a replan
 		for (auto& Goal : Goals)
@@ -270,6 +282,7 @@ void UPlannerComponent::AddAction(UGOAPAction* Action)
 
 void UPlannerComponent::ClearCurrentPlan()
 {
+	ExpectedEffects.Reset();
 	PlanFull = false;
 	while (PlanHead != PlanTail)
 	{

@@ -39,6 +39,9 @@ protected:
 		TArray<UGOAPAction*> ActionSet;
 
 	UPROPERTY(transient)
+		TArray<FAISymEffect> ExpectedEffects;
+
+	UPROPERTY(transient)
 		TArray<UPlannerService*> Services;
 
 	UPROPERTY(transient)
