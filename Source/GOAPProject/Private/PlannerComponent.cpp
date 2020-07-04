@@ -111,6 +111,8 @@ bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FW
 				NodePool.Add(ChildNode);
 			}
 		}
+		//If we run out of nodes, we don't want to still be referencing a valid node
+		CurrentNode.Reset();
 	}
 
 	if (CurrentNode.IsValid())
@@ -176,6 +178,7 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 		Services.Add(NewObject<UPlannerService>(this, ServiceClass));
 	}
 	Asset = &PlannerAsset;
+	AStarPlanner.MaxDepth = PlannerAsset.MaxPlanSize;
 	BufferSize = PlannerAsset.MaxPlanSize + 1;
 	PlanBuffer.Init(nullptr, BufferSize);
 }

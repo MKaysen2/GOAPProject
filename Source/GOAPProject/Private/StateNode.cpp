@@ -153,8 +153,11 @@ bool FStateNode::InvertEffect(const EWorldKey& Key, const FAISymEffect& Effect)
 	//This is only true when the effect produces a constant value
 	//TODO: add a check for that 
 	CurrentState->SetProp(Key, PriorVal);
-	SetKeyRelevance(Key, false);
-	UnsatisfiedKeys.Remove(Key);
+	if (PriorVal == GroundVal)
+	{
+		SetKeyRelevance(Key, false);
+		UnsatisfiedKeys.Remove(Key);
+	}
 
 	Heuristic -= GoalState->HeuristicDist(Key, CurVal);
 	Heuristic += GoalState->HeuristicDist(Key, PriorVal);

@@ -51,9 +51,9 @@ private:
 
 	TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> EdgeTable;
 
-	int32 MaxDepth;
 public:
-
+	int32 MaxDepth;
+	
 	bool Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan);
 	void AddAction(UGOAPAction* Action);
 	void RemoveAction(UGOAPAction* Action);

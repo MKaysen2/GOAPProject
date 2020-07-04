@@ -153,6 +153,16 @@ public:
 	//However, the actual value of the property could technically have been anything
 	uint8 Backward(uint8 Post, uint8 Pre) const
 	{
-		return Pre;
+		switch (Op)
+		{
+		case ESymbolOp::Set:
+			return Pre;
+		case ESymbolOp::Inc:
+			return (Post >= Value) ? Post - Value : 0;
+		case ESymbolOp::Dec:
+			return (Post <= (255 - Value)) ? Post + Value : 255;
+		default:
+			return Pre;
+		}
 	}
 };
