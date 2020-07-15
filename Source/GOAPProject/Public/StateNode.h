@@ -49,7 +49,7 @@ public:
 	void CacheTotalCost();
 
 	//Whether a value of the world state must hold to satisfy some precondition
-	void AddPrecondition(const EWorldKey& Key, const uint8& Value);
+	bool AddPrecondition(const FWorldProperty& Precondition);
 
 	bool GetKeyRelevance(const EWorldKey& Key)
 	{

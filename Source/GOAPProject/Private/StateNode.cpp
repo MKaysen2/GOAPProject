@@ -19,7 +19,7 @@ FStateNode::FStateNode(const FWorldState& InitialState, const TArray<FWorldPrope
 	PropFlags.Init(false, CurrentState->Num());
 	for (const auto& Symbol : SymbolSet)
 	{
-		AddPrecondition(Symbol.Key, Symbol.Value);
+		AddPrecondition(Symbol);
 	}
 	CacheTypeHash(GetTypeHash(CurrentState.Get()));
 	CacheTotalCost();
@@ -118,11 +118,15 @@ bool FStateNode::ChainBackward(UGOAPAction& Action)
 		{
 			return false;
 		}
+
 	}
 
 	for (const auto& Precondition : Action.GetPreconditions())
 	{
-		AddPrecondition(Precondition.Key, Precondition.Value);
+		if (!AddPrecondition(Precondition))
+		{
+			return false;
+		}
 	}
 	if (Heuristic > CachedHeuristic)
 	{
@@ -150,12 +154,17 @@ bool FStateNode::InvertEffect(const EWorldKey& Key, const FAISymEffect& Effect)
 		return false;
 	}
 
-	//This is only true when the effect produces a constant value
-	//TODO: add a check for that 
+	//This is actually fine
 	CurrentState->SetProp(Key, PriorVal);
 	if (PriorVal == GroundVal)
 	{
-		SetKeyRelevance(Key, false);
+		//if the effect produces a constant value, then the value COULD have been anything
+		//Otherwise, there is an implicit precondition on the value since it needs to have held
+		//for the found plan to be valid
+		if (Effect.Op == ESymbolOp::Set)
+		{
+			SetKeyRelevance(Key, false);
+		}
 		UnsatisfiedKeys.Remove(Key);
 	}
 
@@ -165,16 +174,27 @@ bool FStateNode::InvertEffect(const EWorldKey& Key, const FAISymEffect& Effect)
 	return true;
 }
 
-void FStateNode::AddPrecondition(const EWorldKey& Key, const uint8& Value)
+bool FStateNode::AddPrecondition(const FWorldProperty& Precondition)
 {
-	CurrentState->SetProp(Key, Value);
+	EWorldKey Key = Precondition.Key;
+	uint8 GroundVal = GoalState->GetProp(Key);
+	uint8 CurVal = CurrentState->GetProp(Key);
+	
+	//if the precondition COULD NOT have been true, then we can skip it
+	if (GetKeyRelevance(Key) == true)
+	{
+		return Precondition.Eval(CurVal);
+	}
+	uint8 NewVal = (Precondition.Eval(GroundVal) ? GroundVal : Precondition.MinSatisfyVal());
+	CurrentState->SetProp(Key, NewVal);
 	SetKeyRelevance(Key, true);
-	int32 Distance = GoalState->HeuristicDist(Key, Value);
+	int32 Distance = GoalState->HeuristicDist(Key, NewVal);
 	if (Distance != 0)
 	{
 		UnsatisfiedKeys.Add(Key);
 		Heuristic += Distance;
 	}
+	return true;
 }
 
 void FStateNode::CacheTotalCost()

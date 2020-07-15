@@ -22,6 +22,7 @@ enum class EWorldKey : uint8
 	SYMBOL_MAX	UMETA(Hidden)
 };
 
+//maybe should remove Neq
 UENUM()
 enum class ESymbolTest : uint8
 {
@@ -85,7 +86,7 @@ public:
 		return lhs.Value == rhs.Value;
 	}
 
-	bool Eval(uint8 Pre)
+	bool Eval(uint8 Pre) const
 	{
 		//is there a better way to do this?
 		switch (Comparator)
@@ -106,6 +107,27 @@ public:
 			return Pre <= Value;
 		default:
 			return false;
+		}
+	}
+
+	//Haven't figured out Neq, may have to remove it.
+	uint8 MinSatisfyVal() const
+	{
+		switch (Comparator)
+		{
+		case ESymbolTest::Eq:
+			//fallthrough
+		case ESymbolTest::Geq:
+			//fallthrough
+		case ESymbolTest::Leq:
+			return Value;
+		// Must constrain designer somehow
+		case ESymbolTest::Gt:
+			return (Value < 255) ? Value + 1 : 255;
+		case ESymbolTest::Lt:
+			return Value > 0 ? Value - 1 : 0;
+		default:
+			return 0;
 		}
 	}
 };
