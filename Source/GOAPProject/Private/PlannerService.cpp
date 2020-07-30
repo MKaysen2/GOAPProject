@@ -13,10 +13,11 @@ void UPlannerService::TickService(UPlannerComponent& PlannerComp, float DeltaTim
 void UPlanService_TargetProps::TickService(UPlannerComponent& PlannerComp, float DeltaTime)
 {
 	//empty in base class
+	/*
 	TArray<AActor*> OutActors;
 	PlannerComp.GetAIOwner()->GetPerceptionComponent()->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), OutActors);
 	PlannerComp.SetWSProp(EWorldKey::kIdle, (uint8)OutActors.Num());
-
+	*/
 	FBlackboard::FKey KeyID = PlannerComp.GetBlackboardComponent()->GetKeyID(FName("EnemyActor"));
 	PlannerComp.SetWSProp(EWorldKey::kEnemyActor, KeyID);
 }

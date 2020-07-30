@@ -145,49 +145,73 @@ bool FStateNode::InvertEffect(const EWorldKey& Key, const FAISymEffect& Effect)
 {
 	uint8 CurVal = CurrentState->GetProp(Key);
 	uint8 GroundVal = GoalState->GetProp(Key);
-	uint8 PriorVal = Effect.Backward(CurVal, GroundVal);
 
 	//The effect couldn't have occured if the forward call on the computed prior
 	//produces a different value than what actually happened (the "current" value)
-	if (Effect.Forward(PriorVal) != CurVal)
+	if (!CurrentState->RevertEffect(Effect))
 	{
 		return false;
 	}
 
-	//This is actually fine
-	CurrentState->SetProp(Key, PriorVal);
-	if (PriorVal == GroundVal)
+	//if the effect always produces the same value, then the value COULD have been anything
+	//Otherwise, there is an implicit precondition on the value since it needs to have held
+	//for the found plan to be valid
+	if (Effect.Op == ESymbolOp::Set)
 	{
-		//if the effect produces a constant value, then the value COULD have been anything
-		//Otherwise, there is an implicit precondition on the value since it needs to have held
-		//for the found plan to be valid
-		if (Effect.Op == ESymbolOp::Set)
-		{
-			SetKeyRelevance(Key, false);
-		}
-		UnsatisfiedKeys.Remove(Key);
+		SetKeyRelevance(Key, false);
+		CurrentState->SetProp(Key, GroundVal);
 	}
 
-	Heuristic -= GoalState->HeuristicDist(Key, CurVal);
-	Heuristic += GoalState->HeuristicDist(Key, PriorVal);
+	//if we are dependent on another WSKey for a value, then we are implicitly asserting
+	//that it held some particular value at a prior point in time
+	if (!Effect.IsRHSAbsolute())
+	{
+		SetKeyRelevance(Effect.KeyRHS, true);
+	}
 
-	return true;
+	bool bWasAlreadySatisfied = !UnsatisfiedKeys.Contains(Key);
+	if (CurrentState->GetProp(Key) == GroundVal && !bWasAlreadySatisfied)
+	{
+		UnsatisfiedKeys.Remove(Key);
+	}
+	
+	int32 PrevHeuristic = Heuristic;
+	Heuristic -= GoalState->HeuristicDist(Key, CurVal);
+	Heuristic += GoalState->HeuristicDist(Key, CurrentState->GetProp(Key));
+
+	//if we got further away from the goal just from the effects, we definitely shouldn't take this node
+	return Heuristic <= PrevHeuristic;
 }
 
 bool FStateNode::AddPrecondition(const FWorldProperty& Precondition)
 {
 	EWorldKey Key = Precondition.Key;
 	uint8 GroundVal = GoalState->GetProp(Key);
-	uint8 CurVal = CurrentState->GetProp(Key);
 	
-	//if the precondition COULD NOT have been true, then we can skip it
+	//the precondition can't conflict with a known value
 	if (GetKeyRelevance(Key) == true)
 	{
-		return Precondition.Eval(CurVal);
+		return CurrentState->CheckCondition(Precondition);
 	}
-	uint8 NewVal = (Precondition.Eval(GroundVal) ? GroundVal : Precondition.MinSatisfyVal());
-	CurrentState->SetProp(Key, NewVal);
+
+	uint8 NewVal;
+	if (GoalState->CheckCondition(Precondition))
+	{
+		NewVal = (Precondition.IsRHSAbsolute()) ? GroundVal : GoalState->GetProp(Precondition.KeyRHS);
+		CurrentState->SetProp(Key, NewVal);
+	}
+	else
+	{
+		CurrentState->SatisfyCondition(Precondition);
+		NewVal = CurrentState->GetProp(Key);
+	}
+
 	SetKeyRelevance(Key, true);
+	if (!Precondition.IsRHSAbsolute())
+	{
+		SetKeyRelevance(Precondition.KeyRHS, true);
+	}
+
 	int32 Distance = GoalState->HeuristicDist(Key, NewVal);
 	if (Distance != 0)
 	{

@@ -30,6 +30,14 @@ public:
 
 	const uint8& GetProp(EWorldKey Key) const;
 	
+	bool CheckCondition(const FWorldProperty& Condition) const;
+
+	void SatisfyCondition(const FWorldProperty& Condition);
+
+	bool ApplyEffect(const FAISymEffect& Effect);
+
+	bool RevertEffect(const FAISymEffect& Effect);
+
 	uint32 Num() const
 	{
 		return State.Num();

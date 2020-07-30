@@ -5,6 +5,9 @@
 
 #define GETENUMSTRING(etype, evalue) ( (FindObject<UEnum>(nullptr, TEXT(etype), true) != nullptr) ? FindObject<UEnum>(nullptr, TEXT(etype), true)->GetNameStringByIndex((int32)evalue) : FString("Invalid - are you sure enum uses UENUM() macro?") )
 
+struct FWorldProperty;
+struct FAISymEffect;
+
 UENUM(BlueprintType)
 enum class EWorldKey : uint8
 {
@@ -28,11 +31,12 @@ UENUM()
 enum class ESymbolTest : uint8
 {
 	Eq,
-	Neq,
 	Gt,
-	Geq,
 	Lt,
-	Leq
+	Geq,
+	Leq,
+
+	MAX UMETA(Hidden)
 };
 
 UENUM()
@@ -40,7 +44,9 @@ enum class ESymbolOp : uint8
 {
 	Set,
 	Inc,
-	Dec
+	Dec,
+
+	MAX UMETA(Hidden)
 };
 UENUM()
 namespace EPlannerTaskFinishedResult
@@ -52,6 +58,17 @@ namespace EPlannerTaskFinishedResult
 	};
 }
 
+
+//most of this is from the HTN module and I'd like to switch over to using that if I can, eventually
+namespace FPlannerWSOperations
+{
+	typedef bool(*FConditionFunctionPtr)(const uint8&, const uint8& RHS);
+	typedef void(*FOperationFunctionPtr)(uint8&, const uint8& RHS);
+	typedef bool(*FOpCheckFunctionPtr)(const uint8&, const uint8& RHS);
+
+}
+
+//TODO: should update the naming for this
 USTRUCT(BlueprintType)
 struct GOAPPROJECT_API FWorldProperty 
 {
@@ -66,12 +83,20 @@ public:
 		ESymbolTest Comparator = ESymbolTest::Eq;
 
 	UPROPERTY(EditAnywhere)
+		EWorldKey KeyRHS = EWorldKey::SYMBOL_MAX;
+
+	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
 
 	FWorldProperty() = default;
 	FWorldProperty(EWorldKey _Key, bool bValue) : Key(_Key), Value(bValue) {}
 	FWorldProperty(const EWorldKey& Key, const uint8& nValue) : Key(Key), Value(nValue) {}
+
+	bool IsRHSAbsolute() const
+	{
+		return KeyRHS >= EWorldKey::SYMBOL_MAX;
+	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FWorldProperty& Prop) 
 	{
@@ -95,9 +120,6 @@ public:
 		case ESymbolTest::Eq:
 			return Pre == Value;
 			//break;
-		case ESymbolTest::Neq:
-			return Pre != Value;
-			//break
 		case ESymbolTest::Gt:
 			return Pre > Value;
 		case ESymbolTest::Geq:
@@ -111,9 +133,32 @@ public:
 		}
 	}
 
-	//Haven't figured out Neq, may have to remove it.
-	uint8 MinSatisfyVal() const
+	bool Evaluate(const uint8* Values) const
 	{
+		uint8 RHSValue = (IsRHSAbsolute()) ? Value : Values[uint8(KeyRHS)];
+
+		uint8 LHSValue = Values[uint8(Key)];
+		switch (Comparator)
+		{
+		case ESymbolTest::Eq:
+			return LHSValue == Value;
+			//break;
+		case ESymbolTest::Gt:
+			return LHSValue > Value;
+		case ESymbolTest::Geq:
+			return LHSValue >= Value;
+		case ESymbolTest::Lt:
+			return LHSValue < Value;
+		case ESymbolTest::Leq:
+			return LHSValue <= Value;
+		default:
+			return false;
+		}
+	}
+	//Haven't figured out Neq, may have to remove it.
+	uint8 MinSatisfyVal(uint8* Values) const
+	{
+		uint8 RHSValue = (IsRHSAbsolute()) ? Value : Values[uint8(Key)];
 		switch (Comparator)
 		{
 		case ESymbolTest::Eq:
@@ -147,6 +192,8 @@ public:
 		ESymbolOp Op = ESymbolOp::Set;
 
 	UPROPERTY(EditAnywhere)
+		EWorldKey KeyRHS = EWorldKey::SYMBOL_MAX;
+	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
 	//Whether or not the effect is expected as a result of a sensor update
@@ -155,21 +202,15 @@ public:
 
 	FAISymEffect() : Key(EWorldKey::kIdle), Value(0) {}
 	FAISymEffect(const EWorldKey& Key, const uint8& Value) : Key(Key), Value(Value) {}
+	FAISymEffect(const EWorldKey& KeyLHS, const EWorldKey& KeyRHS) : Key(KeyLHS), KeyRHS(KeyRHS) {}
 
-	uint8 Forward(uint8 Pre) const
+	bool IsRHSAbsolute() const
 	{
-		switch (Op)
-		{
-		case ESymbolOp::Set:
-			return Value;
-		case ESymbolOp::Inc:
-			return (Pre <= (255 - Value)) ? Pre + Value : 255;
-		case ESymbolOp::Dec:
-			return (Pre >= Value) ? Pre - Value : 0;
-		default:
-			return Value;
-		}
+		return KeyRHS >= EWorldKey::SYMBOL_MAX;
 	}
+
+	//Returns whether effect was applied successfully
+	bool Apply(uint8* Values) const;
 
 	//the set operation's inverse changes the value back to the "Ground truth", i.e. the value in 
 	//the goal state, so that the hash of the world state will remain consistent
@@ -188,4 +229,7 @@ public:
 			return Pre;
 		}
 	}
+
+	//GroundValue is whatever the value in the GoalState is
+	bool Revert(uint8* Values) const;
 };

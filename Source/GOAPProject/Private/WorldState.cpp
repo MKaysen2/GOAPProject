@@ -18,6 +18,27 @@ const uint8& FWorldState::GetProp(EWorldKey Key) const
 	return State[Idx];
 }
 
+bool FWorldState::CheckCondition(const FWorldProperty& Condition) const
+{
+	return Condition.Evaluate(State.GetData());
+}
+
+void FWorldState::SatisfyCondition(const FWorldProperty& Condition)
+{
+	uint8 NewValue = Condition.MinSatisfyVal(State.GetData());
+	State[uint8(Condition.Key)] = NewValue;
+}
+
+bool FWorldState::ApplyEffect(const FAISymEffect& Effect)
+{
+	return Effect.Apply(State.GetData());
+}
+
+bool FWorldState::RevertEffect(const FAISymEffect& Effect)
+{
+	return Effect.Revert(State.GetData());
+}
+
 int32 FWorldState::HeuristicDist(EWorldKey Key, uint8 Value, bool bHamming) const
 {
 	int32 StateVal = State[(uint8)Key];

@@ -22,6 +22,7 @@ struct GOAPPROJECT_API FStateNode : public TSharedFromThis<FStateNode>
 public:
 	typedef TMultiMap < EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;
 	//Can make sharedref or uniqueptr to show ownership
+	//TODO: this doesn't need to be a smart pointer at all
 	TSharedRef<FWorldState> CurrentState;
 
 	//The true current state, that we are regressing to
@@ -33,6 +34,8 @@ public:
 	TWeakObjectPtr<UGOAPAction> ParentEdge;
 
 	TSet<EWorldKey> UnsatisfiedKeys;
+
+	TMap<EWorldKey, FWorldProperty> UnsatisfiedPreconditions;
 	/**Properties flags (just Relevant for now). Indexed by EWorldKey
 	  * might make this into uint8 and add some flags if I need to */
 

@@ -109,6 +109,7 @@ UAITask* UGOAPAction::GetOperator()
 
 EActionResult UGOAPAction::StartAction() 
 {
+	UE_LOG(LogAction, Warning, TEXT("Uhhh action started"));
 	EActionResult Result = EActionResult::Failed;
 	UAITask_Operator* OpCopy = DuplicateObject<UAITask_Operator>(Operator, this);
 	if (AIOwner && OpCopy)
@@ -125,6 +126,7 @@ void UGOAPAction::FinishAction(EPlannerTaskFinishedResult::Type Result)
 {
 	const bool bSuccess = (Result == EPlannerTaskFinishedResult::Success);
 	OpInstance = nullptr;
+	UE_LOG(LogAction, Warning, TEXT("Uhhh action ended"));
 
 	if (OwnerComp)
 	{

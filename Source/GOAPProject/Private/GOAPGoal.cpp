@@ -40,7 +40,7 @@ void UGOAPGoal::OnWSUpdated(const FWorldState& WorldState)
 	bool bSuccess = true;
 	for (auto& Precondition : Preconditions)
 	{
-		bSuccess = bSuccess && Precondition.Eval(WorldState.GetProp(Precondition.Key));
+		bSuccess = bSuccess && WorldState.CheckCondition(Precondition);
 		if (!bSuccess)
 		{
 			break;

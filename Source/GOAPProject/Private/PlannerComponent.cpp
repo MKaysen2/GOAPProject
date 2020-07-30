@@ -237,9 +237,9 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 {
 	uint8 Prev = WorldState.GetProp(Key);
-	WorldState.SetProp(Key, Value);
 	if (Prev != Value)
 	{
+		WorldState.SetProp(Key, Value);
 		ScheduleWSUpdate();
 
 		//Check for expected effects from current action, if any
@@ -288,16 +288,21 @@ void UPlannerComponent::UpdatePlanExecution()
 			ScheduleReplan();
 			return;
 		}
-		for (auto& Effect : NextAction->GetEffects())
+
 		{
-			if (Effect.bExpected)
+			FWorldState PredictedState = FWorldState(WorldState); //need to save computed values in case later effects reference them
+			for (auto& Effect : NextAction->GetEffects())
 			{
-				uint8 NextVal = Effect.Forward(WorldState.GetProp(Effect.Key));
-				auto Idx = ExpectedEffects.Add(FAISymEffect());
-				ExpectedEffects[Idx].Key = Effect.Key;
-				ExpectedEffects[Idx].Value = NextVal;
+				PredictedState.ApplyEffect(Effect);
+				if (Effect.bExpected)
+				{
+					auto Idx = ExpectedEffects.Add(FAISymEffect());
+					ExpectedEffects[Idx].Key = Effect.Key;
+					ExpectedEffects[Idx].Value = PredictedState.GetProp(Effect.Key);
+				}
 			}
 		}
+
 		NextAction->StartAction();
 	}
 	else
@@ -319,7 +324,7 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 			//by the preconditions of the next task
 			if (!Effect.bExpected)
 			{
-				WorldState.SetProp(Effect.Key, Effect.Forward(WorldState.GetProp(Effect.Key)));
+				WorldState.ApplyEffect(Effect);
 			}
 		}
 		//Still have to notify goals about new WS, but don't cause a replan
@@ -359,6 +364,10 @@ void UPlannerComponent::ProcessReplanRequest()
 		}
 	}
 
+	if (ActiveGoals.Num() == 0)
+	{
+		UE_LOG(LogAction, Warning, TEXT("No active goal"));
+	}
 	//TODO: Pop active goals till found a valid plan
 	while(ActiveGoals.Num() != 0)
 	{
@@ -380,7 +389,11 @@ void UPlannerComponent::ProcessReplanRequest()
 		StartNewPlan(NewPlan); //for now
 		return;
 	}
-	UE_LOG(LogAction, Warning, TEXT("No valid goal"));
+	
+	if (ActiveGoals.Num() != 0)
+	{
+		UE_LOG(LogAction, Warning, TEXT("Could not find plans for any active goals"));
+	}
 	if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
 	{
 		
