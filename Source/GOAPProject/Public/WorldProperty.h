@@ -18,6 +18,7 @@ enum class EWorldKey : uint8
 	kTargetSuppressed,
 	kDead,
 	kInDanger,
+	kEnemyActor,
 	//kPathBlocked
 	SYMBOL_MAX	UMETA(Hidden)
 };

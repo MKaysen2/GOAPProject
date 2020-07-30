@@ -5,11 +5,13 @@
 #include "..\Public\GOAPAction.h"
 #include "..\Public\PlannerAsset.h"
 #include "..\Public\PlannerComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 AActionTestingController::AActionTestingController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComp"));
+	Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard"));
 }
 
 void AActionTestingController::BeginPlay()

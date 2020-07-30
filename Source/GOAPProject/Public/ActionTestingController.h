@@ -8,6 +8,7 @@
 
 class UGOAPAction;
 class UPlannerAsset;
+class UBlackboardComponent;
 /**
  * Meant to run an Action by keypress
  */

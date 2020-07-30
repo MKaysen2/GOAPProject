@@ -4,7 +4,8 @@
 #include "../Public/GOAPGoal.h"
 #include "../Public/StateNode.h"
 #include "../Public/PlannerService.h"
-
+#include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 //FAStarPlanner 
 bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan)
 {
@@ -156,6 +157,12 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	if (AIOwner == nullptr)
 	{
 		return;
+	}
+	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
+	if (BBComp && IsValid(PlannerAsset.BlackboardData))
+	{
+		BBComp->InitializeBlackboard(*PlannerAsset.BlackboardData);
+		CacheBlackboardComponent(BBComp);
 	}
 	ActionSet.Reserve(PlannerAsset.Actions.Num());
 	for (auto* Action : PlannerAsset.Actions)
