@@ -101,6 +101,7 @@ protected:
 
 	UPROPERTY(transient)
 		UPlannerAsset* Asset;
+
 	//this might need to get wrapped in an object so property-specific delegates can be added
 	FWorldState WorldState;
 
@@ -119,6 +120,12 @@ protected:
 	void SetWSPropInternal(const EWorldKey& Key, const uint8& Value);
 
 	UPROPERTY(transient)
+		UGOAPGoal* CurrentGoal;
+
+	EActionStatus ActionStatus;
+
+
+	UPROPERTY(transient)
 	TArray<UGOAPAction*> PlanBuffer;
 	uint32 BufferSize = 1;
 	uint32 PlanHead =0 ;
@@ -127,7 +134,10 @@ protected:
 
 	bool PlanReachedEnd();
 	bool PlanAdvance();
+	void AbortPlan();
+
 	void StartNewPlan(TArray<UGOAPAction*>& Plan);
 	void AddAction(UGOAPAction* Action);
-	void ClearCurrentPlan();
+	void ClearAllButCurrentAction();
+	void ClearAll();
 };

@@ -32,23 +32,17 @@ enum class EActionResult : uint8
 	Success
 };
 
-UENUM()
-enum class EActionStatus : uint8
-{
-	Active,
-	Aborting
-};
-
 
 //Analogous to FSM States
 //State transitions are not explicitly defined, instead
 //they are computed by solving a symbolic world representation
-UCLASS(Config=AI, EditInlineNew, meta=(DisplayName="Planner Primitive"))
-class GOAPPROJECT_API UGOAPAction : public UObject, public IGameplayTaskOwnerInterface
+UCLASS(abstract, EditInlineNew, meta=(DisplayName="Planner Primitive"))
+class GOAPPROJECT_API UGOAPAction : public UObject
 {
 	GENERATED_BODY()
 public:
 	UGOAPAction();
+	UGOAPAction(const FObjectInitializer& ObjectInitializer);
 
 	//Message names, might move to BrainComponent
 	static const FName MontageCompleted;
@@ -56,7 +50,6 @@ public:
 	static const FName ActionFinished;
 
 protected:
-	explicit UGOAPAction(const int& Cost);
 
 	UPROPERTY()
 		AAIController* AIOwner;
@@ -68,10 +61,10 @@ protected:
 		FString ActionName;
 	//I don't know why I can't modify this in the editor
 	//cause you didn't tag the properties, ya dingus
-	UPROPERTY(config, EditAnywhere)
+	UPROPERTY(EditAnywhere)
 		TArray<FWorldProperty> Preconditions;
 	
-	UPROPERTY(config, EditAnywhere)
+	UPROPERTY(EditAnywhere)
 		TArray<FAISymEffect> Effects;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -79,18 +72,8 @@ protected:
 
 	UPROPERTY()
 		EActionStatus TaskStatus;
-		
-	UPROPERTY(EditAnywhere, Instanced)
-		UAITask_Operator* Operator;
 
-	UPROPERTY(transient)
-		UAITask_Operator* OpInstance = nullptr;
 public:
-
-	virtual UGameplayTasksComponent* GetGameplayTasksComponent(const UGameplayTask& Task) const override;
-	virtual AActor* GetGameplayTaskOwner(const UGameplayTask* Task) const override;
-	virtual AActor* GetGameplayTaskAvatar(const UGameplayTask* Task) const override;
-	virtual void OnGameplayTaskDeactivated(UGameplayTask& Task) override;
 
 	UFUNCTION()
 		const TArray<FAISymEffect>& GetEffects() const 
@@ -131,25 +114,18 @@ public:
 
 	UFUNCTION()
 		void SetOwner(AAIController* Controller, UPlannerComponent* OwnerComponent);
-	virtual UAITask* GetOperator();
 
 	FString GetActionName() const { return ActionName; };
 	UFUNCTION()
-	EActionResult StartAction();
+	virtual EActionResult StartAction();
 
-	void FinishAction(EPlannerTaskFinishedResult::Type Result);
-	
-	void OnOperatorEnded();
+	virtual void FinishAction(EPlannerTaskFinishedResult::Type Result);
+	virtual void TickAction(float DeltaTime);
 	/*Deactivates action, stops all child tasks, and unbind delegates*/
 	//TODO: add an abort type to control blending
 	//e.g. damage reactions require very fast blend out times
-	EActionResult AbortAction();
+	virtual EActionResult AbortAction();
 
-	template<typename T>
-	T* NewOperatorTask(AAIController& Controller)
-	{
-		return UAITask::NewAITask<T>(Controller, *this);
-	}
 protected:
 	//Should add effects and preconditions in InitAction or something
 	//which will make it easier to create BP subclasses
@@ -159,4 +135,73 @@ protected:
 
 };
 
+UCLASS(Blueprintable)
+class GOAPPROJECT_API UGOAPAction_BlueprintBase : public UGOAPAction
+{
+	GENERATED_BODY()
+
+protected:
+	bool bExecuteHasImpl;
+	bool bTickHasImpl;
+	bool bAbortHasImpl;
+
+	bool bIsAborting;
+public:
+
+	UGOAPAction_BlueprintBase(const FObjectInitializer& ObjectInitializer);
+
+	EActionResult StartAction() override;
+	EActionResult AbortAction() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ReceiveExecuteAI(AAIController* AIController, APawn* Pawn);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ReceiveAbortAI(AAIController* AIController, APawn* Pawn);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ReceiveTickAI(AAIController* AIController, APawn* Pawn);
+
+	UFUNCTION(BlueprintCallable)
+		void FinishExecute(bool bSuccess);
+
+	UFUNCTION(BlueprintCallable)
+		void FinishAbort();
+
+	void TickAction(float DeltaTime) override;
+};
+
+UCLASS()
+class GOAPPROJECT_API UGOAPAction_Operator : public UGOAPAction, public IGameplayTaskOwnerInterface
+{
+	GENERATED_BODY()
+
+protected:
+	UPROPERTY(EditAnywhere, Instanced)
+		UAITask_Operator* Operator;
+
+	UPROPERTY(transient)
+		UAITask_Operator* OpInstance = nullptr;
+public:
+	
+	UGOAPAction_Operator();
+
+	virtual UGameplayTasksComponent* GetGameplayTasksComponent(const UGameplayTask& Task) const override;
+	virtual AActor* GetGameplayTaskOwner(const UGameplayTask* Task) const override;
+	virtual AActor* GetGameplayTaskAvatar(const UGameplayTask* Task) const override;
+	virtual void OnGameplayTaskDeactivated(UGameplayTask& Task) override;
+
+
+	EActionResult StartAction() override;
+	void FinishAction(EPlannerTaskFinishedResult::Type Result) override;
+	EActionResult AbortAction() override;
+
+	virtual UAITask* GetOperator();
+	void OnOperatorEnded();
+	template<typename T>
+	T* NewOperatorTask(AAIController& Controller)
+	{
+		return UAITask::NewAITask<T>(Controller, *this);
+	}
+};
 typedef TMultiMap<EWorldKey, TWeakObjectPtr<UGOAPAction>> LookupTable;

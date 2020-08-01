@@ -22,16 +22,6 @@ void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComp
 {
 	AIOwner = &Controller;
 	OwnerComp = &OwnerComponent;
-	BlackboardKey.SelectedKeyName = KeyName;
-	UBlackboardData* BBAsset = AIOwner->GetBlackboardComponent()->GetBlackboardAsset();
-	if (BBAsset)
-	{
-		BlackboardKey.ResolveSelectedKey(*BBAsset);
-	}
-	else
-	{
-		UE_LOG(LogGoal, Warning, TEXT("No BB Component"));
-	}
 
 }
 

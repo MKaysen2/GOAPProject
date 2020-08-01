@@ -11,6 +11,8 @@ class UPlannerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGoal, Warning, All);
 
+
+//TODO: add Decorators
 UCLASS(Config=AI, EditInlineNew, BlueprintType)
 class UGOAPGoal : public UObject 
 {
@@ -25,14 +27,10 @@ protected:
 	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> GoalCondition;
 
+	//TODO: Everything below this should go in a separate interface
+	//WS conditions for whether the goal is valid or not
 	UPROPERTY(config, EditAnywhere)
 		TArray<FWorldProperty> Preconditions;
-
-	UPROPERTY(EditAnywhere)
-		FName KeyName;
-
-	UPROPERTY()
-		FBlackboardKeySelector BlackboardKey;
 
 	UPROPERTY(transient)
 		AAIController* AIOwner;
@@ -42,7 +40,7 @@ protected:
 	//constant for now
 	//TODO: use response curve
 	UPROPERTY(EditAnywhere)
-		float Insistence;
+		float Insistence = 1.0;
 
 	UPROPERTY()
 		bool bCachedValidity;

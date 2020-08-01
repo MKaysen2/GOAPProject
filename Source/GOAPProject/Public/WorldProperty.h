@@ -54,10 +54,18 @@ namespace EPlannerTaskFinishedResult
 	enum Type
 	{
 		Success,
-		Failure
+		Failure,
+		Aborted
 	};
 }
 
+UENUM()
+enum class EActionStatus : uint8
+{
+	Active,
+	Inactive,
+	Aborting
+};
 
 //most of this is from the HTN module and I'd like to switch over to using that if I can, eventually
 namespace FPlannerWSOperations
