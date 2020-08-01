@@ -10,6 +10,32 @@ class UPlannerComponent;
 class UPlannerService;
 class UBlackboardData;
 
+UENUM()
+enum class EWSValueType
+{
+	//WSKey, I will use this eventually to configure effects/preconditions
+	Absolute,
+	BBKey,
+	MAX UMETA(Hidden)
+};
+
+USTRUCT(atomic)
+struct GOAPPROJECT_API FWSKeyConfig
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+		EWorldKey KeyLHS;
+	UPROPERTY(EditAnywhere)
+		EWSValueType Type = EWSValueType::Absolute;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EWSValueType::BBKey"))
+		FName BBKeyName = NAME_None;
+	
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EWSValueType::Absolute"))
+		uint8 Value;
+};
+
 UCLASS(BlueprintType, Blueprintable)
 class GOAPPROJECT_API UPlannerAsset : public UObject
 {
@@ -18,6 +44,9 @@ class GOAPPROJECT_API UPlannerAsset : public UObject
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UBlackboardData* BlackboardData;
+
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FWSKeyConfig> WSKeyDefaults;
 
 	UPROPERTY(EditDefaultsOnly, Instanced)
 		TArray<UGOAPAction*> Actions;

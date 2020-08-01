@@ -164,6 +164,17 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 		BBComp->InitializeBlackboard(*PlannerAsset.BlackboardData);
 		CacheBlackboardComponent(BBComp);
 	}
+	for (auto& KeyConfig : PlannerAsset.WSKeyDefaults)
+	{
+		if (KeyConfig.Type == EWSValueType::BBKey)
+		{
+			WorldState.SetProp(KeyConfig.KeyLHS, BBComp->GetKeyID(KeyConfig.BBKeyName));
+		}
+		else
+		{
+			WorldState.SetProp(KeyConfig.KeyLHS, KeyConfig.Value);
+		}
+	}
 	ActionSet.Reserve(PlannerAsset.Actions.Num());
 	for (auto* Action : PlannerAsset.Actions)
 	{

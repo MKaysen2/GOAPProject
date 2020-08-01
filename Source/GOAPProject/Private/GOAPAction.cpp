@@ -83,7 +83,7 @@ bool UGOAPAction::ValidatePlannerPreconditions(const FWorldState& WorldState)
 {
 	for (auto& Precondition : Preconditions)
 	{
-		if (!Precondition.Eval(WorldState.GetProp(Precondition.Key)))
+		if (!WorldState.CheckCondition(Precondition))
 		{
 			return false;
 		}
