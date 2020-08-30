@@ -200,8 +200,8 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	CurrentGoal = nullptr;
 	Asset = &PlannerAsset;
 	AStarPlanner.MaxDepth = PlannerAsset.MaxPlanSize;
-	BufferSize = PlannerAsset.MaxPlanSize + 1;
-	PlanBuffer.Init(nullptr, BufferSize);
+	int BufferSize = PlannerAsset.MaxPlanSize + 1;
+	PlanInstance.Init(BufferSize);
 }
 
 void UPlannerComponent::RunAllActions()
@@ -242,7 +242,7 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	}
 
 	//Do any replans last
-	if (bReplanNeeded || !IsRunningPlan())
+	if (bReplanNeeded || !PlanInstance.IsRunningPlan())
 	{
 		ProcessReplanRequest();
 	}
@@ -257,7 +257,7 @@ void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 		ScheduleWSUpdate();
 
 		//Check for expected effects from current action, if any
-		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
+		if (PlanInstance.IsRunningPlan() && PlanInstance.HasCurrentAction())
 		{
 			// Should just use a map for this
 			for (auto& Effect : ExpectedEffects)
@@ -291,9 +291,9 @@ void UPlannerComponent::UpdatePlanExecution()
 {
 	bPlanUpdateNeeded = false;
 
-	UGOAPAction* NextAction = PlanBuffer[PlanHead];
+	UGOAPAction* NextAction = PlanInstance.GetCurrent();
 
-	if (!PlanReachedEnd() && NextAction != nullptr)
+	if (!PlanInstance.HasReachedEnd() && NextAction != nullptr)
 	{
 		ExpectedEffects.Reset();
 
@@ -351,14 +351,14 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 			Goal->OnWSUpdated(WorldState);
 		}
 		//Update the pointer and flag for the next tick
-		PlanAdvance();
+		PlanInstance.Advance();
 		RequestExecutionUpdate();
 	}
 	else if (Result == EPlannerTaskFinishedResult::Aborted)
 	{
 		//We finished a latent abort, so we don't want to apply effects
 		//However, we might have started a new plan
-		PlanAdvance();
+		PlanInstance.Advance();
 		RequestExecutionUpdate();
 	}
 	else
@@ -426,7 +426,7 @@ void UPlannerComponent::ProcessReplanRequest()
 	{
 		UE_LOG(LogAction, Warning, TEXT("Could not find plans for any active goals"));
 	}
-	if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
+	if (PlanInstance.IsRunningPlan() && PlanInstance.HasCurrentAction())
 	{
 		AbortPlan();
 	}
@@ -437,36 +437,13 @@ void UPlannerComponent::SetWSPropInternal(const EWorldKey& Key, const uint8& Val
 	WorldState.SetProp(Key, Value);
 }
 
-
-//Ring buffer stuff
-bool UPlannerComponent::PlanReachedEnd()
-{
-	return (PlanHead == PlanTail) && PlanBuffer[PlanHead] == nullptr;
-}
-
-bool UPlannerComponent::PlanAdvance()
-{
-	PlanBuffer[PlanHead] = nullptr; //clear previous action
-	//increment pointer
-	PlanFull = false;
-
-	PlanHead = (PlanHead + 1) % BufferSize;
-
-	//return whether we've reached the end of the buffer
-	return (PlanHead == PlanTail);
-}
-
 void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*>& Plan)
 {
-	if (IsRunningPlan())
+	if (PlanInstance.IsRunningPlan())
 	{
 		AbortPlan();
 	}
-	for (auto* Action : Plan)
-	{
-		AddAction(Action);
-	}
-	bPlanInProgress = true;
+	PlanInstance.StartNewPlan(Plan);
 	//pretty sure we want to do this on the same frame
 	UpdatePlanExecution();
 }
@@ -475,9 +452,9 @@ void UPlannerComponent::AbortPlan()
 {
 	ExpectedEffects.Reset();
 	bool bLeaveCurrent = false;
-	if (PlanBuffer[PlanHead] != nullptr && ActionStatus == EActionStatus::Active)
+	if (PlanInstance.HasCurrentAction() && ActionStatus == EActionStatus::Active)
 	{
-		EActionResult Result = PlanBuffer[PlanHead]->AbortAction();
+		EActionResult Result = PlanInstance.GetCurrent()->AbortAction();
 		if (Result == EActionResult::Running)
 		{
 			ActionStatus = EActionStatus::Aborting;
@@ -485,65 +462,12 @@ void UPlannerComponent::AbortPlan()
 		}
 		// wait i think i need something here too/
 	}
-	else if (PlanBuffer[PlanHead] != nullptr && ActionStatus == EActionStatus::Aborting)
+	else if (PlanInstance.HasCurrentAction() && ActionStatus == EActionStatus::Aborting)
 	{
 		bLeaveCurrent = true;
 	}
 	
-	if (bLeaveCurrent)
-	{
-		ClearAllButCurrentAction();
-	}
-	else
-	{
-		ClearAll();
-	}
-}
-
-void UPlannerComponent::AddAction(UGOAPAction* Action)
-{
-	if (PlanTail == PlanHead && PlanBuffer[PlanHead] != nullptr)
-	{
-		TArray<UGOAPAction*> NewBuffer;
-		NewBuffer.Init(nullptr, PlanBuffer.Num() * 2);
-		int Idx = 0;
-		do
-		{
-			NewBuffer[Idx] = PlanBuffer[PlanHead];
-			PlanBuffer[PlanHead] = nullptr;
-			PlanHead = (PlanHead + 1 % PlanBuffer.Num());
-			++Idx;
-		} while (PlanHead != PlanTail);
-
-		PlanBuffer = NewBuffer;
-		BufferSize = NewBuffer.Num();
-	}
-	PlanBuffer[PlanTail] = Action;
-	PlanTail = (PlanTail + 1) % BufferSize;
-}
-
-void UPlannerComponent::ClearAllButCurrentAction()
-{
-	int32 StartIdx = (PlanHead + 1) % BufferSize;
-	while (PlanHead != PlanTail)
-	{
-		PlanBuffer[StartIdx] = nullptr;
-		StartIdx = (StartIdx + 1) % BufferSize;
-	}
-	PlanTail = (PlanHead + 1) % BufferSize;
-	bPlanInProgress = false;
-
-}
-
-void UPlannerComponent::ClearAll()
-{
-	PlanFull = false;
-	while (PlanHead != PlanTail)
-	{
-		PlanBuffer[PlanHead] = nullptr;
-		PlanHead = (PlanHead + 1) % BufferSize;
-	}
-	bPlanInProgress = false;
+	PlanInstance.Clear(bLeaveCurrent);
 }
 
 FString UPlannerComponent::GetDebugInfoString() const
@@ -576,9 +500,9 @@ FString UPlannerComponent::GetDebugInfoString() const
 		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
 		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
 	}
-	for (uint32 Idx = PlanHead; Idx != PlanTail; Idx = (Idx + 1) % BufferSize)
+	for (uint32 Idx = PlanInstance.HeadIdx; Idx != PlanInstance.TailIdx; Idx = (Idx + 1) % PlanInstance.Buffer.Num())
 	{
-		UGOAPAction* Action = PlanBuffer[Idx];
+		UGOAPAction* Action = PlanInstance.Buffer[Idx];
 		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
 		DebugInfo += FString::Printf(TEXT("Plan Step: %s\n"), *ActionName);
 	}
@@ -633,6 +557,10 @@ bool FPlanInstance::Advance()
 	HeadIdx = (HeadIdx + 1) % Buffer.Num();
 
 	//return whether we've reached the end of the buffer
+	if (HeadIdx == TailIdx)
+	{
+		bInProgress = false;
+	}
 	return HeadIdx == TailIdx;
 }
 
@@ -641,7 +569,12 @@ bool FPlanInstance::HasReachedEnd() const
 	return (HeadIdx == TailIdx) && Buffer[HeadIdx] == nullptr;
 }
 
-void FPlanInstance::Clear(bool bLeaveCurrent)
+void FPlanInstance::Init(int32 BufferSize)
+{
+	Buffer.Init(nullptr, BufferSize);
+}
+
+void FPlanInstance::Clear(bool bLeaveCurrent = false)
 {
 	int32 BufferSize = Buffer.Num();
 	bFull = false;
@@ -664,4 +597,9 @@ void FPlanInstance::Clear(bool bLeaveCurrent)
 		}
 	}
 	bInProgress = false;
+}
+
+bool FPlanInstance::IsRunningPlan() const
+{
+	return bInProgress;
 }

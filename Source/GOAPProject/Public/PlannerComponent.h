@@ -80,7 +80,9 @@ public:
 	UGOAPAction* GetCurrent();
 	bool Advance();
 	bool HasReachedEnd() const;
+	void Init(int32 BufferSize);
 	void Clear(bool bLeaveCurrent);
+	bool IsRunningPlan() const;
 };
 
 UCLASS()
@@ -147,20 +149,10 @@ protected:
 
 	EActionStatus ActionStatus;
 
+	UPROPERTY()
+		FPlanInstance PlanInstance;
 
-	UPROPERTY(transient)
-	TArray<UGOAPAction*> PlanBuffer;
-	uint32 BufferSize = 1;
-	uint32 PlanHead =0 ;
-	uint32 PlanTail = 0;
-	bool PlanFull = false;
-
-	bool PlanReachedEnd();
-	bool PlanAdvance();
 	void AbortPlan();
 
 	void StartNewPlan(TArray<UGOAPAction*>& Plan);
-	void AddAction(UGOAPAction* Action);
-	void ClearAllButCurrentAction();
-	void ClearAll();
 };
