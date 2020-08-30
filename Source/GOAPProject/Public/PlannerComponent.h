@@ -60,6 +60,29 @@ public:
 	void ClearEdgeTable();
 };
 
+USTRUCT()
+struct GOAPPROJECT_API FPlanInstance
+{
+	GENERATED_BODY()
+public:
+	int32 HeadIdx = 0;
+	int32 TailIdx = 0;
+
+	bool bInProgress = false;
+	bool bFull = false;
+	UPROPERTY()
+		TArray<UGOAPAction*> Buffer;
+
+
+	void StartNewPlan(TArray<UGOAPAction*>& Plan);
+	void AddStep(UGOAPAction* Action);
+	bool HasCurrentAction() const;
+	UGOAPAction* GetCurrent();
+	bool Advance();
+	bool HasReachedEnd() const;
+	void Clear(bool bLeaveCurrent);
+};
+
 UCLASS()
 class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 {

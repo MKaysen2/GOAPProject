@@ -6,6 +6,7 @@
 #include "../Public/PlannerService.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+
 //FAStarPlanner 
 //Should move this into the same file as StateNode
 bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan)
@@ -258,6 +259,7 @@ void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 		//Check for expected effects from current action, if any
 		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
 		{
+			// Should just use a map for this
 			for (auto& Effect : ExpectedEffects)
 			{
 				if (Effect.Key == Key )
@@ -415,11 +417,7 @@ void UPlannerComponent::ProcessReplanRequest()
 		{
 			continue;
 		}
-		//o.w
-		if (IsRunningPlan() && PlanBuffer[PlanHead] != nullptr)
-		{
-			PlanBuffer[PlanHead]->AbortAction();
-		}
+
 		StartNewPlan(NewPlan); //for now
 		return;
 	}
@@ -476,16 +474,23 @@ void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*>& Plan)
 void UPlannerComponent::AbortPlan()
 {
 	ExpectedEffects.Reset();
+	bool bLeaveCurrent = false;
 	if (PlanBuffer[PlanHead] != nullptr && ActionStatus == EActionStatus::Active)
 	{
 		EActionResult Result = PlanBuffer[PlanHead]->AbortAction();
 		if (Result == EActionResult::Running)
 		{
 			ActionStatus = EActionStatus::Aborting;
-			ClearAllButCurrentAction();
+			bLeaveCurrent = true;
 		}
+		// wait i think i need something here too/
 	}
 	else if (PlanBuffer[PlanHead] != nullptr && ActionStatus == EActionStatus::Aborting)
+	{
+		bLeaveCurrent = true;
+	}
+	
+	if (bLeaveCurrent)
 	{
 		ClearAllButCurrentAction();
 	}
@@ -578,4 +583,85 @@ FString UPlannerComponent::GetDebugInfoString() const
 		DebugInfo += FString::Printf(TEXT("Plan Step: %s\n"), *ActionName);
 	}
 	return DebugInfo;
+}
+
+void FPlanInstance::StartNewPlan(TArray<UGOAPAction*>& Plan)
+{
+	for (auto* Action : Plan)
+	{
+		AddStep(Action);
+	}
+	bInProgress = true;
+}
+
+void FPlanInstance::AddStep(UGOAPAction* Action)
+{
+	if (TailIdx == HeadIdx && Buffer[HeadIdx] != nullptr)
+	{
+		TArray<UGOAPAction*> NewBuffer;
+		NewBuffer.Init(nullptr, Buffer.Num() * 2);
+		int Idx = 0;
+		do
+		{
+			NewBuffer[Idx] = Buffer[HeadIdx];
+			Buffer[HeadIdx] = nullptr;
+			HeadIdx = (HeadIdx + 1 % Buffer.Num());
+			++Idx;
+		} while (HeadIdx != TailIdx);
+
+		Buffer = NewBuffer;
+	}
+	Buffer[TailIdx] = Action;
+	TailIdx = (TailIdx + 1) % Buffer.Num();
+}
+
+bool FPlanInstance::HasCurrentAction() const
+{
+	return Buffer[HeadIdx] != nullptr;
+}
+
+UGOAPAction* FPlanInstance::GetCurrent()
+{
+	return Buffer[HeadIdx];
+}
+bool FPlanInstance::Advance()
+{
+	Buffer[HeadIdx] = nullptr; //clear previous action
+	//increment pointer
+
+	bFull = false;
+	HeadIdx = (HeadIdx + 1) % Buffer.Num();
+
+	//return whether we've reached the end of the buffer
+	return HeadIdx == TailIdx;
+}
+
+bool FPlanInstance::HasReachedEnd() const
+{
+	return (HeadIdx == TailIdx) && Buffer[HeadIdx] == nullptr;
+}
+
+void FPlanInstance::Clear(bool bLeaveCurrent)
+{
+	int32 BufferSize = Buffer.Num();
+	bFull = false;
+	if (bLeaveCurrent)
+	{
+		int32 StartIdx = (HeadIdx + 1) % BufferSize;
+		while (HeadIdx != TailIdx)
+		{
+			Buffer[StartIdx] = nullptr;
+			StartIdx = (StartIdx + 1) % BufferSize;
+		}
+		TailIdx = (HeadIdx + 1) % BufferSize;
+	}
+	else
+	{
+		while (HeadIdx != TailIdx)
+		{
+			Buffer[HeadIdx] = nullptr;
+			HeadIdx = (HeadIdx + 1) % BufferSize;
+		}
+	}
+	bInProgress = false;
 }
