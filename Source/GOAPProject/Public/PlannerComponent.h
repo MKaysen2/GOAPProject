@@ -13,6 +13,28 @@ class UPlannerAsset;
 class UPlannerService;
 struct FStateNode;
 
+
+USTRUCT(BlueprintType)
+struct GOAPPROJECT_API FPlanStepInfo
+{
+	GENERATED_BODY()
+
+public:
+	FPlanStepInfo() = default;
+	FPlanStepInfo(const FPlanStepInfo& Other) = default;
+
+		UPROPERTY()
+		UGOAPAction* Action;
+
+		UPROPERTY()
+		FWorldState ResolvedWS;
+
+		void SetAction(UGOAPAction* NewAction);
+		void SetResolvedWS(const FWorldState& WS);
+
+
+};
+
 struct GOAPPROJECT_API FAStarPlanner
 {
 	
@@ -54,7 +76,7 @@ private:
 public:
 	int32 MaxDepth;
 	
-	bool Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan);
+	bool Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<FPlanStepInfo>& Plan);
 	void AddAction(UGOAPAction* Action);
 	void RemoveAction(UGOAPAction* Action);
 	void ClearEdgeTable();
@@ -74,7 +96,7 @@ public:
 		TArray<UGOAPAction*> Buffer;
 
 
-	void StartNewPlan(TArray<UGOAPAction*>& Plan);
+	void StartNewPlan(TArray<FPlanStepInfo>& Plan);
 	void AddStep(UGOAPAction* Action);
 	bool HasCurrentAction() const;
 	UGOAPAction* GetCurrent();
@@ -154,5 +176,5 @@ protected:
 
 	void AbortPlan();
 
-	void StartNewPlan(TArray<UGOAPAction*>& Plan);
+	void StartNewPlan(TArray<FPlanStepInfo>& Plan);
 };

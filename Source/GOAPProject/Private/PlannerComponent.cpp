@@ -7,9 +7,20 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
+
+void FPlanStepInfo::SetAction(UGOAPAction* NewAction)
+{
+	Action = NewAction;
+}
+
+void FPlanStepInfo::SetResolvedWS(const FWorldState& WS)
+{
+	ResolvedWS = WS;
+}
+
 //FAStarPlanner 
 //Should move this into the same file as StateNode
-bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<UGOAPAction*>& Plan)
+bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FWorldState& InitialState, TArray<FPlanStepInfo>& Plan)
 {
 	//Fringe is a priority queue in textbook A*
 	//Use TArray's heap functionality to mimic a priority queue
@@ -123,7 +134,10 @@ bool FAStarPlanner::Search(const TArray<FWorldProperty>& GoalCondition, const FW
 		const FStateNode* Node = CurrentNode.Get();
 		while (Node && Node->ParentNode.IsValid())
 		{
-			Plan.Add(Node->ParentEdge.Get());
+			FPlanStepInfo NewStep;
+			NewStep.SetAction(Node->ParentEdge.Get());
+			NewStep.SetResolvedWS(Node->ParentNode.Pin()->CurrentState.Get()); //whew
+			Plan.Add(NewStep);
 			Node = Node->ParentNode.Pin().Get();
 		}
 		return true;
@@ -206,7 +220,6 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 
 void UPlannerComponent::RunAllActions()
 {
-	StartNewPlan(ActionSet);
 	RequestExecutionUpdate();
 
 }
@@ -408,7 +421,7 @@ void UPlannerComponent::ProcessReplanRequest()
 			return;
 		}
 		//Search here
-		TArray<UGOAPAction*> NewPlan;
+		TArray<FPlanStepInfo> NewPlan;
 
 		bool bPlanFound = AStarPlanner.Search(Top->GetGoalCondition(), WorldState, NewPlan);
 		//could not satisfy goal so go to next highest
@@ -437,7 +450,7 @@ void UPlannerComponent::SetWSPropInternal(const EWorldKey& Key, const uint8& Val
 	WorldState.SetProp(Key, Value);
 }
 
-void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*>& Plan)
+void UPlannerComponent::StartNewPlan(TArray<FPlanStepInfo>& Plan)
 {
 	if (PlanInstance.IsRunningPlan())
 	{
@@ -500,101 +513,70 @@ FString UPlannerComponent::GetDebugInfoString() const
 		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
 		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
 	}
-	for (uint32 Idx = PlanInstance.HeadIdx; Idx != PlanInstance.TailIdx; Idx = (Idx + 1) % PlanInstance.Buffer.Num())
-	{
-		UGOAPAction* Action = PlanInstance.Buffer[Idx];
-		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
-		DebugInfo += FString::Printf(TEXT("Plan Step: %s\n"), *ActionName);
-	}
 	return DebugInfo;
 }
 
-void FPlanInstance::StartNewPlan(TArray<UGOAPAction*>& Plan)
+void FPlanInstance::StartNewPlan(TArray<FPlanStepInfo>& Plan)
 {
-	for (auto* Action : Plan)
+	for (FPlanStepInfo& PlanStep : Plan)
 	{
-		AddStep(Action);
+		AddStep(PlanStep.Action);
 	}
 	bInProgress = true;
 }
 
 void FPlanInstance::AddStep(UGOAPAction* Action)
 {
-	if (TailIdx == HeadIdx && Buffer[HeadIdx] != nullptr)
-	{
-		TArray<UGOAPAction*> NewBuffer;
-		NewBuffer.Init(nullptr, Buffer.Num() * 2);
-		int Idx = 0;
-		do
-		{
-			NewBuffer[Idx] = Buffer[HeadIdx];
-			Buffer[HeadIdx] = nullptr;
-			HeadIdx = (HeadIdx + 1 % Buffer.Num());
-			++Idx;
-		} while (HeadIdx != TailIdx);
-
-		Buffer = NewBuffer;
-	}
-	Buffer[TailIdx] = Action;
-	TailIdx = (TailIdx + 1) % Buffer.Num();
+	Buffer.Add(Action);
 }
 
 bool FPlanInstance::HasCurrentAction() const
 {
-	return Buffer[HeadIdx] != nullptr;
+	return HeadIdx < Buffer.Num();
 }
 
 UGOAPAction* FPlanInstance::GetCurrent()
 {
-	return Buffer[HeadIdx];
+	return (HeadIdx < Buffer.Num()) ? Buffer[HeadIdx] : nullptr;
 }
+
 bool FPlanInstance::Advance()
 {
 	Buffer[HeadIdx] = nullptr; //clear previous action
-	//increment pointer
-
-	bFull = false;
-	HeadIdx = (HeadIdx + 1) % Buffer.Num();
+	
+	HeadIdx += 1;
 
 	//return whether we've reached the end of the buffer
-	if (HeadIdx == TailIdx)
+	if (HeadIdx >= Buffer.Num())
 	{
 		bInProgress = false;
 	}
-	return HeadIdx == TailIdx;
+	return HeadIdx >= Buffer.Num();
 }
 
 bool FPlanInstance::HasReachedEnd() const
 {
-	return (HeadIdx == TailIdx) && Buffer[HeadIdx] == nullptr;
+	return HeadIdx >= Buffer.Num();
 }
 
 void FPlanInstance::Init(int32 BufferSize)
 {
-	Buffer.Init(nullptr, BufferSize);
+	//nothing
 }
 
 void FPlanInstance::Clear(bool bLeaveCurrent = false)
 {
-	int32 BufferSize = Buffer.Num();
-	bFull = false;
 	if (bLeaveCurrent)
 	{
-		int32 StartIdx = (HeadIdx + 1) % BufferSize;
-		while (HeadIdx != TailIdx)
-		{
-			Buffer[StartIdx] = nullptr;
-			StartIdx = (StartIdx + 1) % BufferSize;
-		}
-		TailIdx = (HeadIdx + 1) % BufferSize;
+		UGOAPAction* Current = Buffer[HeadIdx];
+		Buffer.Reset();
+		HeadIdx = 0;
+		Buffer[HeadIdx] = Current;
 	}
 	else
 	{
-		while (HeadIdx != TailIdx)
-		{
-			Buffer[HeadIdx] = nullptr;
-			HeadIdx = (HeadIdx + 1) % BufferSize;
-		}
+		Buffer.Reset();
+		HeadIdx = 0;
 	}
 	bInProgress = false;
 }
