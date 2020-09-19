@@ -353,8 +353,17 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 			//"Expected" effects from sensors shouldn't be applied
 			//we also don't need to fail here since it'll be caught
 			//by the preconditions of the next task
+			
 			if (!Effect.bExpected)
 			{
+				if (Effect.KeyRHS != EWorldKey::SYMBOL_MAX)
+				{
+					FAISymEffect ResolvedEffect;
+					ResolvedEffect.Key = Effect.Key;
+					ResolvedEffect.Value = PlanInstance.GetResolvedWSValue(Effect.Key);
+					UE_LOG(LogTemp, Warning, TEXT("%d"), ResolvedEffect.Value);
+					WorldState.ApplyEffect(ResolvedEffect);
+				}
 				WorldState.ApplyEffect(Effect);
 			}
 		}
@@ -450,6 +459,16 @@ void UPlannerComponent::SetWSPropInternal(const EWorldKey& Key, const uint8& Val
 	WorldState.SetProp(Key, Value);
 }
 
+uint8 UPlannerComponent::GetResolvedValue(const EWorldKey& Key)
+{
+	return PlanInstance.GetResolvedWSValue(Key);
+}
+
+FName UPlannerComponent::GetKeyName(uint8 KeyID)
+{
+	return BlackboardComp->GetKeyName(KeyID);
+}
+
 void UPlannerComponent::StartNewPlan(TArray<FPlanStepInfo>& Plan)
 {
 	if (PlanInstance.IsRunningPlan())
@@ -520,14 +539,14 @@ void FPlanInstance::StartNewPlan(TArray<FPlanStepInfo>& Plan)
 {
 	for (FPlanStepInfo& PlanStep : Plan)
 	{
-		AddStep(PlanStep.Action);
+		AddStep(PlanStep);
 	}
 	bInProgress = true;
 }
 
-void FPlanInstance::AddStep(UGOAPAction* Action)
+void FPlanInstance::AddStep(const FPlanStepInfo& PlanStep)
 {
-	Buffer.Add(Action);
+	Buffer.Add(PlanStep);
 }
 
 bool FPlanInstance::HasCurrentAction() const
@@ -537,12 +556,16 @@ bool FPlanInstance::HasCurrentAction() const
 
 UGOAPAction* FPlanInstance::GetCurrent()
 {
-	return (HeadIdx < Buffer.Num()) ? Buffer[HeadIdx] : nullptr;
+	return (HeadIdx < Buffer.Num()) ? Buffer[HeadIdx].Action : nullptr;
 }
 
+uint8 FPlanInstance::GetResolvedWSValue(EWorldKey Key)
+{
+	return (HeadIdx < Buffer.Num()) ? Buffer[HeadIdx].ResolvedWS.GetProp(Key) : 0;
+}
 bool FPlanInstance::Advance()
 {
-	Buffer[HeadIdx] = nullptr; //clear previous action
+	//Buffer[HeadIdx] = nullptr; //clear previous action
 	
 	HeadIdx += 1;
 
@@ -568,7 +591,7 @@ void FPlanInstance::Clear(bool bLeaveCurrent = false)
 {
 	if (bLeaveCurrent)
 	{
-		UGOAPAction* Current = Buffer[HeadIdx];
+		FPlanStepInfo Current = Buffer[HeadIdx];
 		Buffer.Reset();
 		HeadIdx = 0;
 		Buffer[HeadIdx] = Current;

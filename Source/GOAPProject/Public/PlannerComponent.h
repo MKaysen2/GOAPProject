@@ -5,6 +5,7 @@
 #include "WorldState.h"
 #include "WorldProperty.h"
 #include "StateNode.h"
+#include "BehaviorTree/BehaviorTreeTypes.h"
 #include "PlannerComponent.generated.h"
 
 class UGOAPAction;
@@ -93,13 +94,14 @@ public:
 	bool bInProgress = false;
 	bool bFull = false;
 	UPROPERTY()
-		TArray<UGOAPAction*> Buffer;
+		TArray<FPlanStepInfo> Buffer;
 
 
 	void StartNewPlan(TArray<FPlanStepInfo>& Plan);
-	void AddStep(UGOAPAction* Action);
+	void AddStep(const FPlanStepInfo& PlanStep);
 	bool HasCurrentAction() const;
 	UGOAPAction* GetCurrent();
+	uint8 GetResolvedWSValue(EWorldKey Key);
 	bool Advance();
 	bool HasReachedEnd() const;
 	void Init(int32 BufferSize);
@@ -169,6 +171,11 @@ protected:
 	UPROPERTY(transient)
 		UGOAPGoal* CurrentGoal;
 
+	UFUNCTION(BlueprintCallable)
+		uint8 GetResolvedValue(const EWorldKey& Key);
+
+	UFUNCTION(BlueprintCallable)
+		FName GetKeyName(uint8 KeyID);
 	EActionStatus ActionStatus;
 
 	UPROPERTY()
