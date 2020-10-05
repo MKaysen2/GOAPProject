@@ -12,6 +12,7 @@ AActionTestingController::AActionTestingController(const FObjectInitializer& Obj
 {
 	BrainComponent = CreateDefaultSubobject<UBrainComponent>(TEXT("BrainComp"));
 	Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard"));
+	SetGenericTeamId(FGenericTeamId(2));
 }
 
 void AActionTestingController::BeginPlay()
