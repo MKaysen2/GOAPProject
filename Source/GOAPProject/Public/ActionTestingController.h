@@ -9,6 +9,7 @@
 class UGOAPAction;
 class UPlannerAsset;
 class UBlackboardComponent;
+class UPlannerComponent;
 /**
  * Meant to run an Action by keypress
  */
@@ -21,6 +22,8 @@ protected:
 	AActionTestingController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	//Want to allow this to be easy to edit without recompiling
 
+	UPROPERTY()
+		UPlannerComponent* PlannerComp;
 public:
 	virtual void BeginPlay() override;
 
