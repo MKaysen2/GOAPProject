@@ -5,6 +5,7 @@
 
 #include "GOAPGoal.generated.h"
 
+class UGOAPAction;
 struct FWorldState;
 class AAIController;
 class UPlannerComponent;
@@ -26,6 +27,10 @@ protected:
 	//for each condition when you do a search
 	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> GoalCondition;
+
+	//Subtasks that need to happen before the found plan happens
+	UPROPERTY(EditAnywhere, Instanced)
+		TArray<UGOAPAction*> SubTasks;
 
 	//TODO: Everything below this should go in a separate interface
 	//WS conditions for whether the goal is valid or not
