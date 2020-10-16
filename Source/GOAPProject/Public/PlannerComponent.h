@@ -183,5 +183,5 @@ protected:
 
 	void AbortPlan();
 
-	void StartNewPlan(TArray<FPlanStepInfo>& Plan);
+	void StartNewPlan(TArray<UGOAPAction*> Subtasks, TArray<FPlanStepInfo>& Plan);
 };

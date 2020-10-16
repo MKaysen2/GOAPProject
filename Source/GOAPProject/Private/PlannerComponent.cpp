@@ -440,7 +440,7 @@ void UPlannerComponent::ProcessReplanRequest()
 			continue;
 		}
 
-		StartNewPlan(NewPlan); //for now
+		StartNewPlan(Top->GetSubTasks(), NewPlan); 
 		return;
 	}
 	
@@ -469,11 +469,18 @@ FName UPlannerComponent::GetKeyName(uint8 KeyID)
 	return BlackboardComp->GetKeyName(KeyID);
 }
 
-void UPlannerComponent::StartNewPlan(TArray<FPlanStepInfo>& Plan)
+void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*> Subtasks, TArray<FPlanStepInfo>& Plan)
 {
 	if (PlanInstance.IsRunningPlan())
 	{
 		AbortPlan();
+	}
+
+	for (auto* Action : Subtasks)
+	{
+		FPlanStepInfo SubtaskStep;
+		SubtaskStep.SetAction(Action);
+		PlanInstance.AddStep(SubtaskStep);
 	}
 	PlanInstance.StartNewPlan(Plan);
 	//pretty sure we want to do this on the same frame

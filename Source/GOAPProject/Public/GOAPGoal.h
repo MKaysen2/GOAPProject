@@ -55,7 +55,7 @@ protected:
 public:
 	UGOAPGoal();
 	const TArray<FWorldProperty>& GetGoalCondition() const { return GoalCondition;  }
-
+	TArray<UGOAPAction*> GetSubTasks() const { return SubTasks; }
 	FString GetTaskName() { return TaskName;  }
 	bool IsValid() const { return bCachedValidity; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
