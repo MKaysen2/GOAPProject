@@ -544,10 +544,6 @@ FString UPlannerComponent::GetDebugInfoString() const
 		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
 	}
 
-	for (auto& PlanStep : PlanInstance.Buffer)
-	{
-
-	}
 	return DebugInfo;
 }
 

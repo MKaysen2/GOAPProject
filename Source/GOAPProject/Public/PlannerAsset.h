@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
+#include "WorldProperty.h"
 #include "PlannerAsset.generated.h"
 
 class UGOAPAction;
@@ -25,7 +25,7 @@ struct GOAPPROJECT_API FWSKeyConfig
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-		EWorldKey KeyLHS;
+		EWorldKey KeyLHS = EWorldKey::SYMBOL_MAX;
 	UPROPERTY(EditAnywhere)
 		EWSValueType Type = EWSValueType::Absolute;
 

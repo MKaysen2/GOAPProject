@@ -223,6 +223,7 @@ void UGOAPAction_RunEQSQuery::OnQueryFinished(TSharedPtr<FEnvQueryResult> Result
 		}
 	}
 
+	//The original BTTask uses messaging to finish. I hope this wont affect anything
 	FinishAction((bSuccess ? EPlannerTaskFinishedResult::Success : EPlannerTaskFinishedResult::Failure));
 }
 /////////      UGOAPAction_Operator //////////////

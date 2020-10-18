@@ -7,7 +7,6 @@
 #include "../Public/StateNode.h"
 #include "Perception\AISenseConfig_Sight.h"
 #include "Perception\AISenseConfig_Hearing.h"
-#include "../Public/InteractableObjectInterface.h"
 #include "BehaviorTree\BlackboardComponent.h"
 
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
