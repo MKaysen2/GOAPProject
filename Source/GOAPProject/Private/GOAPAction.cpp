@@ -9,6 +9,8 @@
 #include "AIController.h"
 #include "Tasks/AITask.h"
 #include "GameFramework/Character.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "BlueprintNodeHelpers.h"
 
 DEFINE_LOG_CATEGORY(LogAction);
@@ -145,6 +147,83 @@ void UGOAPAction_BlueprintBase::FinishAbort()
 void UGOAPAction_BlueprintBase::TickAction(float DeltaTime)
 {
 
+}
+
+///////// UGOAPAction_RunEQSQuery //////////
+
+UGOAPAction_RunEQSQuery::UGOAPAction_RunEQSQuery(const FObjectInitializer& Initializer) : Super(Initializer)
+{
+	BlackboardKey.SelectedKeyName = BBKeyName;
+	QueryFinishedDelegate = FQueryFinishedSignature::CreateUObject(this, &UGOAPAction_RunEQSQuery::OnQueryFinished);
+}
+
+EActionResult UGOAPAction_RunEQSQuery::StartAction()
+{
+	AActor* QueryOwner = AIOwner->GetPawn();
+	if (!EQSRequest.IsValid())
+	{
+		const UBlackboardComponent* BBComp = OwnerComp->GetBlackboardComponent();
+
+		EQSRequest.InitForOwnerAndBlackboard(*this, BBComp->GetBlackboardAsset());
+	}
+	if (QueryOwner && EQSRequest.IsValid())
+	{
+
+		const UBlackboardComponent* BlackboardComponent = OwnerComp->GetBlackboardComponent();
+		if (BlackboardKey.SelectedKeyName.IsNone() || BlackboardKey.NeedsResolving())
+		{	
+			BlackboardKey.SelectedKeyName = BBKeyName;
+			BlackboardKey.ResolveSelectedKey(*(BlackboardComponent->GetBlackboardAsset()));
+		}
+		RequestID = EQSRequest.Execute(*QueryOwner, BlackboardComponent, QueryFinishedDelegate);
+
+		const bool bValid = (RequestID >= 0);
+		if (bValid)
+		{
+			return EActionResult::Running;
+		}
+	}
+
+	return EActionResult::Failed;
+}
+
+EActionResult UGOAPAction_RunEQSQuery::AbortAction()
+{
+	UWorld* MyWorld = OwnerComp->GetWorld();
+	UEnvQueryManager* QueryManager = UEnvQueryManager::GetCurrent(MyWorld);
+
+	if (QueryManager)
+	{
+		QueryManager->AbortQuery(RequestID);
+	}
+
+	return EActionResult::Aborted;
+}
+
+void UGOAPAction_RunEQSQuery::OnQueryFinished(TSharedPtr<FEnvQueryResult> Result) 
+{
+	if (Result->IsAborted())
+	{
+		return;
+	}
+	if (!OwnerComp)
+	{
+		return;
+	}
+	bool bSuccess = (Result->Items.Num() >= 1);
+	if (bSuccess)
+	{
+		UBlackboardComponent* MyBlackboard = OwnerComp->GetBlackboardComponent();
+		UEnvQueryItemType* ItemTypeCDO = Result->ItemType->GetDefaultObject<UEnvQueryItemType>();
+
+		bSuccess = ItemTypeCDO->StoreInBlackboard(BlackboardKey, MyBlackboard, Result->RawData.GetData() + Result->Items[0].DataOffset);
+		if (!bSuccess)
+		{
+			FBlackboard::FKey KeyID = BlackboardKey.GetSelectedKeyID();
+		}
+	}
+
+	FinishAction((bSuccess ? EPlannerTaskFinishedResult::Success : EPlannerTaskFinishedResult::Failure));
 }
 /////////      UGOAPAction_Operator //////////////
 

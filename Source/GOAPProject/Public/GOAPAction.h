@@ -7,6 +7,8 @@
 #include "WorldState.h"
 #include "Tasks/AITask.h"
 #include "GameplayTaskOwnerInterface.h"
+#include "BehaviorTree/BehaviorTreeTypes.h"
+#include "EnvironmentQuery/EnvQueryTypes.h"
 
 #include "GOAPAction.generated.h"
 
@@ -169,6 +171,35 @@ public:
 		void FinishAbort();
 
 	void TickAction(float DeltaTime) override;
+};
+
+UCLASS()
+class GOAPPROJECT_API UGOAPAction_RunEQSQuery : public UGOAPAction
+{
+	GENERATED_BODY()
+
+protected:
+	UPROPERTY()
+		int32 RequestID;
+
+	//Workaround for not being able to edit BBKeySelector outside of the BTEditor
+	UPROPERTY(EditAnywhere)
+		FName BBKeyName;
+
+	UPROPERTY(EditAnywhere)
+		struct FBlackboardKeySelector BlackboardKey;
+
+	UPROPERTY(EditAnywhere)
+		FEQSParametrizedQueryExecutionRequest EQSRequest;
+
+	FQueryFinishedSignature QueryFinishedDelegate;
+public:
+	UGOAPAction_RunEQSQuery(const FObjectInitializer& Initializer);
+
+	virtual EActionResult StartAction() override;
+	virtual EActionResult AbortAction() override;
+
+	void OnQueryFinished(TSharedPtr<FEnvQueryResult> Result);
 };
 
 UCLASS()

@@ -204,6 +204,10 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	{
 		UGOAPGoal* Copy = DuplicateObject<UGOAPGoal>(Goal, this);
 		Copy->SetOwner(*AIOwner, *this);
+		for (auto* Subtask : Copy->GetSubTasks())
+		{
+			Subtask->SetOwner(AIOwner, this);
+		}
 		Copy->OnWSUpdated(WorldState);
 		Goals.Emplace(Copy);
 	}
@@ -538,6 +542,11 @@ FString UPlannerComponent::GetDebugInfoString() const
 		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
 		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
 		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
+	}
+
+	for (auto& PlanStep : PlanInstance.Buffer)
+	{
+
 	}
 	return DebugInfo;
 }
