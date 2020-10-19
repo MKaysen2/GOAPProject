@@ -13,16 +13,12 @@ enum class EWorldKey : uint8
 {
 	kIdle = 0,
 	kAtLocation,
-	kWeaponLoaded,
-	kHasWeapon,
 	kTargetDead,
 	kDisturbanceHandled,
 	kUsingObject,
 	kTargetSuppressed,
 	kDead,
 	kInDanger,
-	kEnemyActor,
-	//kPathBlocked
 	SYMBOL_MAX	UMETA(Hidden)
 };
 

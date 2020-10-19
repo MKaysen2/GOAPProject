@@ -404,12 +404,13 @@ void UPlannerComponent::ProcessReplanRequest()
 {
 	bReplanNeeded = false;
 	auto InsistencePred = [](const UGOAPGoal& lhs, const UGOAPGoal& rhs) { 
-		return lhs.GetInsistence() < rhs.GetInsistence(); 
+		return lhs.GetInsistence() > rhs.GetInsistence(); 
 	};
 	TArray<UGOAPGoal*> ActiveGoals;
 	ActiveGoals.Heapify(InsistencePred);
 	for (auto* Goal : Goals)
 	{
+
 		if (Goal->IsValid() && (Goal->GetInsistence() > 0.f))
 		{
 			ActiveGoals.HeapPush(Goal, InsistencePred);
@@ -423,9 +424,9 @@ void UPlannerComponent::ProcessReplanRequest()
 
 	while(ActiveGoals.Num() != 0)
 	{
+		
 		UGOAPGoal* Top;
 		ActiveGoals.HeapPop(Top, InsistencePred);
-
 		//Prefer not to interrupt the current plan if possible
 		//May want to add a list of changes that would force a replan even if the current goal
 		//is still the same
@@ -544,6 +545,13 @@ FString UPlannerComponent::GetDebugInfoString() const
 		DebugInfo += FString::Printf(TEXT("    Pre: %d | Eff: %d\n"), Action->GetPreconditions().Num(), Action->GetEffects().Num());
 	}
 
+	DebugInfo += FString::Printf(TEXT("PLAN\n"));
+	for (auto& PlanStep : PlanInstance.Buffer)
+	{
+		UGOAPAction* Action = PlanStep.Action;
+		FString ActionName = Action ? Action->GetActionName() : FString(TEXT("None"));
+		DebugInfo += FString::Printf(TEXT("Action: %s\n"), *ActionName);
+	}
 	return DebugInfo;
 }
 
