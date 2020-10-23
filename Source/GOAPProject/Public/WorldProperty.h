@@ -92,6 +92,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	uint8 Value;
 
+	//Do we try to satisfy this condition with the planner?
+	//if this is true, the condition must be true of the goal state for the action to have been valid.
+	
+	//For instance, if we have an "attack from cover" action with a "Using object" precondition,
+	// we want that to already be true about the WS. If not, we dont consider the action valid.
+	UPROPERTY(EditAnywhere)
+		bool bIsNotSolvable;
 
 	FWorldProperty() = default;
 	FWorldProperty(EWorldKey _Key, bool bValue) : Key(_Key), Value(bValue) {}

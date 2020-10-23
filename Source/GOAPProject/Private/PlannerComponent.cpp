@@ -174,6 +174,8 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	{
 		return;
 	}
+
+	
 	UBlackboardComponent* BBComp = AIOwner->GetBlackboardComponent();
 	if (BBComp && IsValid(PlannerAsset.BlackboardData))
 	{
@@ -192,6 +194,7 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 		}
 	}
 	ActionSet.Reserve(PlannerAsset.Actions.Num());
+	//TODO: this is a hot mess
 	for (auto* Action : PlannerAsset.Actions)
 	{
 		UGOAPAction* Copy = DuplicateObject<UGOAPAction>(Action, this);
@@ -273,24 +276,30 @@ void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 		WorldState.SetProp(Key, Value);
 		ScheduleWSUpdate();
 
+		bool bShouldIgnore = false;
 		//Check for expected effects from current action, if any
 		if (PlanInstance.IsRunningPlan() && PlanInstance.HasCurrentAction())
 		{
-			// Should just use a map for this
-			for (auto& Effect : ExpectedEffects)
+			
+			//Action Expected effects
+			uint8* Effect = ExpectedEffects.Find(Key);
+			if (Effect && (*Effect == Value))
 			{
-				if (Effect.Key == Key )
-				{
-					if (PredictedWS.GetProp(Effect.Key) != Value)
-					{
-						ScheduleReplan();
-					}
-					return;
-				}
+				bShouldIgnore = true;
+			}
+			
+			//Goal Expected effects
+			Effect = GoalExpectedEffects.Find(Key);
+			if (Effect && (*Effect == Value))
+			{
+				bShouldIgnore = true;
 			}
 		}
 		//Unhandled WS change causes replan
-		ScheduleReplan();
+		if (!bShouldIgnore)
+		{
+			ScheduleReplan();
+		}
 	}
 }
 
@@ -316,6 +325,7 @@ void UPlannerComponent::UpdatePlanExecution()
 
 		if (!NextAction->ValidatePlannerPreconditions(WorldState))
 		{
+			CurrentGoal = nullptr;
 			AbortPlan();
 			ScheduleReplan();
 			return;
@@ -328,19 +338,29 @@ void UPlannerComponent::UpdatePlanExecution()
 				PredictedState.ApplyEffect(Effect);
 				if (Effect.bExpected)
 				{
-					auto Idx = ExpectedEffects.Add(FAISymEffect());
-					ExpectedEffects[Idx].Key = Effect.Key;
-					ExpectedEffects[Idx].Value = PredictedState.GetProp(Effect.Key);
+					ExpectedEffects.Add(Effect.Key, Effect.Value);
 				}
 			}
 		}
 
-		//TODO: check the return value for success/failure
 		NextAction->StartAction();
 		ActionStatus = EActionStatus::Active;
 	}
 	else
 	{
+		//Plan has reached the end successfully
+		//Apply Goal effects (except expected)
+
+		for (auto& Effect : CurrentGoal->GetEffects())
+		{
+			if (!Effect.bExpected)
+			{
+				//There are no "Resolved" effects for goals
+				WorldState.ApplyEffect(Effect);
+			}
+		}
+
+		CurrentGoal = nullptr;
 		AbortPlan();
 		ScheduleReplan();
 	}
@@ -389,8 +409,8 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 	}
 	else
 	{
+		CurrentGoal = nullptr;
 		AbortPlan();
-
 		ScheduleReplan();
 	}
 }
@@ -437,14 +457,27 @@ void UPlannerComponent::ProcessReplanRequest()
 		//Search here
 		TArray<FPlanStepInfo> NewPlan;
 
-		bool bPlanFound = AStarPlanner.Search(Top->GetGoalCondition(), WorldState, NewPlan);
+
+		//Make a copy of the worldstate and apply subtask effects to it first
+		FWorldState SearchStartWS(WorldState);
+		
+		for (auto* Subtask : Top->GetSubTasks())
+		{
+			for (auto& Effect : Subtask->GetEffects())
+			{
+				SearchStartWS.ApplyEffect(Effect);
+			}
+		}
+
+		bool bPlanFound = AStarPlanner.Search(Top->GetGoalCondition(), SearchStartWS, NewPlan);
 		//could not satisfy goal so go to next highest
 
 		if (!bPlanFound)
 		{
 			continue;
 		}
-
+		
+		CurrentGoal = Top;
 		StartNewPlan(Top->GetSubTasks(), NewPlan); 
 		return;
 	}
@@ -453,6 +486,8 @@ void UPlannerComponent::ProcessReplanRequest()
 	{
 		UE_LOG(LogAction, Warning, TEXT("Could not find plans for any active goals"));
 	}
+	//I dont quite remember but I think this is supposed to be if 
+	//no valid goal was found
 	if (PlanInstance.IsRunningPlan() && PlanInstance.HasCurrentAction())
 	{
 		AbortPlan();
@@ -481,6 +516,14 @@ void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*> Subtasks, TArray<FPlan
 		AbortPlan();
 	}
 
+	//add expected effects for goal
+	for (auto& Effect : CurrentGoal->GetEffects())
+	{
+		if (Effect.bExpected)
+		{
+			GoalExpectedEffects.Add(Effect.Key, Effect.Value);
+		}
+	}
 	for (auto* Action : Subtasks)
 	{
 		FPlanStepInfo SubtaskStep;
@@ -494,7 +537,10 @@ void UPlannerComponent::StartNewPlan(TArray<UGOAPAction*> Subtasks, TArray<FPlan
 
 void UPlannerComponent::AbortPlan()
 {
+	//Reset expected effects from both action and goal
 	ExpectedEffects.Reset();
+	GoalExpectedEffects.Reset();
+
 	bool bLeaveCurrent = false;
 	if (PlanInstance.HasCurrentAction() && ActionStatus == EActionStatus::Active)
 	{

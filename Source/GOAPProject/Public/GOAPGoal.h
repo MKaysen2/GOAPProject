@@ -32,14 +32,21 @@ protected:
 	UPROPERTY(EditAnywhere, Instanced)
 		TArray<UGOAPAction*> SubTasks;
 
-	//TODO: Everything below this should go in a separate interface
 	//WS conditions for whether the goal is valid or not
 	UPROPERTY(config, EditAnywhere)
 		TArray<FWorldProperty> Preconditions;
 
+	//These are applied when the goal succeeds.
+	//May need to add effects applied on any result
+	//Do NOT add variable effects here.
+	UPROPERTY(EditAnywhere)
+		TArray<FAISymEffect> Effects;
+	
+	//cached AI owner
 	UPROPERTY(transient)
 		AAIController* AIOwner;
 
+	//cached Owner Component
 	UPROPERTY(transient)
 		UPlannerComponent* OwnerComp;
 	//constant for now
@@ -57,7 +64,11 @@ public:
 	const TArray<FWorldProperty>& GetGoalCondition() const { return GoalCondition;  }
 	TArray<UGOAPAction*> GetSubTasks() const { return SubTasks; }
 	FString GetTaskName() { return TaskName;  }
+
 	bool IsValid() const { return bCachedValidity; }
+	virtual bool ValidateContextPreconditions() const;
+
+	TArray<FAISymEffect> GetEffects() { return Effects; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
 	void OnWSUpdated(const FWorldState& WorldState);
 	float GetInsistence() const;

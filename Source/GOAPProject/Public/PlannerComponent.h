@@ -139,8 +139,9 @@ protected:
 	UPROPERTY(transient)
 		TArray<UGOAPAction*> ActionSet;
 
-	UPROPERTY(transient)
-		TArray<FAISymEffect> ExpectedEffects;
+	TMap<EWorldKey, uint8> ExpectedEffects;
+
+	TMap<EWorldKey, uint8> GoalExpectedEffects;
 
 	UPROPERTY(transient)
 		TArray<UPlannerService*> Services;

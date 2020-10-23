@@ -193,25 +193,40 @@ bool FStateNode::AddPrecondition(const FWorldProperty& Precondition)
 	{
 		return CurrentState->CheckCondition(Precondition);
 	}
+	//we save the new value after setting it to calculate the heuristic
+	uint8 NewVal; 
 
-	uint8 NewVal;
+	//Was the condition true about the goal state?
 	if (GoalState->CheckCondition(Precondition))
 	{
+		//New value is the goal state's value from LHS key if absolute or RHS key if variable
 		NewVal = (Precondition.IsRHSAbsolute()) ? GroundVal : GoalState->GetProp(Precondition.KeyRHS);
+		//Update our state with new value
 		CurrentState->SetProp(Key, NewVal);
 	}
 	else
 	{
+		//Goal state does not satisfy precondition inherently
+
+		//we dont want to solve this.
+		if (Precondition.bIsNotSolvable)
+		{
+			return false;
+		}
+
+		//satisfy the precondition and get the new value
 		CurrentState->SatisfyCondition(Precondition);
 		NewVal = CurrentState->GetProp(Key);
 	}
 
+	//Mark the key(s) as relevant to the world state
 	SetKeyRelevance(Key, true);
 	if (!Precondition.IsRHSAbsolute())
 	{
 		SetKeyRelevance(Precondition.KeyRHS, true);
 	}
 
+	//Compute new heuristic
 	int32 Distance = GoalState->HeuristicDist(Key, NewVal);
 	if (Distance != 0)
 	{

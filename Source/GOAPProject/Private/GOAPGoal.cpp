@@ -18,6 +18,12 @@ UGOAPGoal::UGOAPGoal() :
 {
 }
 
+bool UGOAPGoal::ValidateContextPreconditions() const
+{
+	//For now. Will check decorators here
+	return true;
+}
+
 void UGOAPGoal::SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent)
 {
 	AIOwner = &Controller;
