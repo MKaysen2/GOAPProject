@@ -24,14 +24,40 @@ void UPlanService_TargetProps::TickService(UPlannerComponent& PlannerComp, float
 	if (!EnemyActor)
 	{
 		TArray<AActor*> OutActors;
-		PlannerComp.GetAIOwner()->GetPerceptionComponent()->GetPerceivedHostileActors(OutActors);
-
-		ETeamAttitude::Type Attitude = FGenericTeamId::GetAttitude(FGenericTeamId(2), FGenericTeamId(10));
-		
-		if (OutActors.Num() != 0)
+		UAIPerceptionComponent* PerceptComp = PlannerComp.GetAIOwner()->GetPerceptionComponent();
+		PerceptComp->GetPerceivedHostileActors(OutActors);
+		APawn* Pawn = PlannerComp.GetAIOwner()->GetPawn();
+		if (OutActors.Num != 0)
 		{
-			BBComp->SetValueAsObject(FName("EnemyActor"), OutActors[0]);
+			bool bBestActorIsSensed = false;
+			float fBestDistSq = TNumericLimits<float>::Max();
+			AActor* BestActor = nullptr;
+			FAISenseID SightID = UAISense::GetSenseID(UAISense_Sight::StaticClass());
+			//Get the nearest visible target, then nearest nonvisible target
+			for (auto* Actor : OutActors)
+			{
+				
+				float newDistSq = FVector::DistSquared(Pawn->GetActorLocation(), PerceptComp->GetActorLocation(*Actor));
+				bool bWasSensed = PerceptComp->HasAnyCurrentStimulus(*Actor);
+				if (bWasSensed && !bBestActorIsSensed)
+				{
+					bBestActorIsSensed = bWasSensed;
+					fBestDistSq = newDistSq;
+					BestActor = Actor;
+				}
+				else if ((bWasSensed == bBestActorIsSensed) && newDistSq < fBestDistSq)
+				{
+					fBestDistSq = newDistSq;
+					BestActor = Actor;
+				}
+			}
+
+			if (BestActor)
+			{
+				BBComp->SetValueAsObject(FName("EnemyActor"), BestActor);
+			}
 		}
 	}
 
+	EnemyActor = Cast<AActor>(BBComp->GetValueAsObject(FName("EnemyActor")));
 }

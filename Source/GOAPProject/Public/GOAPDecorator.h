@@ -34,3 +34,20 @@ public:
 
 	virtual bool CalcRawConditionValue(AAIController& AIOwner, const FWorldState& WS) override;
 };
+
+UCLASS()
+class GOAPPROJECT_API UGOAPDec_IsKeyOfType : public UGOAPDecorator
+{
+	GENERATED_BODY()
+
+		UPROPERTY(EditAnywhere)
+		FName BBTargetName;
+
+	UPROPERTY(EditAnywhere)
+		TArray<TSubclassOf<UObject>> AllowedTypes;
+
+public:
+	UGOAPDec_IsKeyOfType(const FObjectInitializer& ObjectInitializer);
+
+	virtual bool CalcRawConditionValue(AAIController& AIOwner, const FWorldState& WS) override;
+};

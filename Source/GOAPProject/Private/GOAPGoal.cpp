@@ -1,5 +1,4 @@
 #include "..\Public\GOAPGoal.h"
-#include "..\Public\GOAPCharacterBase.h"
 #include "..\Public\WorldState.h"
 #include "..\Public\GOAPDecorator.h"
 #include "BehaviorTree/BlackboardData.h"

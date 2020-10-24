@@ -47,3 +47,25 @@ bool UGOAPDec_ShouldFlushOut::CalcRawConditionValue(AAIController& AIOwner, cons
 
 	return false;
 }
+
+UGOAPDec_IsKeyOfType::UGOAPDec_IsKeyOfType(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
+bool UGOAPDec_IsKeyOfType::CalcRawConditionValue(AAIController& AIOwner, const FWorldState& WS)
+{
+	UObject* Object = AIOwner.GetBlackboardComponent()->GetValueAsObject(BBTargetName);
+	if (!Object)
+	{
+		return false;
+	}
+	for (auto& TestClass : AllowedTypes)
+	{
+		if (Object->GetClass()->IsChildOf(TestClass))
+		{
+			return true;
+		}
+	}
+	return false;
+}
