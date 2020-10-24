@@ -6,6 +6,7 @@
 #include "GOAPGoal.generated.h"
 
 class UGOAPAction;
+class UGOAPDecorator;
 struct FWorldState;
 class AAIController;
 class UPlannerComponent;
@@ -28,6 +29,8 @@ protected:
 	UPROPERTY(config, EditAnywhere)
 	TArray<FWorldProperty> GoalCondition;
 
+	UPROPERTY(EditAnywhere, Instanced)
+		TArray<UGOAPDecorator*> Decorators;
 	//Subtasks that need to happen before the found plan happens
 	UPROPERTY(EditAnywhere, Instanced)
 		TArray<UGOAPAction*> SubTasks;
@@ -66,7 +69,7 @@ public:
 	FString GetTaskName() { return TaskName;  }
 
 	bool IsValid() const { return bCachedValidity; }
-	virtual bool ValidateContextPreconditions() const;
+	virtual bool ValidateContextPreconditions(const FWorldState& WS) const;
 
 	TArray<FAISymEffect> GetEffects() { return Effects; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);

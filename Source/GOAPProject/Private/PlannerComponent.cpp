@@ -431,7 +431,7 @@ void UPlannerComponent::ProcessReplanRequest()
 	for (auto* Goal : Goals)
 	{
 
-		if (Goal->IsValid() && (Goal->GetInsistence() > 0.f))
+		if (Goal->IsValid() && Goal->ValidateContextPreconditions(WorldState) && (Goal->GetInsistence() > 0.f))
 		{
 			ActiveGoals.HeapPush(Goal, InsistencePred);
 		}

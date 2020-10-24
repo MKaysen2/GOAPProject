@@ -1,6 +1,7 @@
 #include "..\Public\GOAPGoal.h"
 #include "..\Public\GOAPCharacterBase.h"
 #include "..\Public\WorldState.h"
+#include "..\Public\GOAPDecorator.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -18,9 +19,16 @@ UGOAPGoal::UGOAPGoal() :
 {
 }
 
-bool UGOAPGoal::ValidateContextPreconditions() const
+bool UGOAPGoal::ValidateContextPreconditions(const FWorldState& WS) const
 {
 	//For now. Will check decorators here
+	for (auto* Decorator : Decorators)
+	{
+		if (!Decorator->CalcRawConditionValue(*AIOwner, WS))
+		{
+			return false;
+		}
+	}
 	return true;
 }
 
