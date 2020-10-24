@@ -26,6 +26,9 @@ class GOAPPROJECT_API UGOAPDec_ShouldFlushOut : public UGOAPDecorator
 
 		UPROPERTY(EditAnywhere)
 		FName BBTargetName;
+	
+	UPROPERTY(EditAnywhere)
+		float AgeThreshold;
 public:
 	UGOAPDec_ShouldFlushOut(const FObjectInitializer& ObjectInitializer);
 
