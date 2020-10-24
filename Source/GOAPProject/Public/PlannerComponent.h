@@ -117,6 +117,8 @@ public:
 	//unused for now. using messages first
 	void OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result);
 	void StartPlanner(UPlannerAsset& PlannerAsset);
+	void StopPlanner();
+
 	void RunAllActions();
 	bool IsRunningPlan() const;
 	void ScheduleReplan();
@@ -166,6 +168,8 @@ protected:
 
 	void ProcessReplanRequest();
 	
+	virtual void Cleanup() override;
+
 	//Does not broadcast WS changes
 	void SetWSPropInternal(const EWorldKey& Key, const uint8& Value);
 

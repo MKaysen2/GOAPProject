@@ -27,7 +27,7 @@ void UPlanService_TargetProps::TickService(UPlannerComponent& PlannerComp, float
 		UAIPerceptionComponent* PerceptComp = PlannerComp.GetAIOwner()->GetPerceptionComponent();
 		PerceptComp->GetPerceivedHostileActors(OutActors);
 		APawn* Pawn = PlannerComp.GetAIOwner()->GetPawn();
-		if (OutActors.Num != 0)
+		if (OutActors.Num() != 0)
 		{
 			bool bBestActorIsSensed = false;
 			float fBestDistSq = TNumericLimits<float>::Max();

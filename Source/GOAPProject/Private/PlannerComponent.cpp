@@ -225,6 +225,24 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	PlanInstance.Init(BufferSize);
 }
 
+void UPlannerComponent::StopPlanner()
+{
+	ExpectedEffects.Reset();
+	GoalExpectedEffects.Reset();
+
+	if (PlanInstance.HasCurrentAction() && ActionStatus == EActionStatus::Active)
+	{
+		EActionResult Result = PlanInstance.GetCurrent()->AbortAction();
+		if (Result == EActionResult::Running)
+		{
+			ActionStatus = EActionStatus::Aborting;
+		}
+	}
+	CurrentGoal = nullptr;
+
+	PlanInstance.Clear(false);
+}
+
 void UPlannerComponent::RunAllActions()
 {
 	RequestExecutionUpdate();
@@ -494,6 +512,15 @@ void UPlannerComponent::ProcessReplanRequest()
 	}
 }
 
+void UPlannerComponent::Cleanup()
+{
+
+	StopPlanner();
+	Services.Reset();
+	Goals.Reset();
+	ActionSet.Reset();
+
+}
 void UPlannerComponent::SetWSPropInternal(const EWorldKey& Key, const uint8& Value)
 {
 	WorldState.SetProp(Key, Value);
