@@ -137,6 +137,7 @@ protected:
 	bool bPlanInProgress = false;
 	bool bPlanUpdateNeeded = false;
 	bool bWorldStateUpdated = false;
+	bool bRunning = false;
 
 	UPROPERTY(transient)
 		TArray<UGOAPAction*> ActionSet;

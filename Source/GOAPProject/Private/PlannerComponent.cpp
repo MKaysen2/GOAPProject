@@ -223,6 +223,7 @@ void UPlannerComponent::StartPlanner(UPlannerAsset& PlannerAsset)
 	AStarPlanner.MaxDepth = PlannerAsset.MaxPlanSize;
 	int BufferSize = PlannerAsset.MaxPlanSize + 1;
 	PlanInstance.Init(BufferSize);
+	bRunning = true;
 }
 
 void UPlannerComponent::StopPlanner()
@@ -230,6 +231,7 @@ void UPlannerComponent::StopPlanner()
 	ExpectedEffects.Reset();
 	GoalExpectedEffects.Reset();
 
+	bRunning = false;
 	if (PlanInstance.HasCurrentAction() && ActionStatus == EActionStatus::Active)
 	{
 		EActionResult Result = PlanInstance.GetCurrent()->AbortAction();
@@ -272,6 +274,11 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		{
 			Goal->OnWSUpdated(WorldState);
 		}
+	}
+
+	if (!bRunning)
+	{
+		return;
 	}
 
 	if (bPlanUpdateNeeded)
