@@ -90,6 +90,10 @@ EActionResult UGOAPAction::AbortAction()
 	return EActionResult::Aborted;
 }
 
+UWorld* UGOAPAction::GetWorld() const
+{
+	return GetOuter()->GetWorld();
+}
 ///// GOAPAction BlueprintBase//////////////
 
 UGOAPAction_BlueprintBase::UGOAPAction_BlueprintBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

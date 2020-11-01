@@ -129,6 +129,7 @@ public:
 	virtual EActionResult AbortAction();
 
 protected:
+	virtual UWorld* GetWorld() const override;
 	//Should add effects and preconditions in InitAction or something
 	//which will make it easier to create BP subclasses
 	void AddEffect(const EWorldKey& Key, const FAISymEffect& Effect);
