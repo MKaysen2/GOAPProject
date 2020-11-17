@@ -293,6 +293,30 @@ void UPlannerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	}
 }
 
+float UPlannerComponent::GetTagCooldownEndTime(FGameplayTag Tag)
+{
+	return CooldownTagsMap.FindRef(Tag);
+}
+
+void UPlannerComponent::AddTagCooldownDuration(FGameplayTag CooldownTag, float Duration, bool bAddToExistingDuration)
+{
+	//Source: BehaviorTreeComponent.cpp
+	//Want to find a way to ditch this and just use the already existing behavior from the BT
+	if (CooldownTag.IsValid())
+	{
+		float* CurrentEndTime = CooldownTagsMap.Find(CooldownTag);
+
+		// If we are supposed to add to an existing duration, do that, otherwise we set a new value.
+		if (bAddToExistingDuration && (CurrentEndTime != nullptr))
+		{
+			*CurrentEndTime += Duration;
+		}
+		else
+		{
+			CooldownTagsMap.Add(CooldownTag, (GetWorld()->GetTimeSeconds() + Duration));
+		}
+	}
+}
 void UPlannerComponent::SetWSProp(const EWorldKey& Key, const uint8& Value)
 {
 	uint8 Prev = WorldState.GetProp(Key);
@@ -384,7 +408,7 @@ void UPlannerComponent::UpdatePlanExecution()
 				WorldState.ApplyEffect(Effect);
 			}
 		}
-
+		CurrentGoal->OnPlanFinished();
 		CurrentGoal = nullptr;
 		AbortPlan();
 		ScheduleReplan();
@@ -434,6 +458,8 @@ void UPlannerComponent::OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinished
 	}
 	else
 	{
+		//Action failed, plan ends
+		CurrentGoal->OnPlanFinished();
 		CurrentGoal = nullptr;
 		AbortPlan();
 		ScheduleReplan();

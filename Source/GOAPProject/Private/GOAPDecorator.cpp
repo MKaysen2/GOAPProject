@@ -3,7 +3,9 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "Perception/AISense_Damage.h"
 #include "AIController.h"
+#include "..\Public\PlannerComponent.h"
 
 UGOAPDecorator::UGOAPDecorator(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -68,4 +70,63 @@ bool UGOAPDec_IsKeyOfType::CalcRawConditionValue(AAIController& AIOwner, const F
 		}
 	}
 	return false;
+}
+
+UGOAPDec_DamagedSince::UGOAPDec_DamagedSince(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
+bool UGOAPDec_DamagedSince::CalcRawConditionValue(AAIController& AIOwner, const FWorldState& WS)
+{
+	FAISenseID DamageID = UAISense::GetSenseID(UAISense_Damage::StaticClass());
+
+	const FActorPerceptionInfo* Info = AIOwner.GetPerceptionComponent()->GetFreshestTrace(DamageID);
+
+	if (!Info)
+	{
+		return false;
+	}
+
+	for (int32 StimID = 0; StimID < Info->LastSensedStimuli.Num(); ++StimID)
+	{
+
+		if (Info->LastSensedStimuli[StimID].Type == DamageID)
+		{
+			
+			bool bSensed = Info->LastSensedStimuli[StimID].WasSuccessfullySensed();
+			float fAge = Info->LastSensedStimuli[StimID].GetAge();
+			return (bSensed && fAge < AgeThreshold);
+		}
+	}
+	return false;
+}
+
+UGOAPDec_TagCooldown::UGOAPDec_TagCooldown(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
+bool UGOAPDec_TagCooldown::CalcRawConditionValue(AAIController& AIOwner, const FWorldState& WS)
+{
+	UPlannerComponent* PlannerComp = AIOwner.FindComponentByClass<UPlannerComponent>();
+	if (!PlannerComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No plannerComp found"));
+		return false;
+	}
+
+	float EndTime = PlannerComp->GetTagCooldownEndTime(CooldownTag);
+	if (EndTime == 0.f)
+	{
+
+		return true;
+	}
+	
+	return (GetWorld()->GetTimeSeconds() >= EndTime);
+}
+
+void UGOAPDec_TagCooldown::OnTaskDeactivated(UPlannerComponent& OwnerComp)
+{
+	OwnerComp.AddTagCooldownDuration(CooldownTag, Duration, false);
 }

@@ -71,6 +71,7 @@ public:
 	bool IsValid() const { return bCachedValidity; }
 	virtual bool ValidateContextPreconditions(const FWorldState& WS) const;
 
+	virtual void OnPlanFinished();
 	TArray<FAISymEffect> GetEffects() { return Effects; }
 	void SetOwner(AAIController& Controller, UPlannerComponent& OwnerComponent);
 	void OnWSUpdated(const FWorldState& WorldState);

@@ -5,6 +5,7 @@
 #include "WorldState.h"
 #include "WorldProperty.h"
 #include "StateNode.h"
+#include "GameplayTagContainer.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "PlannerComponent.generated.h"
 
@@ -113,6 +114,9 @@ UCLASS()
 class GOAPPROJECT_API UPlannerComponent : public UBrainComponent
 {
 	GENERATED_BODY()
+protected:
+	//more behavior I had to rip from the BT system
+	TMap<FGameplayTag, float> CooldownTagsMap;
 public:
 	//unused for now. using messages first
 	void OnTaskFinished(UGOAPAction* Action, EPlannerTaskFinishedResult::Type Result);
@@ -122,10 +126,14 @@ public:
 	void RunAllActions();
 	bool IsRunningPlan() const;
 	void ScheduleReplan();
-
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual FString GetDebugInfoString() const;
+
+	//0.f if tag is not set at all
+	float GetTagCooldownEndTime(FGameplayTag Tag);
+	//If AddToDuration is false, the cooldown duration is overwritten
+	void AddTagCooldownDuration(FGameplayTag CooldownTag, float Duration, bool AddToDuration);
 
 	void SetWSProp(const EWorldKey& Key, const uint8& Value);
 
